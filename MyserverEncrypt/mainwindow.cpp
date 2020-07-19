@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     m_pWebSocketServer(nullptr)
 {
     ui->setupUi(this);
-
+   // ancora un commento come prova
     ui->stopserver->setEnabled(false);
     ui->commet->setReadOnly(true);
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
