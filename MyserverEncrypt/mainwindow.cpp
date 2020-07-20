@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QString>
 #include "../Client/user.h"
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow),
     m_pWebSocketServer(nullptr)
@@ -29,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
 MainWindow::~MainWindow()
 {
-    //delete ui;
     m_pWebSocketServer->close();
     qDeleteAll(m_clients.begin(), m_clients.end());
 }
@@ -62,7 +62,7 @@ void MainWindow::on_startserver_clicked()
     if (!m_pWebSocketServer->listen(QHostAddress::LocalHost,qint64(ui->nport->value()))) {
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer is already started on this port. Try to change num port.");
     }else {
-        ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer started..");
+        ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer started...");
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tIP server:\t"+m_pWebSocketServer->serverAddress().toString()+" on port:\t"+QString::number(m_pWebSocketServer->serverPort()));
         ui->stopserver->setEnabled(true);
         ui->startserver->setEnabled(false);
@@ -94,7 +94,7 @@ void MainWindow::onNewConnection(){
     if(pSocket==nullptr || !pSocket->isValid())
         return;
     
-    ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tClient connected\t"+pSocket->peerName()+"\tIP: "+pSocket->peerAddress().toString());
+    ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tClient connected: "+pSocket->peerName()+"IP: "+pSocket->peerAddress().toString());
 
     connect(pSocket, &QWebSocket::textMessageReceived, this, &MainWindow::processTextMessage);
     connect(pSocket, &QWebSocket::binaryMessageReceived,this, &MainWindow::processBinaryMessage);
@@ -123,30 +123,59 @@ void MainWindow::processBinaryMessage(QByteArray message)
     // processare il messoggio , leggendo i primi 16 bit per identificare il tipo di messaggio sul socket
     // dopo chimare la funzione processmessage
     // che chiamera una funzione dentro questa classe per la sua elaborazione
-
-    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
+    /*
+    QWebSocket *pClient = dynamic_cast<QWebSocket*>(sender());
     if (pClient)
     {
         for (int i=0; i< m_clients.size();i++){
             if(m_clients.at(i)!=pClient)
                 m_clients.at(i)->sendBinaryMessage(message);
         }
-        /*
+
         User a;
         QDataStream out(&message, QIODevice::ReadOnly);
         out.setVersion(QDataStream::Qt_5_14);
         out>>a;
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tClient ha inviato byte:\t"+a.print());
-        */
 
-        /* Esempio di operazione
+
+         Esempio di operazione
         ProcessOperation p(nullptr); -- messo nel costruttore
         quint16 tipo;
         QDataStream out(&message,QIODevice::ReadOnly);
         out.setVersion(QDataStream::Qt_5_14);
         out>>tipo;
         p.process((TypeOperation)tipo,nullptr);
-        */
+
+    }*/
+
+    QWebSocket* socket = dynamic_cast<QWebSocket*>(sender());
+    if (socket == nullptr || !socket->isValid())
+        return;
+    QDataStream streamIn(&message, QIODevice::ReadOnly);	/* connect stream with socket */
+    streamIn.setVersion( QDataStream::Qt_5_14);
+    quint16 mType;
+    QString testo;
+    streamIn>>mType;
+    ui->commet->appendPlainText("Tipo Messaggio: "+QString::number(mType));
+    streamIn>>testo;
+    ui->commet->appendPlainText("Contenuto Messaggio: "+testo);
+
+    try {
+        ProcessOperation po;
+
+        if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate || mType == AccountUpdate ||
+            mType == Logout || mType == Simplemessage )
+        {
+            ui->commet->appendPlainText("Type correct");
+            po.process((TypeOperation)mType, socket);
+        }
+        else
+            ui->commet->appendPlainText("(MESSAGE ERROR) Received unexpected message: ");
+    }
+    catch (std::exception& me)
+    {
+        ui->commet->appendPlainText( me.what());
     }
 }
 
@@ -171,8 +200,11 @@ void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
     }
 }
 
-
 void MainWindow::on_startserver_2_clicked()
 {
     ui->commet->clear();
+}
+
+void MainWindow::SimpleTextMessageTest(){
+    ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tTEST MESSAGE");
 }

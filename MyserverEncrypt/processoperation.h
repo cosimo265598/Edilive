@@ -8,6 +8,8 @@
 
 enum TypeOperation : quint16
 {
+    // Tests
+    Simplemessage,
     // Login messages
     LoginRequest,
     LoginChallenge,
@@ -25,6 +27,7 @@ enum TypeOperation : quint16
     Logout,
     // Others
     Failure
+
 };
 
 class ProcessOperation
@@ -33,9 +36,10 @@ private:
     TypeOperation tipo;
 
 public:
+    ProcessOperation();
     ProcessOperation(QWebSocketServer *s);
     QString typeOp(TypeOperation type);
-    void process(TypeOperation message, QSslSocket* socket);
+    void process(TypeOperation message, QWebSocket* socket);
     ~ProcessOperation();
 
 signals:
@@ -43,8 +47,9 @@ signals:
     ProcessOperation loginRequest(QWebSocket* clientSocket, QString username);
     ProcessOperation loginUnlock(QWebSocket* clientSocket, QByteArray token);
 
-    ProcessOperation accountCreate(QWebSocket* lientSocket, QString username, QString nickname, QImage icon, QString password);
-    ProcessOperation accountUpdate(QWebSocket* lientSocket, QString nickname, QImage icon, QString password);
+    ProcessOperation accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    ProcessOperation accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
+    ProcessOperation SimpleMessage(QWebSocket* clientSocket, QString mess);
 
 };
 

@@ -20,6 +20,7 @@
 #include <QtNetwork/QSslKey>
 #include <QDateTime>
 #include <QTextCursor>
+#include <userdata.h>
 
 
 #include "serverdatabase.h"
@@ -48,13 +49,15 @@ private slots:
     void processBinaryMessage(QByteArray message);
     void socketDisconnected();
     void onSslErrors(const QList<QSslError> &errors);
-
-
     void on_startserver_2_clicked();
+
+public slots:
+    void SimpleTextMessageTest();
 
 private:
     QSharedPointer<Ui::MainWindow> ui;
     QSharedPointer<QWebSocketServer> m_pWebSocketServer;
+    //QMap<QWebSocket *,QSharedPointer<ClientP>> clients;
     QList<QWebSocket *> m_clients;
     ServerDatabase database;
     QSslConfiguration sslconfig;
