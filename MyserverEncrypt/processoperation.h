@@ -5,6 +5,8 @@
 #include <QByteArray>
 #include "QtWebSockets/QWebSocketServer"
 #include "QtWebSockets/QWebSocket"
+#include <QObject>
+
 
 enum TypeOperation : quint16
 {
@@ -30,26 +32,30 @@ enum TypeOperation : quint16
 
 };
 
-class ProcessOperation
+class MainWindow;
+
+class ProcessOperation: public QObject
 {
+    Q_OBJECT
 private:
     TypeOperation tipo;
+    QSharedPointer<MainWindow> wind;
 
 public:
-    ProcessOperation();
-    ProcessOperation(QWebSocketServer *s);
+    ProcessOperation(QObject *parent );
+    ProcessOperation(QWebSocketServer *s,QObject *parent );
     QString typeOp(TypeOperation type);
     void process(TypeOperation message, QWebSocket* socket);
     ~ProcessOperation();
 
 signals:
 
-    ProcessOperation loginRequest(QWebSocket* clientSocket, QString username);
-    ProcessOperation loginUnlock(QWebSocket* clientSocket, QByteArray token);
+    //void  loginRequest(QWebSocket* clientSocket, QString username);
+    //void  loginUnlock(QWebSocket* clientSocket, QByteArray token);
 
-    ProcessOperation accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
-    ProcessOperation accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
-    ProcessOperation SimpleMessage(QWebSocket* clientSocket, QString mess);
+    //void  accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    //void  accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
+    void  SimpleMessage(QWebSocket* clientSocket, QString mess);
 
 };
 

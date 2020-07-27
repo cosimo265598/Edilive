@@ -162,7 +162,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
     ui->commet->appendPlainText("Contenuto Messaggio: "+testo);
 
     try {
-        ProcessOperation po;
+        ProcessOperation po(this->m_pWebSocketServer.get(),this);
 
         if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate || mType == AccountUpdate ||
             mType == Logout || mType == Simplemessage )
@@ -206,5 +206,6 @@ void MainWindow::on_startserver_2_clicked()
 }
 
 void MainWindow::SimpleTextMessageTest(){
-    ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tTEST MESSAGE");
+    std::cout<<"MAIN windows called\n";
+    ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tTEST MESSAGE FROM SERVER");
 }

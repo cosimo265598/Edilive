@@ -1,11 +1,17 @@
 #include "mainwindow.h"
 #include "processoperation.h"
 #include <iostream>
+#include <QObject>
+#include <memory>
 
-ProcessOperation::ProcessOperation(){}
+ProcessOperation::ProcessOperation(QObject *parent):QObject(parent){
+    this->wind=  QSharedPointer<MainWindow>( qobject_cast<MainWindow*>(this->parent()) ) ;
+}
 
-ProcessOperation::ProcessOperation(QWebSocketServer *s)
+ProcessOperation::ProcessOperation(QWebSocketServer *s,QObject *parent):QObject(parent)
 {
+    //this->wind =  QSharedPointer<MainWindow>( qobject_cast<MainWindow*>(this->parent()) ) ;
+    std::cout<<"object   "<<qobject_cast<MainWindow*>(this->parent());
     /*
     //aggancio il segnale login request della classe process operation a quella presente nel server
     connect(this, &ProcessOperation::loginRequest, s, &TcpServer::serveLoginRequest, Qt::DirectConnection);
@@ -15,12 +21,13 @@ ProcessOperation::ProcessOperation(QWebSocketServer *s)
     connect(this, &ProcessOperation::accountUpdate, s, &TcpServer::updateAccount, Qt::DirectConnection);
     connect(this, &ProcessOperation::userLogout, s, &TcpServer::logoutClient, Qt::DirectConnection);
     */
-    /*connect(
+    std::cout<<"this->wind is = "<<wind.get();
+    connect(
             this,
             &ProcessOperation::SimpleMessage,
-            s,
+            dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::SimpleTextMessageTest,
-            Qt::DirectConnection); */
+            Qt::DirectConnection);
 }
 
 void ProcessOperation::process(TypeOperation message, QWebSocket* socket)
@@ -38,8 +45,8 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket)
             break;
         }
         case Simplemessage:{
-             std::cout<<"Simplemessagetest";
-            //emit SimpleMessage(socket,"hello message test sended");
+             std::cout<<"Simplemessagetest by cout";
+             emit SimpleMessage(socket,QString("hello message test sended\n"));
             break;
         }
 
