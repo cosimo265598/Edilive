@@ -32,18 +32,14 @@ enum TypeOperation : quint16
 
 };
 
-class MainWindow;
-
 class ProcessOperation: public QObject
 {
     Q_OBJECT
 private:
     TypeOperation tipo;
-    QSharedPointer<MainWindow> wind;
 
 public:
     ProcessOperation(QObject *parent );
-    ProcessOperation(QWebSocketServer *s,QObject *parent );
     QString typeOp(TypeOperation type);
     void process(TypeOperation message, QWebSocket* socket);
     ~ProcessOperation();
