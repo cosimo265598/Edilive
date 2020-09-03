@@ -136,7 +136,9 @@ QDataStream& operator>>(QDataStream& in, UserData& user)
 {
     // Object deserialized reading field by field from the stream
 
-    in >> user.m_username >> user.m_userId >> user.m_nickname
+    in  >> user.m_username
+        >> user.m_userId
+        >> user.m_nickname
         >> user.m_passwd
         >> user.m_salt
         >> user.m_icon
@@ -149,7 +151,9 @@ QDataStream& operator<<(QDataStream& out, const UserData& user)
 {
     // Object serialized as the sequence of its member fields
 
-    out << user.m_username << user.m_userId << user.m_nickname
+    out << user.m_username
+        << user.m_userId
+        << user.m_nickname
         << user.m_passwd
         << user.m_salt
         << user.m_icon

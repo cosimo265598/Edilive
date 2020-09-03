@@ -18,16 +18,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    buildermessageclient.cpp \
+    clientfilesystem.cpp \
+    eventfilterimpl.cpp \
+    filehandler.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    buildermessageclient.h \
+    clientfilesystem.h \
+    eventfilterimpl.h \
+    filehandler.h \
     mainwindow.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    clientfilesystem.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources_login.qrc

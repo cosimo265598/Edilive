@@ -11,20 +11,20 @@
 
 
 #define usertable "CREATE TABLE \"Users\" (\
-                    \"Username\"	TEXT,\
+                    \"Username\"	TEXT UNIQUE,\
                     \"UserID\"	INTEGER NOT NULL UNIQUE,\
                     \"Nickname\"	TEXT,\
                     \"PassHash\"	BLOB NOT NULL,\
                     \"Salt\"	BLOB NOT NULL,\
                     \"Icon\"	BLOB,\
-                    PRIMARY KEY(\"Username\"))"
+                    PRIMARY KEY(\"Username\"));"
 
 
 #define documentable "CREATE TABLE \"DocEditors\" (\
                      \"Username\"	TEXT NOT NULL,\
                      \"DocURI\"	TEXT NOT NULL,\
                      FOREIGN KEY(\"Username\") REFERENCES \"Users\"(\"Username\") ON UPDATE CASCADE ON DELETE CASCADE,\
-                     PRIMARY KEY(\"Username\", \"DocURI\"))"
+                     PRIMARY KEY(\"Username\", \"DocURI\"));"
 
 #define defaultnamedb "sql_for_server"
 
@@ -42,6 +42,7 @@ private:
     QSqlQuery qRemoveDoc;
     QSqlQuery qCountDocEditors;
     QSqlQuery qSelectUserDocs;
+    QSqlQuery qExistUser;
 
 public:
 

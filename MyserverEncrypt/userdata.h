@@ -6,7 +6,7 @@
 #include <QByteArray>
 
 #define MAX_NAME_LENGTH	  50			  // 50 characters
-#define MAX_IMAGE_SIZE	  1*1024*1024
+#define MAX_IMAGE_SIZE	  5*1024*1024      // 5 MByte
 
 class UserData
 {

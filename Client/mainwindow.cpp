@@ -84,8 +84,8 @@ void MainWindow::changePosition(){
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_14);
-    //out<<QString("Posizione: ")<<(quint32)c.position();
-    out<<a;
+    out<<QString("Posizione: ")<<(quint32)c.position();
+    //out<<a;
 
     m_webSocket.sendBinaryMessage(block);
 

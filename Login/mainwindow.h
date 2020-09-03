@@ -8,6 +8,10 @@
 #include <QtCore/QList>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QMessageBox>
+#include <clientfilesystem.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,10 +32,18 @@ private slots:
     void on_back_clicked();
 
     void on_login_clicked();
+    void onConnected();
+    void onSslErrors(const QList<QSslError> &errors);
+    void on_sign_account_clicked();
+    void MessageReceivedFromServer(const QByteArray& message);
+    void Registeruser();
+    void StartNewWindows();
 
 private:
     Ui::MainWindow *ui;
-    QWebSocket m_webSocket;
+    ClientFilesystem *secondWindows;
+    QSharedPointer<QWebSocket> m_webSocket;
+    QString urlForConnection;
 
 };
 #endif // MAINWINDOW_H

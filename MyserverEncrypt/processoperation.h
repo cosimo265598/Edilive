@@ -6,7 +6,9 @@
 #include "QtWebSockets/QWebSocketServer"
 #include "QtWebSockets/QWebSocket"
 #include <QObject>
-
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QImage>
 
 enum TypeOperation : quint16
 {
@@ -25,6 +27,11 @@ enum TypeOperation : quint16
     AccountConfirmed,
     AccountError,
 
+    // File Management
+    OpenDirectory,
+    OpenFile,
+    CreateFile,
+    ErrorFile,
     // Logout message
     Logout,
     // Others
@@ -41,18 +48,21 @@ private:
 public:
     ProcessOperation(QObject *parent );
     QString typeOp(TypeOperation type);
-    void process(TypeOperation message, QWebSocket* socket);
+    void process(TypeOperation message, QWebSocket* socket, QJsonObject& data);
     ~ProcessOperation();
 
 signals:
 
-    //void  loginRequest(QWebSocket* clientSocket, QString username);
-    //void  loginUnlock(QWebSocket* clientSocket, QByteArray token);
+    void  loginRequest(QWebSocket* clientSocket, QString username);
+    void  loginUnlock(QWebSocket* clientSocket, QString token);
 
-    //void  accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    void  accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
     //void  accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
     void  SimpleMessage(QWebSocket* clientSocket, QString mess);
 
+    /* FILE */
+    void OpenDirOfClient(QWebSocket* clientSocket);
+    void CreateFileForClient(QWebSocket* clientSocket, QString filename);
 };
 
 #endif // PROCESSOPERATION_H
