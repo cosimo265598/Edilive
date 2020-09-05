@@ -89,3 +89,14 @@ QJsonDocument BuilderMessageClient::MessageGenericErrorFile(QString data)
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
+
+QJsonDocument BuilderMessageClient::MessageOpenFile(QString nomefile)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",11);
+    objtosend.insert("auth",true);
+    objtosend.insert("nomefile",nomefile);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}

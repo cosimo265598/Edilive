@@ -17,11 +17,17 @@ FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &file
     this->owner = owner;
     this->lastModified = lastModified;
     this->lastRead = lastRead;
+    this->filename= fileName;
 }
 
 FileHandler::~FileHandler()
 {
     qDebug()<<"Rimosso"<<this->getPath();
+}
+
+QString FileHandler::getFilename()
+{
+    return this->filename;
 }
 
 QString FileHandler::getPath(){

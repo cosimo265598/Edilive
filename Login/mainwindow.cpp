@@ -6,6 +6,8 @@
 #include <QJsonDocument>
 #include "buildermessageclient.h"
 #include "clientfilesystem.h"
+#include <QDir>
+#include <QProcess>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -115,11 +117,23 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 
     // Fail if the JSON is invalid.
     // Make sure the root is an object.
+    int pos=0;
+    if (parseError.error != QJsonParseError::NoError || !jsonDoc.isObject()){
+        // can be bytes of file
+       qDebug()<<"Possbile file in byte in arrivo";
+       pos=message.indexOf("{",0);
+       QByteArray dimjson(message.data(),pos);
+       QByteArray header(message.data()+pos,dimjson.toInt());
+       pos=pos+dimjson.toInt();
+       // in header hai il json , in message il contenuto del file.
+       //check if the json is correct
+       QJsonParseError parseError2;
+       QJsonDocument jsonDoc2 = QJsonDocument::fromJson(header, &parseError2);
+       if (parseError2.error != QJsonParseError::NoError || !jsonDoc2.isObject())
+            return ;
+       jsonDoc=jsonDoc2;
 
-    if (parseError.error != QJsonParseError::NoError)
-        return ;
-    if (!jsonDoc.isObject())
-        return ;
+    }
 
     QJsonObject root = jsonDoc.object();
     int type= root.value("type").toInt();
@@ -148,7 +162,6 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
         }break;
         case 9:{    // message account create error
             QMessageBox::critical(this, tr("Account Status"),"Account create error: "+root.value("error").toString(),QMessageBox::Ok);
-
         }break;
         case 10:{    // show dir/document for client
             secondWindows->createHomepage(root.value("files").toArray());
@@ -156,6 +169,20 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
         case 13:{    // file gia presente
             QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),root.value("error").toString(),QMessageBox::Ok);
         }break;
+        case 11:{    // file in arrivo
+            QString fileinarrivo(root.value("header").toString());
+            qDebug()<<"file in arrivo"<<fileinarrivo;
+            QFile f(QDir().tempPath()+"/"+fileinarrivo);
+
+            if (!f.open(QIODevice::WriteOnly))
+                    return;
+
+            f.write(message.data()+pos);
+            f.close();
+            // prova di apertura file arrivato dal server
+            QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
+        }break;
+
 
         default:         return;
     }

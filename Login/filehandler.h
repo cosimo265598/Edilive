@@ -20,9 +20,10 @@ private:
     QString owner;
     QString lastModified;
     QString lastRead;
+    QString filename;
 
 public:
-
+    QString getFilename();
     QString getPath();
     QString getLastRead();
     QString getLastModified();

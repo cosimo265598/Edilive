@@ -22,10 +22,9 @@ ClientFilesystem::~ClientFilesystem()
 }
 
 void ClientFilesystem::onFileHandlerClicked(){
-    QJsonObject openDir{};
-    openDir["type"] = "openFile";
-    openDir["path"] = dynamic_cast<FileHandler *>(QObject::sender())->getPath();
-    client_socket->sendBinaryMessage(QJsonDocument{openDir}.toJson(QJsonDocument::Indented));
+    QString nomefile = dynamic_cast<FileHandler *>(QObject::sender())->getFilename();
+    client_socket->sendBinaryMessage(BuilderMessageClient::MessageOpenFile(nomefile)
+                                     .toJson(QJsonDocument::Indented));
 }
 
 void ClientFilesystem::createHomepage(QJsonArray paths){
@@ -52,7 +51,8 @@ void ClientFilesystem::createHomepage(QJsonArray paths){
         connect(item, &FileHandler::clicked,[filename,dir,this]()
                     {ui->InfoFile_label->setText("File Selected:\t"+filename+"\tOwner: "+
                                                  dir["owner"].toString()+"\tLast Modified: "+
-                                                 dir["lastModified"].toString());   });
+                                                 dir["lastModified"].toString()+ "\tSize: "+
+                                                 dir["size"].toString() );   });
         connect(item, &FileHandler::doubleClicked,this, &ClientFilesystem::onFileHandlerClicked);
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
         qDebug()<<row<< " "<<column;

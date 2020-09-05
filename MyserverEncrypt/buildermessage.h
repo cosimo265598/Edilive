@@ -18,6 +18,7 @@ public:
 
     static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles);
     static QJsonDocument MessageFileClientError(QString error);
+    static QJsonDocument MessageHeaderForFile(QString data);
 
 };
 

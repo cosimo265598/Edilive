@@ -63,6 +63,7 @@ public slots:
     /* FILE */
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString file);
+    void OpenFileForClient(QWebSocket* clientSocket, QString file);
 
 private:
     QSharedPointer<Ui::MainWindow> ui;

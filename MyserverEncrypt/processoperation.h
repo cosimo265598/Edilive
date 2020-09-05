@@ -63,6 +63,7 @@ signals:
     /* FILE */
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString filename);
+    void OpenFileForClient(QWebSocket* clientSocket, QString filename);
 };
 
 #endif // PROCESSOPERATION_H

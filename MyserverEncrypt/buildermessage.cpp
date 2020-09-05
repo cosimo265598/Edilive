@@ -81,3 +81,13 @@ QJsonDocument BuilderMessage::MessageFileClientError(QString error)
     return jsondoc;
 }
 
+QJsonDocument BuilderMessage::MessageHeaderForFile(QString data)
+{
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",11);
+    json.insert("header",data);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+

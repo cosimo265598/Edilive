@@ -316,7 +316,8 @@ void MainWindow::OpenDirOfClient(QWebSocket *clientSocket)
                          {"filename", it.fileInfo().fileName()}, // meglio file name
                          {"owner", it.fileInfo().owner()},
                          {"lastModified",  it.fileInfo().lastModified().toString()},
-                         {"lastRead", it.fileInfo().lastRead().toString()}
+                         {"lastRead", it.fileInfo().lastRead().toString()},
+                         {"size", QString::number(it.fileInfo().size()) }
                      });
     }
     //qDebug()<<BuilderMessage::MessageOpenDirOfClient(files).toJson(QJsonDocument::Indented);
@@ -350,6 +351,33 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
                                         .toJson());
     }
 }
+
+void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString file)
+{
+    qDebug()<<"Segnale apertura file ricevuto";
+    QSharedPointer<Client> client = clients[clientSocket];
+    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+file);
+
+    QByteArray completedata("");
+    QByteArray headerjson=BuilderMessage::MessageHeaderForFile(file).toJson();
+
+    completedata.append(QByteArray::number(headerjson.size()));
+    completedata.append(headerjson);
+
+
+    QFile filecreate(path);
+    if(filecreate.exists()){
+        if (filecreate.open(QIODevice::ReadWrite)){
+            completedata.append(filecreate.readAll());
+            filecreate.close();
+        }
+    }
+    else
+        return;
+    qDebug()<<completedata;
+    clientSocket->sendBinaryMessage(completedata);
+}
+
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {

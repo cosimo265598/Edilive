@@ -17,6 +17,8 @@ public:
     static QJsonDocument MessageOpenDir();
     static QJsonDocument MessageCreateNewFile(QString nomefile);
     static QJsonDocument MessageGenericErrorFile(QString data);
+    static QJsonDocument MessageOpenFile(QString nomefile);
+
 };
 
 #endif // BUILDERMESSAGECLIENT_H

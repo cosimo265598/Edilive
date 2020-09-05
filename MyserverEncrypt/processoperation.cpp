@@ -39,6 +39,9 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
     connect(this,&ProcessOperation::CreateFileForClient,
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::CreateFileForClient,Qt::DirectConnection);
+    connect(this,&ProcessOperation::OpenFileForClient,
+            dynamic_cast<MainWindow*>(this->parent()),
+            &MainWindow::OpenFileForClient,Qt::DirectConnection);
 
 }
 
@@ -79,6 +82,11 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
         case CreateFile:{
             QString file    =data.value("nomefile").toString();
             emit CreateFileForClient(socket,file);
+            break;
+        }
+        case OpenFile:{
+            QString file    =data.value("nomefile").toString();
+            emit OpenFileForClient(socket,file);
             break;
         }
 
