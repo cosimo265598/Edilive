@@ -17,6 +17,12 @@ open file whit edito default in linux,
 Add message Format for send data server, 
 Add message Format for send data client
 
+* 06/09/20- Add new ui for profile page of user
+
+user profile page attched to the project,
+ui whit useful information of client,
+no work on server side
+
 
 MANISI COSIMO 
 
