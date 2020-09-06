@@ -23,18 +23,21 @@ SOURCES += \
     eventfilterimpl.cpp \
     filehandler.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    profilepage.cpp
 
 HEADERS += \
     buildermessageclient.h \
     clientfilesystem.h \
     eventfilterimpl.h \
     filehandler.h \
-    mainwindow.h
+    mainwindow.h \
+    profilepage.h
 
 FORMS += \
     mainwindow.ui \
-    clientfilesystem.ui
+    clientfilesystem.ui \
+    profilepage.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

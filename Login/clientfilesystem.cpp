@@ -97,3 +97,14 @@ void ClientFilesystem::on_pushButton_aggiorna_vista_clicked()
 {
     client_socket->sendBinaryMessage(BuilderMessageClient::MessageOpenDir().toJson());
 }
+
+void ClientFilesystem::on_toolButton_profile_page_clicked()
+{
+    pageofclient = new ProfilePage(this);
+    pageofclient->setWindowTitle(tr("La tua Pagina del profilo"));
+    //pageofclient->setMinimumSize(QSize(800, 400));
+    pageofclient->setAttribute(Qt::WA_DeleteOnClose);
+    //secondWindows->setWindowFlags(Qt::Popup);
+    pageofclient->show();
+
+}
