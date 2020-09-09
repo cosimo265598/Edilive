@@ -28,5 +28,9 @@ add ui for editor text, add toolbar for users online
 add auto configuration for server
 reparir same problem 
 
+* 09/09/20- create direcory 
+add directory for each new use , 
+show e file as a example on starup
+
 MANISI COSIMO 
 

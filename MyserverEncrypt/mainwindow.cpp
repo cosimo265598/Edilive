@@ -310,11 +310,19 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     try
     {	// Add the new user record to the server database
         database.insertUser(user);
+        if (!QDir(QDir().currentPath()+"/Users").mkdir(client->getUsername())) {
+            ui->commet->appendPlainText("Cannot create folder for Users"+ client->getUsername());
+        }
+        // inserimento di un file di prova
+        QFile::copy(QDir().currentPath()+"/example.html",
+                    QDir().currentPath()+"/Users/"+client->getUsername()+"/examplefile");
+
     }
     catch (QException& dbe) {
         ui->commet->appendPlainText(dbe.what());
         client->logout();
         users.remove(username);
+        QDir(QDir().currentPath()+"/Users").rmdir(client->getUsername());
         clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Internal Error").toJson());
         return;
     }

@@ -11,5 +11,4 @@ int main(int argc, char *argv[])
     w.show();
     w.prepareToStart();
     return a.exec();
-    // aggiunta di testo.
 }
