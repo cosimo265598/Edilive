@@ -8,6 +8,9 @@
 #include "clientfilesystem.h"
 #include <QDir>
 #include <QProcess>
+#include <textedit.h>
+#include <QDesktopWidget>
+#include <QScreen>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -109,6 +112,23 @@ void MainWindow::StartNewWindows()
     secondWindows->show();
 }
 
+void MainWindow::StartEditorText(QString fileeditor)
+{
+    editor= new TextEdit(secondWindows);
+    QCoreApplication::setApplicationName("CoopEditorText");
+    editor->setAttribute(Qt::WA_DeleteOnClose);
+
+    const QRect availableGeometry = editor->screen()->availableGeometry();
+    editor->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    editor->move((availableGeometry.width() - editor->width()) / 2,
+            (availableGeometry.height() - editor->height()) / 2);
+
+    if (!editor->load(fileeditor))
+        editor->fileNew();
+
+    editor->show();
+}
+
 
 void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 {
@@ -157,8 +177,7 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
         }break;
         case 8:{    // message account confimed
             QMessageBox::information(this, tr("Account Status"),tr("Account Cretated\n"),QMessageBox::Ok);
-            // open new windows
-
+            StartNewWindows();
         }break;
         case 9:{    // message account create error
             QMessageBox::critical(this, tr("Account Status"),"Account create error: "+root.value("error").toString(),QMessageBox::Ok);
@@ -179,8 +198,9 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 
             f.write(message.data()+pos);
             f.close();
-            // prova di apertura file arrivato dal server
-            QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
+            //QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
+            // Aperura editor per l'editing del file
+            StartEditorText(QDir().tempPath()+"/"+fileinarrivo);
         }break;
 
 

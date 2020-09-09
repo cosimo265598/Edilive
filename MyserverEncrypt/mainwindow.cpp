@@ -40,11 +40,32 @@ MainWindow::~MainWindow()
 void MainWindow::prepareToStart()
 {
     ui->commet->appendPlainText("(INIT STARTED)" );
+
     //UserData userprova("hello",1,"prova","ciao",QImage());
     //UserData userprova2("good",2,"prova","tutto",QImage());
     //database.insertUser(userprova);
     //database.insertUser(userprova2);
+    // Check existence of the required SSL certificate files
+    if (!QFile("localhost.key").exists()) {
+        ui->commet->appendPlainText("Not find localhost.key");
 
+        //throw StartupException("Cannot find private key file: 'server.key'");
+    }
+    if (!QFile("localhost.cert").exists()) {
+        ui->commet->appendPlainText("Not find localhost.cert");
+        //throw StartupException("Cannot find local certificate file: 'server.pem'");
+    }
+
+    // Check existence of (or create) the Users folder
+    if (!QDir("Users").exists())
+    {
+        ui->commet->appendPlainText("Creating the server Users folder");
+        if (!QDir().mkdir("Users")) {
+            ui->commet->appendPlainText("Cannot create folder '.\\Users'");
+        }
+    }
+
+    // Read The database file , avoid to interview each time the db
     for (UserData user : database.readUsersList() )
     {
         for (QString docUri : database.readUserDocuments(user.getUsername()))
@@ -55,8 +76,9 @@ void MainWindow::prepareToStart()
     }
     // Initialize the counter
     userId = database.getMaxUserID();
+    ui->commet->appendPlainText("users counter: "+ QString::number(users.count()) );
 
-    ui->commet->appendPlainText("(INIT COMPLETE ) users counter: "+ QString::number(users.count()) );
+    ui->commet->appendPlainText("(INIT COMPLETE )" );
 }
 
 

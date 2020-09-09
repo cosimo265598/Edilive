@@ -12,6 +12,7 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <clientfilesystem.h>
+#include <textedit.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -38,10 +39,12 @@ private slots:
     void MessageReceivedFromServer(const QByteArray& message);
     void Registeruser();
     void StartNewWindows();
+    void StartEditorText(QString fileeditor);
 
 private:
     Ui::MainWindow *ui;
     ClientFilesystem *secondWindows;
+    TextEdit *editor;
     QSharedPointer<QWebSocket> m_webSocket;
     QString urlForConnection;
 

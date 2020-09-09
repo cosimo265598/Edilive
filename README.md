@@ -23,6 +23,10 @@ user profile page attched to the project,
 ui whit useful information of client,
 no work on server side
 
+* 09/09/20- add editor text 
+add ui for editor text, add toolbar for users online
+add auto configuration for server
+reparir same problem 
 
 MANISI COSIMO 
 
