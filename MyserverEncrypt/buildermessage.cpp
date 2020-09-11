@@ -4,6 +4,9 @@
 QJsonDocument BuilderMessage::MessageLogin()
 {
     QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",1);
+    jsondoc.setObject(json);
     return  jsondoc;
 }
 
@@ -81,12 +84,12 @@ QJsonDocument BuilderMessage::MessageFileClientError(QString error)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageHeaderForFile(QString data)
+QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",11);
-    json.insert("header",data);
+    json.insert("fileName",fileName);
     jsondoc.setObject(json);
     return jsondoc;
 }

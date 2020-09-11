@@ -132,36 +132,29 @@ void MainWindow::StartEditorText(QString fileeditor)
 
 void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 {
-    QJsonParseError parseError;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(message, &parseError);
+    QDataStream stream(message);
+    stream.setVersion(QDataStream::Qt_5_14);
+    QJsonDocument jsonDoc{};
 
-    // Fail if the JSON is invalid.
-    // Make sure the root is an object.
-    int pos=0;
-    if (parseError.error != QJsonParseError::NoError || !jsonDoc.isObject()){
-        // can be bytes of file
-       qDebug()<<"Possbile file in byte in arrivo";
-       pos=message.indexOf("{",0);
-       QByteArray dimjson(message.data(),pos);
-       QByteArray header(message.data()+pos,dimjson.toInt());
-       pos=pos+dimjson.toInt();
-       // in header hai il json , in message il contenuto del file.
-       //check if the json is correct
-       QJsonParseError parseError2;
-       QJsonDocument jsonDoc2 = QJsonDocument::fromJson(header, &parseError2);
-       if (parseError2.error != QJsonParseError::NoError || !jsonDoc2.isObject())
-            return ;
-       jsonDoc=jsonDoc2;
+    stream >> jsonDoc;
 
+    qDebug() << jsonDoc;
+    if (jsonDoc.isNull()) {
+        std::cout << "Failed to create JSON doc." << std::endl;
+        return;
     }
 
-    QJsonObject root = jsonDoc.object();
-    int type= root.value("type").toInt();
+    if (!jsonDoc.isObject()) {
+        std::cout << "JSON is not an object." << std::endl;
+        return;
+    }
 
-    switch (type) {
+    QJsonObject jsonObj = jsonDoc.object();
+
+    switch (jsonObj["type"].toInt()) {
         case 2:{   // message challange login
-            QString salt=root.value("salt").toString();
-            QString nonce=root.value("nonce").toString();
+            QString salt=jsonObj["salt"].toString();
+            QString nonce= salt=jsonObj["nonce"].toString();
             m_webSocket.get()->sendBinaryMessage(BuilderMessageClient::MessageLoginUnlock(salt,nonce,ui->psw->text()).toJson());
 
         } break;
@@ -172,7 +165,7 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
             StartNewWindows();
         }break;
         case 5:{    // message  login error
-            QMessageBox::critical(this, tr("Login Status"),"Loggin error: "+root.value("error").toString(),QMessageBox::Ok);
+            QMessageBox::critical(this, tr("Login Status"),"Loggin error: "+jsonObj["error"].toString(),QMessageBox::Ok);
 
         }break;
         case 8:{    // message account confimed
@@ -180,27 +173,30 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
             StartNewWindows();
         }break;
         case 9:{    // message account create error
-            QMessageBox::critical(this, tr("Account Status"),"Account create error: "+root.value("error").toString(),QMessageBox::Ok);
+            QMessageBox::critical(this, tr("Account Status"),"Account create error: "+jsonObj["error"].toString(),QMessageBox::Ok);
         }break;
         case 10:{    // show dir/document for client
-            secondWindows->createHomepage(root.value("files").toArray());
+            secondWindows->createHomepage(jsonObj["files"].toArray());
         }break;
         case 13:{    // file gia presente
-            QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),root.value("error").toString(),QMessageBox::Ok);
+            QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
         }break;
         case 11:{    // file in arrivo
-            QString fileinarrivo(root.value("header").toString());
-            qDebug()<<"file in arrivo"<<fileinarrivo;
-            QFile f(QDir().tempPath()+"/"+fileinarrivo);
+            QString fileName = jsonObj["fileName"].toString();
+            qDebug()<<"file in arrivo"<< fileName;
+            QFile file(QDir().tempPath()+"/"+ fileName);
 
-            if (!f.open(QIODevice::WriteOnly))
-                    return;
+            if (file.open(QIODevice::WriteOnly)){
+                QByteArray serializedFile;
+                stream >> serializedFile;
+                file.write(serializedFile);
+                file.close();
+                //QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
+                // Aperura editor per l'editing del file
+                StartEditorText(QDir().tempPath()+"/"+ fileName);
+            }else
+                return;
 
-            f.write(message.data()+pos);
-            f.close();
-            //QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
-            // Aperura editor per l'editing del file
-            StartEditorText(QDir().tempPath()+"/"+fileinarrivo);
         }break;
 
 

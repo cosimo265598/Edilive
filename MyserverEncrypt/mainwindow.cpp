@@ -8,7 +8,6 @@
 #include <QtNetwork/QSslKey>
 #include <QDebug>
 #include <QString>
-#include "../Client/user.h"
 #include <iostream>
 #include "buildermessage.h"
 #include <QFile>
@@ -225,23 +224,32 @@ void MainWindow::SimpleTextMessageTest(){
 void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     QSharedPointer<Client> client = clients[clientSocket];
 
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
     if (users.contains(username))
     {
         if (client->isLogged()){
             ui->commet->appendPlainText("Client already logged in as '" + client->getUsername() + "'");
-            clientSocket->sendBinaryMessage(BuilderMessage::MessageLoginError("Client: "+client->getUsername()+" is already logged in.").toJson());
+            stream << BuilderMessage::MessageLoginError("Client: "+client->getUsername()+" is already logged in.");
+            clientSocket->sendBinaryMessage(data);
             return;
         }
         // client not logged
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageChallege(
-        QString(users[username].getSalt()) ,
-        QString(client->challenge(&users[username])) ).toJson());
+
+        stream << BuilderMessage::MessageChallege(
+                      QString(users[username].getSalt()) ,
+                      QString(client->challenge(&users[username])));
+
+        clientSocket->sendBinaryMessage(data);
 
     }
     else {
         // send message utente non registrato
         ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageLoginError("Client not registered.").toJson());
+        stream << BuilderMessage::MessageLoginError("Client not registered.");
+        clientSocket->sendBinaryMessage(data);
     }
 
 }
@@ -250,52 +258,62 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
 {
     QSharedPointer<Client> client = clients[clientSocket];
 
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
     if (client->isLogged()){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageLoginError("You have to loggin before use the platform").toJson());
+        stream << BuilderMessage::MessageLoginError("You have to loggin before use the platform");
+        clientSocket->sendBinaryMessage(data);
         return ;
-    }
-    if (client->authenticate(token.toUtf8()))		// verify the user's account credentials
-    {
+    }else if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
         ui->commet->appendPlainText( "User " + client->getUsername() + " is logged in");
         client->login(client->getUser());
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageChallegePassed(QString()).toJson());
+        stream << BuilderMessage::MessageChallegePassed(QString());
+        clientSocket->sendBinaryMessage(data);
         return ;
-    }
-    else
-    {
+    }else{
         client->logout();
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageLoginError("Credential inserted are not corrected").toJson());
+        stream << BuilderMessage::MessageLoginError("Credential inserted are not corrected");
+        clientSocket->sendBinaryMessage(data);
         return ;
     }
-
-
 }
 
 void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username, QString nickname, QImage icon, QString password)
 {
     QSharedPointer<Client> client = clients[clientSocket];
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
     if (client->isLogged()){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Client already logged in").toJson());
+        stream << BuilderMessage::MessageAccountError("Client already logged in");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check if username or password are nulls */
     if (!username.compare("") || !password.compare("")){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("User/Psw can not be empty").toJson());
+        stream << BuilderMessage::MessageAccountError("User/Psw can not be empty");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check username length */
     if (username.length() > MAX_NAME_LENGTH){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Username too long").toJson());
+        stream << BuilderMessage::MessageAccountError("Username too long");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check if this username is already used */
     if (users.contains(username)){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Username already exist").toJson());
+        stream << BuilderMessage::MessageAccountError("Username already exist");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check whitespaces */
     if (!QRegExp("^[^\\s]+$").exactMatch(username)){
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Username mut not be only whitespaces").toJson());
+        stream << BuilderMessage::MessageAccountError("Username mut not be only whitespaces");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     // no check on image because are used for the firts time default settings
@@ -323,11 +341,12 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
         client->logout();
         users.remove(username);
         QDir(QDir().currentPath()+"/Users").rmdir(client->getUsername());
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountError("Internal Error").toJson());
+        stream << BuilderMessage::MessageAccountError("Internal Error");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
-
-    clientSocket->sendBinaryMessage(BuilderMessage::MessageAccountConfirmed("Account Created Correctly").toJson());
+    stream << BuilderMessage::MessageAccountConfirmed("Account Created Correctly");
+    clientSocket->sendBinaryMessage(data);
     return;
 
 }
@@ -336,9 +355,13 @@ void MainWindow::OpenDirOfClient(QWebSocket *clientSocket)
 {
     QSharedPointer<Client> client = clients[clientSocket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername());
-
     QDirIterator it(path, QDir::Files, QDirIterator::NoIteratorFlags);
     QJsonArray files;
+
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
     // visita della directory
     while (it.hasNext()) {
         it.next();
@@ -350,23 +373,26 @@ void MainWindow::OpenDirOfClient(QWebSocket *clientSocket)
                          {"size", QString::number(it.fileInfo().size()) }
                      });
     }
-    //qDebug()<<BuilderMessage::MessageOpenDirOfClient(files).toJson(QJsonDocument::Indented);
-    clientSocket->sendBinaryMessage(BuilderMessage::MessageOpenDirOfClient(files).toJson(QJsonDocument::Indented));
+    stream << BuilderMessage::MessageOpenDirOfClient(files);
+    clientSocket->sendBinaryMessage(data);
 }
 
 void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
 {
     qDebug()<<"segnale nuovo file ricevuto";
     QSharedPointer<Client> client = clients[clientSocket];
-
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+file);
+
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
 
     QFile filecreate(path);
     if(filecreate.exists()){
         qDebug()<< " File già presente- "<<file;
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageFileClientError
-                                        ("La tua directory contine già un file con questo nome.")
-                                        .toJson());
+        stream << BuilderMessage::MessageFileClientError
+                  ("La tua directory contine già un file con questo nome.");
+        clientSocket->sendBinaryMessage(data);
         return;
     }
     if (filecreate.open(QIODevice::WriteOnly | QIODevice::Text)){
@@ -374,38 +400,36 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         out << "";
         filecreate.close();
         OpenDirOfClient(clientSocket);
-    }else
-    {
-        clientSocket->sendBinaryMessage(BuilderMessage::MessageFileClientError
-                                        ("Impossibile creare il file. Riprova.")
-                                        .toJson());
+    }else{
+        stream << BuilderMessage::MessageFileClientError
+                  ("Impossibile creare il file. Riprova.");
+        clientSocket->sendBinaryMessage(data);
     }
 }
 
-void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString file)
+void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
 {
     qDebug()<<"Segnale apertura file ricevuto";
     QSharedPointer<Client> client = clients[clientSocket];
-    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+file);
+    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
-    QByteArray completedata("");
-    QByteArray headerjson=BuilderMessage::MessageHeaderForFile(file).toJson();
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
 
-    completedata.append(QByteArray::number(headerjson.size()));
-    completedata.append(headerjson);
-
+    stream << BuilderMessage::MessageHeaderFile(fileName);
 
     QFile filecreate(path);
     if(filecreate.exists()){
         if (filecreate.open(QIODevice::ReadWrite)){
-            completedata.append(filecreate.readAll());
+            stream << filecreate.readAll();
             filecreate.close();
         }
     }
     else
         return;
-    qDebug()<<completedata;
-    clientSocket->sendBinaryMessage(completedata);
+
+    clientSocket->sendBinaryMessage(data);
 }
 
 
