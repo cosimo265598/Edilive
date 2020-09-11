@@ -67,7 +67,14 @@ void MainWindow::on_login_clicked()
 }
 void MainWindow::onConnected(){
     ui->status->setText("Status: Connected...");
-    m_webSocket.get()->sendBinaryMessage(BuilderMessageClient::MessageLogin(ui->user->text()).toJson());
+
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
+    stream << BuilderMessageClient::MessageLogin(ui->user->text());
+
+    m_webSocket.get()->sendBinaryMessage(data);
 }
 
 void MainWindow::onSslErrors(const QList<QSslError> &errors)
@@ -93,11 +100,17 @@ void MainWindow::on_sign_account_clicked()
 void MainWindow::Registeruser()
 {
     ui->status->setText("Status: Connected...");
-    m_webSocket.get()->sendBinaryMessage(BuilderMessageClient::MessageRegisterAccount(
-                                      ui->user->text(),
-                                      ui->psw->text(),
-                                      QString(),
-                                      QImage() ).toJson());
+
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+    stream << BuilderMessageClient::MessageRegisterAccount(
+                  ui->user->text(),
+                  ui->psw->text(),
+                  QString(),
+                  QImage());
+
+    m_webSocket.get()->sendBinaryMessage(data);
 
 }
 
@@ -134,11 +147,12 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 {
     QDataStream stream(message);
     stream.setVersion(QDataStream::Qt_5_14);
-    QJsonDocument jsonDoc{};
+    QJsonDocument jsonDoc;
 
     stream >> jsonDoc;
 
     qDebug() << jsonDoc;
+
     if (jsonDoc.isNull()) {
         std::cout << "Failed to create JSON doc." << std::endl;
         return;
@@ -153,11 +167,23 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 
     switch (jsonObj["type"].toInt()) {
         case 2:{   // message challange login
+<<<<<<< HEAD
             QString salt=  jsonObj["salt"].toString();
             QString nonce= jsonObj["nonce"].toString();
             m_webSocket.get()->sendBinaryMessage(BuilderMessageClient::MessageLoginUnlock(salt,nonce,ui->psw->text()).toJson());
 
         } break;
+=======
+                QString salt =jsonObj["salt"].toString();
+                QString nonce =jsonObj["nonce"].toString();
+
+                QByteArray outData;
+                QDataStream out(&outData, QIODevice::WriteOnly);
+                out.setVersion(QDataStream::Qt_5_14);
+                out << BuilderMessageClient::MessageLoginUnlock(salt,nonce,ui->psw->text());
+                m_webSocket.get()->sendBinaryMessage(outData);
+                } break;
+>>>>>>> 4ca71cd616bce37de87b07d44b8885d49b3845a2
         case 4:{    // message unlock login
             QMessageBox::information(this, tr("Login Status"),tr("Successfull login\n"),QMessageBox::Ok);
             // open new windows
@@ -195,10 +221,7 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
                 StartEditorText(QDir().tempPath()+"/"+ fileName);
             }else
                 return;
-
         }break;
-
-
         default:         return;
     }
 

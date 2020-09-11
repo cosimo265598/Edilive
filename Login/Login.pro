@@ -28,6 +28,7 @@ SOURCES += \
     filehandler.cpp \
     main.cpp \
     mainwindow.cpp \
+    profileimage.cpp \
     profilepage.cpp \
     textedit.cpp
 
@@ -37,6 +38,7 @@ HEADERS += \
     eventfilterimpl.h \
     filehandler.h \
     mainwindow.h \
+    profileimage.h \
     profilepage.h \
     textedit.h
 

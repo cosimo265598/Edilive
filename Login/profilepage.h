@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QDialogButtonBox>
+#include <QPainter>
+#include <profileimage.h>
 
 namespace Ui {
 class ProfilePage;

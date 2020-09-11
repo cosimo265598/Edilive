@@ -100,6 +100,7 @@ void ClientFilesystem::on_pushButton_aggiorna_vista_clicked()
 
 void ClientFilesystem::on_toolButton_profile_page_clicked()
 {
+    //QUa da mettere il path per il profileImage
     pageofclient = new ProfilePage(this);
     pageofclient->setWindowTitle(tr("La tua Pagina del profilo"));
     //pageofclient->setMinimumSize(QSize(800, 400));
