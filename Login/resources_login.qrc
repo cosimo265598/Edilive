@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons_pack/opened_folder_480px.png</file>
+        <file>icons_pack/opened_folder_160px.png</file>
+        <file>icons_pack/opened_folder_96px.png</file>
+        <file>icons_pack/folder_icon.jpeg</file>
+        <file>icons_pack/file_icon.png</file>
+        <file>icons_pack/file_480px.png</file>
+        <file>icons_pack/file_160px.png</file>
+        <file>icons_pack/file_96px.png</file>
+        <file>icons_pack/document_480px.png</file>
+        <file>icons_pack/ok_480px.png</file>
+    </qresource>
+</RCC>

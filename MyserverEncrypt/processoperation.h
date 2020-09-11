@@ -5,9 +5,15 @@
 #include <QByteArray>
 #include "QtWebSockets/QWebSocketServer"
 #include "QtWebSockets/QWebSocket"
+#include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QImage>
 
 enum TypeOperation : quint16
 {
+    // Tests
+    Simplemessage,
     // Login messages
     LoginRequest,
     LoginChallenge,
@@ -21,31 +27,43 @@ enum TypeOperation : quint16
     AccountConfirmed,
     AccountError,
 
+    // File Management
+    OpenDirectory,
+    OpenFile,
+    CreateFile,
+    ErrorFile,
     // Logout message
     Logout,
     // Others
     Failure
+
 };
 
-class ProcessOperation
+class ProcessOperation: public QObject
 {
+    Q_OBJECT
 private:
     TypeOperation tipo;
 
 public:
-    ProcessOperation(QWebSocketServer *s);
+    ProcessOperation(QObject *parent );
     QString typeOp(TypeOperation type);
-    void process(TypeOperation message, QSslSocket* socket);
+    void process(TypeOperation message, QWebSocket* socket, QJsonObject& data);
     ~ProcessOperation();
 
 signals:
 
-    ProcessOperation loginRequest(QWebSocket* clientSocket, QString username);
-    ProcessOperation loginUnlock(QWebSocket* clientSocket, QByteArray token);
+    void  loginRequest(QWebSocket* clientSocket, QString username);
+    void  loginUnlock(QWebSocket* clientSocket, QString token);
 
-    ProcessOperation accountCreate(QWebSocket* lientSocket, QString username, QString nickname, QImage icon, QString password);
-    ProcessOperation accountUpdate(QWebSocket* lientSocket, QString nickname, QImage icon, QString password);
+    void  accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    //void  accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
+    void  SimpleMessage(QWebSocket* clientSocket, QString mess);
 
+    /* FILE */
+    void OpenDirOfClient(QWebSocket* clientSocket);
+    void CreateFileForClient(QWebSocket* clientSocket, QString filename);
+    void OpenFileForClient(QWebSocket* clientSocket, QString filename);
 };
 
 #endif // PROCESSOPERATION_H

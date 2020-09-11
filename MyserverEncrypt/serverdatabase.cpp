@@ -14,14 +14,13 @@ void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
 
     if(QFile::exists(dbName)){
         creatingDb=false;
-        //qDebug()<<LOG_PRINT_DB+"----- Caricamento db esistente.";
         ui->commetdb->appendPlainText("----- Caricamento db esistente.");
     }
     db.setDatabaseName(dbName);
     if (!db.open()) {
         //qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
         ui->commetdb->appendPlainText("----- ERORRE apertura db esistente"+db.lastError().text());
-
+        return;
     }
     if (creatingDb)
     {
@@ -30,14 +29,14 @@ void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
         QSqlQuery userTable(db);								// Query to create the Users table
         if (!userTable.exec(usertable) )
         {
-            qDebug()<<LOG_PRINT_DB+"----- ERORRE creazione tabella USER "+db.lastError().text();
+            //qDebug()<<LOG_PRINT_DB+"----- ERORRE creazione tabella USER "+db.lastError().text();
             ui->commetdb->appendPlainText("----- ERORRE creazione tabella USER "+db.lastError().text());
         }
 
         QSqlQuery docTable(db);								  // Query to create the DocEditors table
         if (!docTable.exec(documentable))
         {
-            qDebug()<<LOG_PRINT_DB+"----- ERORRE creazione tabella DOCURI "+db.lastError().text();
+            //qDebug()<<LOG_PRINT_DB+"----- ERORRE creazione tabella DOCURI "+db.lastError().text();
             ui->commetdb->appendPlainText("----- ERORRE creazione tabella DOCURI "+db.lastError().text());
         }
     }
@@ -91,7 +90,7 @@ void ServerDatabase::insertUser(const UserData& user)
     qInsertNewUser.bindValue(":icon", icon);
 
     if (!qInsertNewUser.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error insert user";
+        qDebug()<<LOG_PRINT_DB+"Error insert user "+qInsertNewUser.lastError().text();
     }
 }
 

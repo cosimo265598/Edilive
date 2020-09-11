@@ -20,8 +20,11 @@
 #include <QtNetwork/QSslKey>
 #include <QDateTime>
 #include <QTextCursor>
+#include <userdata.h>
 
 
+
+#include "client.h"
 #include "serverdatabase.h"
 #include "processoperation.h"
 
@@ -41,23 +44,37 @@ private slots:
 
     void on_startserver_clicked();
     void on_stopserver_clicked();
-
-
     void onNewConnection();
     void processTextMessage(QString message);
     void processBinaryMessage(QByteArray message);
     void socketDisconnected();
     void onSslErrors(const QList<QSslError> &errors);
-
-
     void on_startserver_2_clicked();
+
+public slots:
+    void prepareToStart();
+
+    void SimpleTextMessageTest();
+    void serverLoginRequest(QWebSocket* clientSocket, QString username);
+    void serverLoginUnlock(QWebSocket* clientSocket, QString token);
+    void serverAccountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    void serverErrorConnection(QWebSocketProtocol::CloseCode closeCode);
+
+    /* FILE */
+    void OpenDirOfClient(QWebSocket* clientSocket);
+    void CreateFileForClient(QWebSocket* clientSocket, QString file);
+    void OpenFileForClient(QWebSocket* clientSocket, QString file);
 
 private:
     QSharedPointer<Ui::MainWindow> ui;
     QSharedPointer<QWebSocketServer> m_pWebSocketServer;
-    QList<QWebSocket *> m_clients;
+   // QList<QWebSocket *> m_clients;
     ServerDatabase database;
     QSslConfiguration sslconfig;
+    QMap<QWebSocket*, QSharedPointer<Client>> clients;
+    QMap<QString, UserData> users;
+    int userId;
+
 
 };
 #endif // MAINWINDOW_H
