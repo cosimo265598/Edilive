@@ -153,15 +153,14 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 
     switch (jsonObj["type"].toInt()) {
         case 2:{   // message challange login
-            QString salt=jsonObj["salt"].toString();
-            QString nonce= salt=jsonObj["nonce"].toString();
+            QString salt=  jsonObj["salt"].toString();
+            QString nonce= jsonObj["nonce"].toString();
             m_webSocket.get()->sendBinaryMessage(BuilderMessageClient::MessageLoginUnlock(salt,nonce,ui->psw->text()).toJson());
 
         } break;
         case 4:{    // message unlock login
             QMessageBox::information(this, tr("Login Status"),tr("Successfull login\n"),QMessageBox::Ok);
             // open new windows
-            // start to open new windows for client file system.
             StartNewWindows();
         }break;
         case 5:{    // message  login error

@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     // set your working directory
-    QDir().setCurrent(QDir().homePath()+ "/QtProjects/pds-project/myservertest/MyserverEncrypt/");
+    QDir().setCurrent(QDir().homePath()+ "/GIT/myservertest/MyserverEncrypt/");
     MainWindow w;
     w.show();
     w.prepareToStart();
