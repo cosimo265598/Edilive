@@ -251,7 +251,6 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
         stream << BuilderMessage::MessageLoginError("Client not registered.");
         clientSocket->sendBinaryMessage(data);
     }
-
 }
 
 void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
@@ -435,32 +434,28 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {
-    // processare il messoggio , leggendo i primi 16 bit per identificare il tipo di messaggio sul socket
-    // dopo chimare la funzione processmessage
-    // che chiamera una funzione dentro questa classe per la sua elaborazione
     QWebSocket* socket = dynamic_cast<QWebSocket*>(sender());
     if (socket == nullptr || !socket->isValid())
         return;
 
-    QJsonParseError parseError;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(message, &parseError);
+    QDataStream stream (&message, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+    QJsonDocument jsonDoc;
+    stream >> jsonDoc;
 
     // Fail if the JSON is invalid.
-    if (parseError.error != QJsonParseError::NoError)
-        return ;
+    if (jsonDoc.isNull()){
+        qDebug() << "JSON NULL";
+         return ;
+    }
     // Make sure the root is an object.
-    if (!jsonDoc.isObject())
-        return ;
+    if (!jsonDoc.isObject()){
+         qDebug() << "JSON not a obj";
+          return ;
+    }
 
-    QJsonObject root = jsonDoc.object();
-    quint16 mType = static_cast<quint16>(root.value("type").toInt());
-/*
-    QDataStream streamIn(&message, QIODevice::ReadOnly);	// connect stream with socket
-    streamIn.setVersion( QDataStream::Qt_5_14);
-    quint16 mType;
-    streamIn>>mType;
-*/
-
+    QJsonObject jsonObj = jsonDoc.object();
+    int mType = jsonObj["type"].toInt();
 
     try {
         ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
@@ -471,7 +466,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
             mType == AccountUpdate || mType == Logout || mType == Simplemessage
                 || mType == OpenDirectory || mType== CreateFile || mType== OpenFile)
         {
-            po.process((TypeOperation)mType, socket, root );
+            po.process((TypeOperation)mType, socket, jsonObj );
         }
         else
             ui->commet->appendPlainText("(MESSAGE ERROR) Received unexpected message: ");
