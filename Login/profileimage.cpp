@@ -6,7 +6,6 @@ ProfileImage::ProfileImage(QWidget *parent) : QLabel(parent){
 
 void ProfileImage::paintEvent(QPaintEvent *event)
 {
-
     QPixmap pixmap(":/icons_pack/document_480px.png");
     QPixmap scaled = pixmap.scaled(width(), height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QBrush brush(scaled);
