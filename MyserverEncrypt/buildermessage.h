@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QImage>
 
 
 class BuilderMessage
@@ -20,6 +21,7 @@ public:
     static QJsonDocument MessageFileClientError(QString error);
     static QJsonDocument MessageHeaderFile(QString data);
 
+    static QJsonDocument MessageProfileData(QString username,QString nickname,QImage ico);
 };
 
 

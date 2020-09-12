@@ -2,6 +2,21 @@
 
 #include <QCryptographicHash>
 
+void BuilderMessageClient::MessageSendToServer(QByteArray &byte,QJsonDocument jsonToSend)
+{
+    QDataStream out(&byte, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_14);
+    out << jsonToSend;
+}
+
+void BuilderMessageClient::MessageSendToServer(QByteArray &byte, QByteArray &appendByte)
+{
+    QDataStream out(&byte, QIODevice::WriteOnly | QIODevice::Append);
+    out.setVersion(QDataStream::Qt_5_14);
+    out << appendByte;
+}
+
+
 QJsonDocument BuilderMessageClient::MessageTest(QString data)
 {
     QJsonDocument jsondoc;
@@ -97,6 +112,16 @@ QJsonDocument BuilderMessageClient::MessageOpenFile(QString nomefile)
     objtosend.insert("type",11);
     objtosend.insert("auth",true);
     objtosend.insert("nomefile",nomefile);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessageClient::MessageOpenProfilePage()
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",16);
+    objtosend.insert("auth",true);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

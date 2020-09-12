@@ -38,6 +38,7 @@ public:
     void openReceivedFile(QByteArray data);
     void createHomepage(QJsonArray json);
 
+
 private Q_SLOTS:
     void onFileHandlerClicked();
     void on_pushButton_new_file_clicked();

@@ -35,7 +35,10 @@ enum TypeOperation : quint16
     // Logout message
     Logout,
     // Others
-    Failure
+    Failure,
+
+    // personal image
+    ProfileData
 
 };
 
@@ -64,6 +67,9 @@ signals:
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString filename);
     void OpenFileForClient(QWebSocket* clientSocket, QString filename);
+
+    /* Profile */
+    void PersonalDataOfClient(QWebSocket* clientSocket);
 };
 
 #endif // PROCESSOPERATION_H

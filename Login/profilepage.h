@@ -5,6 +5,7 @@
 #include <QDialogButtonBox>
 #include <QPainter>
 #include <profileimage.h>
+#include <QWebSocket>
 
 namespace Ui {
 class ProfilePage;
@@ -15,7 +16,7 @@ class ProfilePage : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit ProfilePage(QWidget *parent = nullptr);
+    explicit ProfilePage(QWidget *parent = nullptr,QWebSocket *client_socket= nullptr);
     ~ProfilePage();
 
 private slots:
@@ -26,6 +27,7 @@ private slots:
 
 private:
     Ui::ProfilePage *ui;
+    QWebSocket* client_socket;
 };
 
 #endif // PROFILEPAGE_H
