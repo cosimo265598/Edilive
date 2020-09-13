@@ -431,6 +431,27 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
     clientSocket->sendBinaryMessage(data);
 }
 
+void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
+{
+    qDebug()<<"segnale di aperura dati profilo ricevuto";
+    QSharedPointer<Client> client = clients[clientSocket];
+
+    QByteArray data;
+    QDataStream stream (&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_14);
+
+    //debug invio immagine di prova
+    QImage img(QDir().currentPath()+"/logo32.png");
+
+    stream<< BuilderMessage::MessageProfileData(
+                 users[client->getUsername()].getUsername(),
+                 users[client->getUsername()].getNickname(),
+                 /*users[client->getUsername()].getIcon()*/img);
+
+    clientSocket->sendBinaryMessage(data);
+    qDebug()<<data;
+}
+
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {
@@ -464,7 +485,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
         if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate ||
             mType == AccountUpdate || mType == Logout || mType == Simplemessage
-                || mType == OpenDirectory || mType== CreateFile || mType== OpenFile)
+                || mType == OpenDirectory || mType== CreateFile || mType== OpenFile || mType==ProfileData)
         {
             po.process((TypeOperation)mType, socket, jsonObj );
         }

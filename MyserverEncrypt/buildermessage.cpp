@@ -1,5 +1,6 @@
 #include "buildermessage.h"
-
+#include <QBuffer>
+#include <QDebug>
 
 QJsonDocument BuilderMessage::MessageLogin()
 {
@@ -90,6 +91,31 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName)
     QJsonObject json;
     json.insert("type",11);
     json.insert("fileName",fileName);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessage::MessageProfileData(QString username, QString nickname, QImage ico)
+{
+    bool presentIcon=false;
+    if(!ico.isNull())
+        presentIcon=true;
+
+    QByteArray icon;
+    QBuffer buffer(&icon);
+    buffer.open(QIODevice::WriteOnly);
+    ico.save(&buffer, "PNG");	// writes image into the bytearray in PNG format
+
+    //
+
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",17);
+    json.insert("username",username);
+    json.insert("nickname",nickname);
+    json.insert("ico",QLatin1String(buffer.data().toBase64()));
+    json.insert("ico_present", presentIcon);
+
     jsondoc.setObject(json);
     return jsondoc;
 }

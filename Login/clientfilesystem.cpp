@@ -11,7 +11,12 @@ ClientFilesystem::ClientFilesystem(QWidget *parent,QWebSocket *socket) :
 {
     ui->setupUi(this);
     this->eventFilter = new EventFilterImpl(this);
-    client_socket->sendBinaryMessage(BuilderMessageClient::MessageOpenDir().toJson());
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageOpenDir());
+    client_socket->sendBinaryMessage(out);
 }
 
 
@@ -23,8 +28,13 @@ ClientFilesystem::~ClientFilesystem()
 
 void ClientFilesystem::onFileHandlerClicked(){
     QString nomefile = dynamic_cast<FileHandler *>(QObject::sender())->getFilename();
-    client_socket->sendBinaryMessage(BuilderMessageClient::MessageOpenFile(nomefile)
-                                     .toJson(QJsonDocument::Indented));
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageOpenFile(nomefile));
+    client_socket->sendBinaryMessage(out);
+
 }
 
 void ClientFilesystem::createHomepage(QJsonArray paths){
@@ -61,6 +71,13 @@ void ClientFilesystem::createHomepage(QJsonArray paths){
     }
 }
 
+ProfilePage *ClientFilesystem::getProfilePage()
+{
+    return this->pageofclient;
+}
+
+
+
 void ClientFilesystem::openReceivedFile(QByteArray data){
     QString nomeuser="cosimo";
     QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
@@ -88,24 +105,31 @@ void ClientFilesystem::on_pushButton_new_file_clicked()
                         tr("Il nome del file non è valido.\n"));
              return;
          }
-         this->client_socket->sendBinaryMessage(BuilderMessageClient::MessageCreateNewFile(filename).toJson());
+         QByteArray out;
+         BuilderMessageClient::MessageSendToServer(
+                     out,
+                     BuilderMessageClient::MessageCreateNewFile(filename));
+         client_socket->sendBinaryMessage(out);
     }
 
 }
 
 void ClientFilesystem::on_pushButton_aggiorna_vista_clicked()
 {
-    client_socket->sendBinaryMessage(BuilderMessageClient::MessageOpenDir().toJson());
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageOpenDir());
+    client_socket->sendBinaryMessage(out);
 }
 
 void ClientFilesystem::on_toolButton_profile_page_clicked()
 {
     //QUa da mettere il path per il profileImage
-    pageofclient = new ProfilePage(this);
+    pageofclient = new ProfilePage(this,client_socket);
     pageofclient->setWindowTitle(tr("La tua Pagina del profilo"));
     //pageofclient->setMinimumSize(QSize(800, 400));
     pageofclient->setAttribute(Qt::WA_DeleteOnClose);
     //secondWindows->setWindowFlags(Qt::Popup);
     pageofclient->show();
-
 }

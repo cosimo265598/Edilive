@@ -65,6 +65,9 @@ public slots:
     void CreateFileForClient(QWebSocket* clientSocket, QString file);
     void OpenFileForClient(QWebSocket* clientSocket, QString file);
 
+    /* Profile data */
+    void PersonalDataOfClient (QWebSocket* clientSocket);
+
 private:
     QSharedPointer<Ui::MainWindow> ui;
     QSharedPointer<QWebSocketServer> m_pWebSocketServer;

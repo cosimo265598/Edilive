@@ -110,7 +110,7 @@ TextEdit::TextEdit(QWidget *parent)
     {
         QMenu *helpMenu = menuBar()->addMenu(tr("Help"));
         helpMenu->addAction(tr("About"), this, &TextEdit::about);
-        helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+        //helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     }
 
     QFont textFont("Helvetica");
@@ -166,11 +166,6 @@ void TextEdit::setupFileActions()
     QToolBar *tb = addToolBar(tr("File Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
-    tb->setFixedHeight(40);
-    tb->setIconSize(QSize(40,40));
-    menu->setFixedHeight(40);
-    menu->setFixedSize(QSize(40,40));
-
     const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));
     QAction *a = menu->addAction(newIcon,  tr("&New"), this, &TextEdit::fileNew);
     tb->addAction(a);
@@ -220,11 +215,6 @@ void TextEdit::setupEditActions()
     QToolBar *tb = addToolBar(tr("Edit Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&Edit"));
 
-    tb->setFixedHeight(40);
-    tb->setIconSize(QSize(40,40));
-    menu->setFixedHeight(40);
-    menu->setFixedSize(QSize(40,40));
-
     const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png"));
     actionUndo = menu->addAction(undoIcon, tr("&Undo"), textEdit, &QTextEdit::undo);
     actionUndo->setShortcut(QKeySequence::Undo);
@@ -265,8 +255,6 @@ void TextEdit::setupTextActions()
 
     tb->setFixedHeight(40);
     tb->setIconSize(QSize(40,40));
-    menu->setFixedHeight(40);
-    menu->setFixedSize(QSize(40,40));
 
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
     actionTextBold = menu->addAction(boldIcon, tr("&Bold"), this, &TextEdit::textBold);
@@ -414,21 +402,17 @@ void TextEdit::setupTextActions()
 void TextEdit::setupClientOnline()
 {
     QToolBar *tb = addToolBar(tr("Client Online"));
-    QMenu *menu = menuBar()->addMenu(tr("&Client"));
 
     tb->setFixedHeight(40);
     tb->setIconSize(QSize(40,40));
-    menu->setFixedHeight(40);
-    menu->setFixedSize(QSize(40,40));
 
     addToolBar(Qt::BottomToolBarArea,tb);
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
     const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));
-    QAction *a = menu->addAction(newIcon,  tr("&New"), this, &TextEdit::fileNew);
+    QAction *a = new QAction(newIcon,"view client online",tb);
     tb->addAction(a);
 
-    menu->addSeparator();
 }
 
 bool TextEdit::load(const QString &f)
@@ -862,9 +846,9 @@ void TextEdit::clipboardDataChanged()
 
 void TextEdit::about()
 {
-    QMessageBox::about(this, tr("About"), tr("This example demonstrates Qt's "
+    QMessageBox::about(this, tr("About"), tr("This project demonstrates Qt's "
         "rich text editing facilities in action, providing an example "
-        "document for you to experiment with."));
+        "document for you to experiment with. SAVERIO MASSANO ; MANISI COSIMO"));
 }
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)

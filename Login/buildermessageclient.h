@@ -8,6 +8,10 @@
 class BuilderMessageClient
 {
 public:
+    static void MessageSendToServer(QByteArray& byte,QJsonDocument jsonToSend);
+    static void MessageSendToServer(QByteArray& byte,QByteArray& appendByte);
+
+
     static QJsonDocument MessageTest(QString data);
     static QJsonDocument MessageLogin(QString username);
     static QJsonDocument MessageLoginUnlock(QString salt,QString nonce, QString psw);
@@ -19,6 +23,8 @@ public:
     static QJsonDocument MessageGenericErrorFile(QString data);
     static QJsonDocument MessageOpenFile(QString nomefile);
 
+    // profile managemet
+    static QJsonDocument MessageOpenProfilePage();
 };
 
 #endif // BUILDERMESSAGECLIENT_H

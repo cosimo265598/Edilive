@@ -10,5 +10,8 @@
         <file>icons_pack/file_96px.png</file>
         <file>icons_pack/document_480px.png</file>
         <file>icons_pack/ok_480px.png</file>
+        <file>icons_pack/avatar_default.png</file>
+        <file>icons_pack/avatar_old.png</file>
+        <file>icons_pack/avatar.png</file>
     </qresource>
 </RCC>
