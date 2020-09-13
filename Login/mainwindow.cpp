@@ -211,7 +211,7 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
         }break;
         case 17:{
             qDebug()<<jsonObj;
-
+            this->secondWindows->getProfilePage()->viewDataOfClient(jsonObj);
         }break;
 
         default:         return;

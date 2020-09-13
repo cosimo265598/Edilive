@@ -71,6 +71,11 @@ void ClientFilesystem::createHomepage(QJsonArray paths){
     }
 }
 
+ProfilePage *ClientFilesystem::getProfilePage()
+{
+    return this->pageofclient;
+}
+
 
 
 void ClientFilesystem::openReceivedFile(QByteArray data){
@@ -127,5 +132,4 @@ void ClientFilesystem::on_toolButton_profile_page_clicked()
     pageofclient->setAttribute(Qt::WA_DeleteOnClose);
     //secondWindows->setWindowFlags(Qt::Popup);
     pageofclient->show();
-
 }

@@ -18,6 +18,8 @@ class ProfilePage : public QMainWindow
 public:
     explicit ProfilePage(QWidget *parent = nullptr,QWebSocket *client_socket= nullptr);
     ~ProfilePage();
+    void viewDataOfClient(QJsonObject j);
+
 
 private slots:
     void on_buttonBox_ok_cancel_accepted();

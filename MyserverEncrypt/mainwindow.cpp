@@ -440,11 +440,13 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     QDataStream stream (&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_14);
 
+    //debug invio immagine di prova
+    QImage img(QDir().currentPath()+"/logo32.png");
 
     stream<< BuilderMessage::MessageProfileData(
                  users[client->getUsername()].getUsername(),
                  users[client->getUsername()].getNickname(),
-                 users[client->getUsername()].getIcon());
+                 /*users[client->getUsername()].getIcon()*/img);
 
     clientSocket->sendBinaryMessage(data);
     qDebug()<<data;

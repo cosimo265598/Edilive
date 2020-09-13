@@ -88,6 +88,13 @@
        </layout>
       </item>
       <item>
+       <widget class="QLabel" name="label_rv">
+        <property name="text">
+         <string>img ricevuta</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
@@ -121,6 +128,7 @@
        <widget class="QLabel" name="username_value">
         <property name="font">
          <font>
+          <pointsize>20</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -141,7 +149,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit_nick"/>
+       <widget class="QLineEdit" name="lineEdit_nick">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="verticalSpacer">
@@ -266,16 +278,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_imagine_profilo">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>

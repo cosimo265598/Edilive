@@ -37,7 +37,7 @@ public:
     ~ClientFilesystem();
     void openReceivedFile(QByteArray data);
     void createHomepage(QJsonArray json);
-
+    ProfilePage* getProfilePage();
 
 private Q_SLOTS:
     void onFileHandlerClicked();
