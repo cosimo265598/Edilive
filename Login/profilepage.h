@@ -20,16 +20,20 @@ public:
     ~ProfilePage();
     void viewDataOfClient(QJsonObject j);
 
-
+    void setImageProfile(QString& path);
+    bool setModify(bool value);
 private slots:
     void on_buttonBox_ok_cancel_accepted();
 
     void on_buttonBox_ok_cancel_rejected();
 
 
+    void on_pushButton_abilitaModifiche_clicked();
+
 private:
     Ui::ProfilePage *ui;
     QWebSocket* client_socket;
+    bool mod;
 };
 
 #endif // PROFILEPAGE_H
