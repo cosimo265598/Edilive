@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <iostream>
 #include <QAuthenticator>
@@ -15,13 +15,21 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , urlForConnection("wss://localhost:1234")
+    , reconnectionRetries(3)
 {
     ui->setupUi(this);
     fieldForSign(false);
-    this->urlForConnection="wss://localhost:1234";
+    this->reconnectionTimer = new QTimer(this);
+    this->reconnectionTimer->setInterval(20000);
+
     m_webSocket = QSharedPointer<QWebSocket>( new QWebSocket("client",QWebSocketProtocol::VersionLatest,this) );
     connect(m_webSocket.get(), QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),this, &MainWindow::onSslErrors);
     connect(m_webSocket.get(), &QWebSocket::binaryMessageReceived, this, &MainWindow::MessageReceivedFromServer);
+    connect(m_webSocket.get(), &QWebSocket::disconnected, this, &MainWindow::onDisconnection);
+    connect(m_webSocket.get(), &QWebSocket::connected, this, &MainWindow::onConnectionSuccess);
+    connect(this->reconnectionTimer, &QTimer::timeout, this, &MainWindow::onConnectionFailure);
+    connect(m_webSocket.get(), &QWebSocket::connected, this, &MainWindow::onConnected);
 }
 
 MainWindow::~MainWindow()
@@ -61,8 +69,7 @@ void MainWindow::on_back_clicked()
 
 void MainWindow::on_login_clicked()
 {
-    // implemntare mecccanismo di riprova collegamento
-    connect(m_webSocket.get(), &QWebSocket::connected, this, &MainWindow::onConnected);
+
     m_webSocket.get()->open(this->urlForConnection);
 }
 void MainWindow::onConnected(){
@@ -216,8 +223,31 @@ void MainWindow::MessageReceivedFromServer(const QByteArray &message)
 
         default:         return;
     }
+}
+
+void MainWindow::onConnectionSuccess(){
+    qDebug() << "BEFORE " << reconnectionTimer->interval();
+    this->reconnectionTimer->stop();
+    this->reconnectionRetries = 3;
+    qDebug() << "AFTER " << reconnectionTimer->interval();
+}
+
+void MainWindow::onDisconnection(){
+    qDebug() << "DISCONNECTED";
+    this->reconnectionTimer->start();
 
 }
 
+void MainWindow::onConnectionFailure(){
 
+    qDebug() << "Failure";
+    this->m_webSocket->abort();
+    if(this->reconnectionRetries > 0){
+        this->reconnectionRetries --;
+        this->m_webSocket.get()->open(this->urlForConnection);
+    }else{
+        this->secondWindows->hide();
+        MainWindow::show();
+    }
 
+}

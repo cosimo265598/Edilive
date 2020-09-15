@@ -9,8 +9,10 @@
 #include <QFile>
 #include <QDir>
 
-ProfilePage::ProfilePage(QWidget *parent,QWebSocket* client_socket) : QMainWindow(parent),
-    ui(new Ui::ProfilePage),client_socket(client_socket)
+ProfilePage::ProfilePage(QWidget *parent,QWebSocket* client_socket) :
+    QMainWindow(parent)
+  , ui(new Ui::ProfilePage)
+  , client_socket(client_socket)
 {
     ui->setupUi(this);
     mod=setModify(false);

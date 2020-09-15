@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QMessageBox>
+#include <QTimer>
 #include <clientfilesystem.h>
 #include <textedit.h>
 
@@ -40,6 +41,9 @@ private slots:
     void Registeruser();
     void StartNewWindows();
     void StartEditorText(QString fileeditor);
+    void onDisconnection();
+    void onConnectionSuccess();
+    void onConnectionFailure();
 
 private:
     Ui::MainWindow *ui;
@@ -47,6 +51,8 @@ private:
     TextEdit *editor;
     QSharedPointer<QWebSocket> m_webSocket;
     QString urlForConnection;
-
+    QTimer *reconnectionTimer;
+    qint32 reconnectionRetries;
 };
+
 #endif // MAINWINDOW_H

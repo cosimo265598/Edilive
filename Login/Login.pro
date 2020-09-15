@@ -30,7 +30,8 @@ SOURCES += \
     mainwindow.cpp \
     profileimage.cpp \
     profilepage.cpp \
-    textedit.cpp
+    textedit.cpp \
+    waitingdialog.cpp
 
 HEADERS += \
     buildermessageclient.h \
@@ -40,12 +41,14 @@ HEADERS += \
     mainwindow.h \
     profileimage.h \
     profilepage.h \
-    textedit.h
+    textedit.h \
+    waitingdialog.h
 
 FORMS += \
     mainwindow.ui \
     clientfilesystem.ui \
-    profilepage.ui
+    profilepage.ui \
+    waitingdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
