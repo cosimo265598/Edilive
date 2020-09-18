@@ -1,5 +1,7 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef HOMEPAGE_H
+#define HOMEPAGE_H
+
+#include <QWidget>
 
 #include <QMainWindow>
 #include <QtCore/QObject>
@@ -23,18 +25,18 @@
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui { class HomePage; }
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-class MainWindow : public QMainWindow
+class HomePage : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr,QWebSocket *socket=nullptr);
-    ~MainWindow();
+    HomePage(QWebSocket *socket = nullptr, QWidget *parent = nullptr);
+    ~HomePage();
     void openReceivedFile(QByteArray data);
     void createHomepage(QJsonArray json);
     ProfilePage* getProfilePage();
@@ -48,7 +50,7 @@ private Q_SLOTS:
     void on_toolButton_profile_page_clicked();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::HomePage *ui;
     QWebSocket *client_socket;
     EventFilterImpl *eventFilter;
     QStringList listfile;
@@ -56,4 +58,5 @@ private:
     int c=0;
 
 };
-#endif // MAINWINDOW_H
+
+#endif // HOMEPAGE_H

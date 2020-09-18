@@ -1,13 +1,13 @@
-﻿#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "homepage.h"
+#include "ui_homepage.h"
 #include <QtCore/QDebug>
 #include <QCoreApplication>
 #include "buildermessageclient.h"
 
 QT_USE_NAMESPACE
 
-MainWindow::MainWindow(QWidget *parent,QWebSocket *socket) :
-    QMainWindow(parent), ui(new Ui::MainWindow), client_socket(socket)
+HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
+    QMainWindow(parent), ui(new Ui::HomePage), client_socket(socket)
 {
     ui->setupUi(this);
     this->eventFilter = new EventFilterImpl(this);
@@ -19,14 +19,13 @@ MainWindow::MainWindow(QWidget *parent,QWebSocket *socket) :
     client_socket->sendBinaryMessage(out);
 }
 
-
-MainWindow::~MainWindow()
+HomePage::~HomePage()
 {
     delete ui;
     delete eventFilter;
 }
 
-void MainWindow::onFileHandlerClicked(){
+void HomePage::onFileHandlerClicked(){
     QString nomefile = dynamic_cast<FileHandler *>(QObject::sender())->getFilename();
 
     QByteArray out;
@@ -37,7 +36,7 @@ void MainWindow::onFileHandlerClicked(){
 
 }
 
-void MainWindow::createHomepage(QJsonArray paths){
+void HomePage::createHomepage(QJsonArray paths){
 
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
@@ -63,7 +62,7 @@ void MainWindow::createHomepage(QJsonArray paths){
                                                  dir["owner"].toString()+"\tLast Modified: "+
                                                  dir["lastModified"].toString()+ "\tSize: "+
                                                  dir["size"].toString() );   });
-        connect(item, &FileHandler::doubleClicked,this, &ClientFilesystem::onFileHandlerClicked);
+        connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerClicked);
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
         qDebug()<<row<< " "<<column;
         column = (++column)%6;
@@ -71,14 +70,14 @@ void MainWindow::createHomepage(QJsonArray paths){
     }
 }
 
-ProfilePage *MainWindow::getProfilePage()
+ProfilePage *HomePage::getProfilePage()
 {
     return this->pageofclient;
 }
 
 
 
-void MainWindow::openReceivedFile(QByteArray data){
+void HomePage::openReceivedFile(QByteArray data){
     QString nomeuser="cosimo";
     QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
     file.open(QIODevice::WriteOnly);
@@ -86,7 +85,7 @@ void MainWindow::openReceivedFile(QByteArray data){
     file.close();
 }
 
-void MainWindow::on_pushButton_new_file_clicked()
+void HomePage::on_pushButton_new_file_clicked()
 {
 
     QInputDialog diag;
@@ -114,7 +113,7 @@ void MainWindow::on_pushButton_new_file_clicked()
 
 }
 
-void MainWindow::on_pushButton_aggiorna_vista_clicked()
+void HomePage::on_pushButton_aggiorna_vista_clicked()
 {
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
@@ -123,7 +122,7 @@ void MainWindow::on_pushButton_aggiorna_vista_clicked()
     client_socket->sendBinaryMessage(out);
 }
 
-void MainWindow::on_toolButton_profile_page_clicked()
+void HomePage::on_toolButton_profile_page_clicked()
 {
     //QUa da mettere il path per il profileImage
     pageofclient = new ProfilePage(this,client_socket);

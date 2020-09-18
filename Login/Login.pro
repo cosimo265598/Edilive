@@ -23,32 +23,36 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     buildermessageclient.cpp \
-    clientfilesystem.cpp \
+    client.cpp \
     eventfilterimpl.cpp \
     filehandler.cpp \
+    homepage.cpp \
+    logindialog.cpp \
     main.cpp \
-    mainwindow.cpp \
     profileimage.cpp \
     profilepage.cpp \
+    registrationdialog.cpp \
     textedit.cpp \
-    waitingdialog.cpp
+    user.cpp
 
 HEADERS += \
     buildermessageclient.h \
-    clientfilesystem.h \
+    client.h \
     eventfilterimpl.h \
     filehandler.h \
-    mainwindow.h \
+    homepage.h \
+    logindialog.h \
     profileimage.h \
     profilepage.h \
+    registrationdialog.h \
     textedit.h \
-    waitingdialog.h
+    user.h
 
 FORMS += \
-    mainwindow.ui \
-    clientfilesystem.ui \
+    homepage.ui \
+    logindialog.ui \
     profilepage.ui \
-    waitingdialog.ui
+    registrationdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
