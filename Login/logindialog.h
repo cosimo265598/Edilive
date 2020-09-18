@@ -2,6 +2,7 @@
 #define LOGINDIALOG_H
 
 #include <QWidget>
+#include "registrationdialog.h"
 
 namespace Ui {
 class LoginDialog;
@@ -20,9 +21,13 @@ public slots:
 
 private:
     Ui::LoginDialog *ui;
+    RegistrationDialog regDialog;
+
 signals:
     void loginRequest(QString user, QString password);
     void sendCredentials(QString user, QString pwd);
+private slots:
+    void on_registration_clicked();
 };
 
 #endif // LOGINDIALOG_H

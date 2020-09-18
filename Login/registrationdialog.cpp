@@ -14,3 +14,8 @@ RegistrationDialog::~RegistrationDialog()
 {
     delete ui;
 }
+
+void RegistrationDialog::on_registration_3_clicked()
+{
+    emit alreadyAnAccount();
+}

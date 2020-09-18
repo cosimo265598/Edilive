@@ -15,8 +15,14 @@ public:
     explicit RegistrationDialog(QWidget *parent = nullptr);
     ~RegistrationDialog();
 
+private slots:
+    void on_registration_3_clicked();
+
 private:
     Ui::RegistrationDialog *ui;
+
+signals:
+    void alreadyAnAccount();
 };
 
 #endif // REGISTRATIONDIALOG_H
