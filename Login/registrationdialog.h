@@ -2,6 +2,8 @@
 #define REGISTRATIONDIALOG_H
 
 #include <QWidget>
+#include <QRegularExpression>
+#include <QValidator>
 
 namespace Ui {
 class RegistrationDialog;

@@ -10,6 +10,7 @@ RegistrationDialog::RegistrationDialog(QWidget *parent) :
     RegistrationDialog::setFixedSize(371,465);
     RegistrationDialog::setWindowTitle("Registration");
     ui->errorMessage->setStyleSheet("color : red");
+    ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
 }
 
 RegistrationDialog::~RegistrationDialog()
@@ -35,11 +36,13 @@ void RegistrationDialog::on_pushButton_register_clicked()
             ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
         if(ui->username->text().isEmpty())
             ui->username->setStyleSheet(" border: 1px solid red;");
-    }
-    if(QString::compare(ui->password->text(), ui->confirmPassword->text(), Qt::CaseInsensitive) != 0){
+    }else if(QString::compare(ui->password->text(), ui->confirmPassword->text(), Qt::CaseInsensitive) != 0){
         ui->password->setStyleSheet(" border: 1px solid red;");
         ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
         ui->errorMessage->setText("The two password MUST be equal");
+    }else if(!ui->username->hasAcceptableInput()){
+        ui->username->setStyleSheet(" border: 1px solid red;");
+        ui->errorMessage->setText("Insert a valid email as username");
     }else{
         emit registrationRequest(ui->username->text(), ui->password->text(), ui->confirmPassword->text());
     }
