@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLineEdit" name="password_4">
+  <widget class="QLineEdit" name="confirmPassword">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -26,7 +26,7 @@
     <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="login_3">
+  <widget class="QPushButton" name="pushButton_register">
    <property name="geometry">
     <rect>
      <x>80</x>
@@ -45,7 +45,7 @@
     <string>Register</string>
    </property>
   </widget>
-  <widget class="QLabel" name="passwordLabel_4">
+  <widget class="QLabel" name="confirmPasswordLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -58,7 +58,7 @@
     <string>Confirm Password:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="password_3">
+  <widget class="QLineEdit" name="password">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -68,7 +68,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="user_3">
+  <widget class="QLineEdit" name="username">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -78,7 +78,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="registration_3">
+  <widget class="QPushButton" name="pushButton_alreadyAnAccount">
    <property name="geometry">
     <rect>
      <x>80</x>
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
+     <y>30</y>
      <width>351</width>
      <height>20</height>
     </rect>
@@ -123,7 +123,7 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QLabel" name="passwordLabel_3">
+  <widget class="QLabel" name="passwordLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -136,7 +136,7 @@
     <string>Password:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="userLabel_3">
+  <widget class="QLabel" name="usernameLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -147,6 +147,19 @@
    </property>
    <property name="text">
     <string>Username:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="errorMessage">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>80</y>
+     <width>331</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

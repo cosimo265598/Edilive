@@ -36,7 +36,7 @@
       <string>Create an account</string>
      </property>
     </widget>
-    <widget class="QLabel" name="userLabel">
+    <widget class="QLabel" name="username_label">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -49,7 +49,7 @@
       <string>Username:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="passwordLabel">
+    <widget class="QLabel" name="password_label">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -72,7 +72,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QLineEdit" name="user">
+    <widget class="QLineEdit" name="username">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -117,7 +117,7 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="loginFailureMessage">
+    <widget class="QLabel" name="errorMessage">
      <property name="geometry">
       <rect>
        <x>16</x>

@@ -8,7 +8,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->setupUi(this);
     LoginDialog::setAttribute(Qt::WA_DeleteOnClose, true);
     LoginDialog::setFixedSize(371,465);
-    ui->loginFailureMessage->setStyleSheet("color : red");
+    LoginDialog::setWindowTitle("Login");
+    ui->errorMessage->setStyleSheet("color : red");
     ui->stackedWidget->addWidget(&regDialog);
     QObject::connect(&regDialog, &RegistrationDialog::alreadyAnAccount, [this](){ui->stackedWidget->setCurrentIndex(0);});
 }
@@ -20,15 +21,34 @@ LoginDialog::~LoginDialog()
 
 void LoginDialog::on_login_clicked()
 {
-    emit loginRequest(ui->user->text(), ui->password->text());
+    ui->username->setStyleSheet("");
+    ui->password->setStyleSheet("");
+
+    if(!ui->username->text().isEmpty() && !ui->password->text().isEmpty()){
+        emit loginRequest(ui->username->text(), ui->password->text());
+    }else{
+        ui->errorMessage->setText("Fill all the fields");
+        if(ui->password->text().isEmpty())
+            ui->password->setStyleSheet(" border: 1px solid red;");
+        if(ui->username->text().isEmpty())
+            ui->username->setStyleSheet(" border: 1px solid red;");
+    }
 }
 
 void LoginDialog::on_login_failure(){
-    ui->loginFailureMessage->setText("ERROR, Username or password wrong");
+    ui->username->clear();
+    ui->password->clear();
+    ui->username->setStyleSheet(" border: 1px solid red;");
+    ui->password->setStyleSheet(" border: 1px solid red;");
+    ui->errorMessage->setText("ERROR, Username or password wrong");
 }
 
 void LoginDialog::on_registration_clicked()
 {
-    ui->loginFailureMessage->clear();
+    ui->username->clear();
+    ui->password->clear();
+    ui->username->setStyleSheet("");
+    ui->password->setStyleSheet("");
+    ui->errorMessage->clear();
     ui->stackedWidget->setCurrentIndex(1);
 }
