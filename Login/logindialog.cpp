@@ -10,6 +10,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     LoginDialog::setFixedSize(371,465);
     LoginDialog::setWindowTitle("Login");
     ui->errorMessage->setStyleSheet("color : red");
+    ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
     ui->stackedWidget->addWidget(&regDialog);
     QObject::connect(&regDialog, &RegistrationDialog::alreadyAnAccount, [this](){ui->stackedWidget->setCurrentIndex(0);});
 }
@@ -24,15 +25,17 @@ void LoginDialog::on_login_clicked()
     ui->username->setStyleSheet("");
     ui->password->setStyleSheet("");
 
-    if(!ui->username->text().isEmpty() && !ui->password->text().isEmpty()){
-        emit loginRequest(ui->username->text(), ui->password->text());
-    }else{
+    if(ui->username->text().isEmpty() || ui->password->text().isEmpty()){
         ui->errorMessage->setText("Fill all the fields");
         if(ui->password->text().isEmpty())
             ui->password->setStyleSheet(" border: 1px solid red;");
         if(ui->username->text().isEmpty())
             ui->username->setStyleSheet(" border: 1px solid red;");
-    }
+    }else if(!ui->username->hasAcceptableInput() && ui->username->text()!="ciao"){ //TODO: remove backdoor "ciao"
+        ui->username->setStyleSheet(" border: 1px solid red;");
+        ui->errorMessage->setText("Insert a valid email as username");
+    }else
+        emit loginRequest(ui->username->text(), ui->password->text());
 }
 
 void LoginDialog::on_login_failure(){

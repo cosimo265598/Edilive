@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include "registrationdialog.h"
+#include <QRegularExpression>
+#include <QValidator>
 
 namespace Ui {
 class LoginDialog;
