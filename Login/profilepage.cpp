@@ -85,16 +85,7 @@ bool ProfilePage::setModify(bool value)
     return value;
 }
 
-
-
-void ProfilePage::on_pushButton_abilitaModifiche_clicked()
+void ProfilePage::on_pushButton_returnToHome_clicked()
 {
-    if(mod){
-        mod=setModify(false);
-        ui->pushButton_abilitaModifiche->setText("Abilita Modifiche");
-
-    }else{
-        mod=setModify(true);
-        ui->pushButton_abilitaModifiche->setText("Disabilita Modifiche");
-    }
+    emit returnToHome();
 }

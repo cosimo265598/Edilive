@@ -39,23 +39,20 @@ public:
     ~HomePage();
     void openReceivedFile(QByteArray data);
     void createHomepage(QJsonArray json);
-    ProfilePage* getProfilePage();
+    ProfilePage *getProfilePage();
 
 private Q_SLOTS:
     void onFileHandlerClicked();
     void on_pushButton_new_file_clicked();
-
     void on_pushButton_aggiorna_vista_clicked();
-
-    void on_toolButton_profile_page_clicked();
+    void on_pushButton_profile_page_clicked();
 
 private:
     Ui::HomePage *ui;
     QWebSocket *client_socket;
     EventFilterImpl *eventFilter;
     QStringList listfile;
-    ProfilePage *pageofclient;
-    int c=0;
+    ProfilePage *profilePage;
 
 };
 

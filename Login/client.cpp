@@ -26,6 +26,7 @@ Client::Client(QObject *parent) : QObject(parent)
     m_webSocket = QSharedPointer<QWebSocket>( new QWebSocket("client",QWebSocketProtocol::VersionLatest,this) );
 
     connect(loginDialog, &LoginDialog::loginRequest, this, &Client::onLoginRequest);
+    connect(this, &Client::loginFailure, loginDialog, &LoginDialog::on_login_failure);
     connect(m_webSocket.get(), QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),this, &Client::onSslErrors);
     connect(m_webSocket.get(), &QWebSocket::binaryMessageReceived, this, &Client::MessageReceivedFromServer);
     connect(m_webSocket.get(), &QWebSocket::disconnected, this, &Client::onDisconnection);
@@ -193,20 +194,16 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             // open new windows
                 qDebug() << "Successfull login";
                 this->loginDialog->close();
-                this->homePage = new HomePage(m_webSocket.get());
-                this->homePage->show();
+                this->homePage = new HomePage(m_webSocket.get());              
         }break;
         case 5:{    // message  login error
-            //QMessageBox::critical(this, tr("Login Status"),"Loggin error: "+jsonObj["error"].toString(),QMessageBox::Ok);
-
+                emit loginFailure();
         }break;
         case 8:{    // message account confimed
            // QMessageBox::information(this, tr("Account Status"),tr("Account Cretated\n"),QMessageBox::Ok);
                 qDebug() << "Account Status";
                 this->loginDialog->close();
                 this->homePage = new HomePage(m_webSocket.get());
-                this->homePage->show();
-
         }break;
         case 9:{    // message account create error
             //QMessageBox::critical(this, tr("Account Status"),"Account create error: "+jsonObj["error"].toString(),QMessageBox::Ok);
@@ -236,7 +233,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         }break;
         case 17:{
             qDebug()<<jsonObj;
-            this->homePage->getProfilePage()->viewDataOfClient(jsonObj);
+            //this->homePage->getProfilePage()->viewDataOfClient(jsonObj);
         }break;
 
         default:         return;
@@ -244,16 +241,13 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 }
 
 void Client::onConnectionSuccess(){
-    qDebug() << "BEFORE " << reconnectionTimer->interval();
     this->reconnectionTimer->stop();
     this->reconnectionRetries = 3;
-    qDebug() << "AFTER " << reconnectionTimer->interval();
 }
 
 void Client::onDisconnection(){
     qDebug() << "DISCONNECTED";
     this->reconnectionTimer->start();
-
 }
 
 void Client::onConnectionFailure(){

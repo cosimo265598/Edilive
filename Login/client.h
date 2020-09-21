@@ -53,5 +53,8 @@ private:
     QTimer *reconnectionTimer;
     qint32 reconnectionRetries;
     User *user;
+
+signals:
+    void loginFailure();
 };
 #endif // CLIENT_H

@@ -7,10 +7,17 @@
 QT_USE_NAMESPACE
 
 HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::HomePage), client_socket(socket)
+    QMainWindow(parent),
+    ui(new Ui::HomePage),
+    client_socket(socket),
+    profilePage(new ProfilePage(this,client_socket))
 {
     ui->setupUi(this);
+    ui->stackedWidget->addWidget(profilePage);
+    connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
     this->eventFilter = new EventFilterImpl(this);
+
+    HomePage::show();
 
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
@@ -58,7 +65,7 @@ void HomePage::createHomepage(QJsonArray paths){
         FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, "./"+dir["filename"].toString(), dir["owner"].toString(), dir["lastModified"].toString(),dir["lastRead"].toString());
         item->installEventFilter(eventFilter);
         connect(item, &FileHandler::clicked,[filename,dir,this]()
-                    {ui->InfoFile_label->setText("File Selected:\t"+filename+"\tOwner: "+
+                    {ui->infoLabel->setText("File Selected:\t"+filename+"\tOwner: "+
                                                  dir["owner"].toString()+"\tLast Modified: "+
                                                  dir["lastModified"].toString()+ "\tSize: "+
                                                  dir["size"].toString() );   });
@@ -72,10 +79,8 @@ void HomePage::createHomepage(QJsonArray paths){
 
 ProfilePage *HomePage::getProfilePage()
 {
-    return this->pageofclient;
+    return this->profilePage;
 }
-
-
 
 void HomePage::openReceivedFile(QByteArray data){
     QString nomeuser="cosimo";
@@ -110,7 +115,6 @@ void HomePage::on_pushButton_new_file_clicked()
                      BuilderMessageClient::MessageCreateNewFile(filename));
          client_socket->sendBinaryMessage(out);
     }
-
 }
 
 void HomePage::on_pushButton_aggiorna_vista_clicked()
@@ -122,13 +126,7 @@ void HomePage::on_pushButton_aggiorna_vista_clicked()
     client_socket->sendBinaryMessage(out);
 }
 
-void HomePage::on_toolButton_profile_page_clicked()
+void HomePage::on_pushButton_profile_page_clicked()
 {
-    //QUa da mettere il path per il profileImage
-    pageofclient = new ProfilePage(this,client_socket);
-    pageofclient->setWindowTitle(tr("La tua Pagina del profilo"));
-    //pageofclient->setMinimumSize(QSize(800, 400));
-    pageofclient->setAttribute(Qt::WA_DeleteOnClose);
-    //secondWindows->setWindowFlags(Qt::Popup);
-    pageofclient->show();
+    ui->stackedWidget->setCurrentIndex(1);
 }
