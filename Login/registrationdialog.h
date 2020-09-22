@@ -28,8 +28,8 @@ private:
     void resetPalette();
 
 signals:
-    void alreadyAnAccount();
-    void registrationRequest(QString username, QString password, QString confirmPassword);
+    void alreadyAnAccountButtonClicked();
+    void registrationRequest(QString username, QString password);
 };
 
 #endif // REGISTRATIONDIALOG_H

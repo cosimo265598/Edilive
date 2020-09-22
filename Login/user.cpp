@@ -1,13 +1,13 @@
 #include "user.h"
 
-User::User(QString user, QString password) :
-    user(user),
+User::User(QString username, QString password) :
+    username(username),
     password(password)
 {
 }
 
-QString User::getUser(){
-    return this->user;
+QString User::getUsername(){
+    return this->username;
 }
 
 QString User::getPassword(){

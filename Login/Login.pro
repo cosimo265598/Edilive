@@ -32,6 +32,7 @@ SOURCES += \
     profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
+    startupstackeddialog.cpp \
     textedit.cpp \
     user.cpp
 
@@ -45,6 +46,7 @@ HEADERS += \
     profileimage.h \
     profilepage.h \
     registrationdialog.h \
+    startupstackeddialog.h \
     textedit.h \
     user.h
 
@@ -52,7 +54,8 @@ FORMS += \
     homepage.ui \
     logindialog.ui \
     profilepage.ui \
-    registrationdialog.ui
+    registrationdialog.ui \
+    startupstackeddialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

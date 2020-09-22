@@ -17,23 +17,21 @@ class LoginDialog : public QWidget
 
 private:
     Ui::LoginDialog *ui;
-    RegistrationDialog regDialog;
 
 public:
     explicit LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
 
 public slots:
-    void on_login_clicked();
     void on_login_failure();
 
 private slots:
     void on_registration_clicked();
+    void on_login_clicked();
 
 signals:
     void loginRequest(QString user, QString password);
-    void sendCredentials(QString user, QString pwd);
-
+    void registrationButtonClicked();
 };
 
 #endif // LOGINDIALOG_H

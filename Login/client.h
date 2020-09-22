@@ -1,7 +1,15 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <QObject>
+#include <iostream>
+#include <QAuthenticator>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QDir>
+#include <QProcess>
+#include <textedit.h>
+#include <QDesktopWidget>
+#include <QScreen>
 #include <QtCore/QObject>
 #include <QtWebSockets/QWebSocket>
 #include <QtNetwork/QSslError>
@@ -12,11 +20,24 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QTimer>
-#include <clientfilesystem.h>
 #include <textedit.h>
+
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 #include "user.h"
 #include "homepage.h"
 #include "logindialog.h"
+#include "buildermessageclient.h"
+#include "startupstackeddialog.h"
+
+enum ClientStatus : quint32
+{
+
+    LoginRequest,
+    LoggedIn,
+    RegistrationRequest
+};
 
 class Client : public QObject
 {
@@ -27,10 +48,6 @@ public:
     ~Client();
 
 private slots:
-    void on_sign_clicked();
-    void fieldForSign(bool state);
-
-    void on_back_clicked();
 
     void onLoginRequest(QString user, QString password);
     void onConnected();
@@ -45,7 +62,7 @@ private slots:
     void onConnectionFailure();
 
 private:
-    LoginDialog *loginDialog;
+    StartupStackedDialog *stackedDialog;
     HomePage *homePage;
     TextEdit *editor;
     QSharedPointer<QWebSocket> m_webSocket;
@@ -53,6 +70,7 @@ private:
     QTimer *reconnectionTimer;
     qint32 reconnectionRetries;
     User *user;
+    quint32 clientStatus;
 
 signals:
     void loginFailure();

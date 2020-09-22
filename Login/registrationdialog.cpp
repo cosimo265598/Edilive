@@ -44,7 +44,7 @@ void RegistrationDialog::on_pushButton_register_clicked()
         ui->username->setStyleSheet(" border: 1px solid red;");
         ui->errorMessage->setText("Insert a valid email as username");
     }else{
-        emit registrationRequest(ui->username->text(), ui->password->text(), ui->confirmPassword->text());
+        emit registrationRequest(ui->username->text(), ui->password->text());
     }
 }
 
@@ -58,5 +58,5 @@ void RegistrationDialog::on_pushButton_alreadyAnAccount_clicked()
     ui->confirmPassword->setStyleSheet("");
     ui->errorMessage->clear();
 
-    emit alreadyAnAccount();
+    emit alreadyAnAccountButtonClicked();
 }

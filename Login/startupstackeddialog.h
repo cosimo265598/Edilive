@@ -3,6 +3,10 @@
 
 #include <QWidget>
 
+#include "ui_startupstackeddialog.h"
+#include "logindialog.h"
+#include "registrationdialog.h"
+
 namespace Ui {
 class StartupStackedDialog;
 }
@@ -17,6 +21,15 @@ public:
 
 private:
     Ui::StartupStackedDialog *ui;
+    LoginDialog loginDialog;
+    RegistrationDialog registrationDialog;
+
+public slots:
+    void onLoginFailure();
+
+signals:
+    void loginRequest(QString user, QString password);
+    void loginFailure();
 };
 
 #endif // STARTUPSTACKEDDIALOG_H

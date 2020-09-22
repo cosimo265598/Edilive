@@ -11,13 +11,29 @@ LoginDialog::LoginDialog(QWidget *parent) :
     LoginDialog::setWindowTitle("Login");
     ui->errorMessage->setStyleSheet("color : red");
     ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
-    ui->stackedWidget->addWidget(&regDialog);
-    QObject::connect(&regDialog, &RegistrationDialog::alreadyAnAccount, [this](){ui->stackedWidget->setCurrentIndex(0);});
 }
 
 LoginDialog::~LoginDialog()
 {
     delete ui;
+}
+
+void LoginDialog::on_login_failure(){
+    ui->username->clear();
+    ui->password->clear();
+    ui->username->setStyleSheet(" border: 1px solid red;");
+    ui->password->setStyleSheet(" border: 1px solid red;");
+    ui->errorMessage->setText("ERROR, Username or password wrong");
+}
+
+void LoginDialog::on_registration_clicked()
+{
+    ui->username->clear();
+    ui->password->clear();
+    ui->username->setStyleSheet("");
+    ui->password->setStyleSheet("");
+    ui->errorMessage->clear();
+    emit registrationButtonClicked();
 }
 
 void LoginDialog::on_login_clicked()
@@ -36,22 +52,4 @@ void LoginDialog::on_login_clicked()
         ui->errorMessage->setText("Insert a valid email as username");
     }else
         emit loginRequest(ui->username->text(), ui->password->text());
-}
-
-void LoginDialog::on_login_failure(){
-    ui->username->clear();
-    ui->password->clear();
-    ui->username->setStyleSheet(" border: 1px solid red;");
-    ui->password->setStyleSheet(" border: 1px solid red;");
-    ui->errorMessage->setText("ERROR, Username or password wrong");
-}
-
-void LoginDialog::on_registration_clicked()
-{
-    ui->username->clear();
-    ui->password->clear();
-    ui->username->setStyleSheet("");
-    ui->password->setStyleSheet("");
-    ui->errorMessage->clear();
-    ui->stackedWidget->setCurrentIndex(1);
 }

@@ -59,14 +59,14 @@ QJsonDocument BuilderMessageClient::MessageLoginUnlock(QString salt, QString non
     return jdoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageRegisterAccount(QString usr, QString passwd, QString nick, QImage img)
+QJsonDocument BuilderMessageClient::MessageRegisterAccount(QString usr, QString passwd)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",6);
     objtosend.insert("username",usr);
     objtosend.insert("password",passwd);
-    objtosend.insert("nickname",passwd);
+    objtosend.insert("nickname","nickNameDefault");
     objtosend.insert("image","dafault");
     jsondoc.setObject(objtosend);
     return jsondoc;

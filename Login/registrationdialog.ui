@@ -111,7 +111,7 @@
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="text">
-    <string>Create your profile and start to shared !</string>
+    <string>Create your profile and start to share !</string>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

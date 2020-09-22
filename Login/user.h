@@ -6,18 +6,15 @@
 class User
 {
 public:
-    User(QString user, QString password);
+    User(QString username, QString password);
 
 private:
-    QString user;
+    QString username;
     QString password;
 
 public:
-    QString getUser();
+    QString getUsername();
     QString getPassword();
-
-signals:
-
 };
 
 #endif // USER_H
