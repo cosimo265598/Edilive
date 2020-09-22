@@ -12,10 +12,16 @@ StartupStackedDialog::StartupStackedDialog(QWidget *parent) :
     ui->stackedWidget->addWidget(&registrationDialog);
     ui->stackedWidget->setCurrentIndex(0);
 
+    //Internal loginDialog and registrationDialog
     QObject::connect(&registrationDialog, &RegistrationDialog::alreadyAnAccountButtonClicked, [this](){ui->stackedWidget->setCurrentIndex(0);});
     QObject::connect(&loginDialog, &LoginDialog::registrationButtonClicked, [this](){ui->stackedWidget->setCurrentIndex(1);});
 
+    //loginDialog connections
     QObject::connect(&loginDialog, &LoginDialog::loginRequest, this, &StartupStackedDialog::loginRequest);
+    QObject::connect(this, &StartupStackedDialog::loginFailure, &loginDialog, &LoginDialog::on_login_failure);
+
+    //registrationDialog connections
+    QObject::connect(&registrationDialog, &RegistrationDialog::registrationRequest, this, &StartupStackedDialog::registrationRequest);
     QObject::connect(this, &StartupStackedDialog::loginFailure, &loginDialog, &LoginDialog::on_login_failure);
 }
 

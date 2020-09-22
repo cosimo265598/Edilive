@@ -15,6 +15,9 @@ Client::Client(QObject *parent) :
 
     connect(stackedDialog, &StartupStackedDialog::loginRequest, this, &Client::onLoginRequest);
     connect(this, &Client::loginFailure, stackedDialog, &StartupStackedDialog::onLoginFailure);
+
+    //connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
+
     connect(m_webSocket.get(), QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),this, &Client::onSslErrors);
     connect(m_webSocket.get(), &QWebSocket::binaryMessageReceived, this, &Client::MessageReceivedFromServer);
     connect(m_webSocket.get(), &QWebSocket::disconnected, this, &Client::onDisconnection);

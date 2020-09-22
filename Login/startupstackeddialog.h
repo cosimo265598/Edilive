@@ -30,6 +30,7 @@ public slots:
 signals:
     void loginRequest(QString user, QString password);
     void loginFailure();
-};
+    void registrationRequest(QString user, QString password);
 
+};
 #endif // STARTUPSTACKEDDIALOG_H
