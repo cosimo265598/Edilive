@@ -22,7 +22,7 @@ StartupStackedDialog::StartupStackedDialog(QWidget *parent) :
 
     //registrationDialog connections
     QObject::connect(&registrationDialog, &RegistrationDialog::registrationRequest, this, &StartupStackedDialog::registrationRequest);
-    QObject::connect(this, &StartupStackedDialog::loginFailure, &loginDialog, &LoginDialog::on_login_failure);
+    QObject::connect(this, &StartupStackedDialog::loginFailure, &loginDialog, &LoginDialog::onLoginFailure);
 }
 
 StartupStackedDialog::~StartupStackedDialog()
