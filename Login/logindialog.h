@@ -23,7 +23,7 @@ public:
     ~LoginDialog();
 
 public slots:
-    void on_login_failure();
+    void onLoginFailure();
 
 private slots:
     void on_registration_clicked();

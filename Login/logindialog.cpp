@@ -18,7 +18,7 @@ LoginDialog::~LoginDialog()
     delete ui;
 }
 
-void LoginDialog::on_login_failure(){
+void LoginDialog::onLoginFailure(){
     ui->username->clear();
     ui->password->clear();
     ui->username->setStyleSheet(" border: 1px solid red;");
