@@ -46,12 +46,11 @@ void MainWindow::prepareToStart()
     //database.insertUser(userprova2);
     // Check existence of the required SSL certificate files
     if (!QFile("localhost.key").exists()) {
-        ui->commet->appendPlainText("Not find localhost.key");
-
+        ui->commet->appendPlainText("Not find localhost.key - Server can not start!");
         //throw StartupException("Cannot find private key file: 'server.key'");
     }
     if (!QFile("localhost.cert").exists()) {
-        ui->commet->appendPlainText("Not find localhost.cert");
+        ui->commet->appendPlainText("Not find localhost.cert - Server can not start!");
         //throw StartupException("Cannot find local certificate file: 'server.pem'");
     }
 
@@ -75,7 +74,8 @@ void MainWindow::prepareToStart()
     }
     // Initialize the counter
     userId = database.getMaxUserID();
-    ui->commet->appendPlainText("users counter: "+ QString::number(users.count()) );
+
+    ui->commet->appendPlainText("Users counter: "+ QString::number(users.count()) );
 
     ui->commet->appendPlainText("(INIT COMPLETE )" );
 }
@@ -201,6 +201,27 @@ void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
     }
 }
 
+void MainWindow::socketAbort(QWebSocket* clientSocket)
+{
+    // Disconnect all the socket's signals from server slots
+    disconnect(clientSocket, &QWebSocket::binaryMessageReceived, this, &MainWindow::processBinaryMessage);
+    disconnect(clientSocket, &QWebSocket::disconnected, this, &MainWindow::socketDisconnected);
+
+    QSharedPointer<Client> client = clients[clientSocket];
+
+    clientSocket->abort();						/* abort and destroy the socket */
+    clientSocket->deleteLater();
+
+    clients.remove(clientSocket);				/* remove this client from the active connections */
+    if (client->isLogged())
+    {
+        client->logout();
+        ui->commet->appendPlainText("Eject "+client->getUsername()+" ip: "+clientSocket->peerAddress().toString());
+    }
+    else
+        ui->commet->appendPlainText("Shutdown connection to unidentified client");
+}
+
 void MainWindow::serverErrorConnection(QWebSocketProtocol::CloseCode closeCode)
 {
     ui->commet->appendPlainText("Errors occurred during ssetup socket\n"+QString(closeCode));
@@ -209,10 +230,7 @@ void MainWindow::serverErrorConnection(QWebSocketProtocol::CloseCode closeCode)
 
 
 
-void MainWindow::on_startserver_2_clicked()
-{
-    ui->commet->clear();
-}
+void MainWindow::on_startserver_2_clicked() {  ui->commet->clear(); }
 
 void MainWindow::SimpleTextMessageTest(){
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tSIGNAL TEST MESSAGE FROM CLIENT RECEIVED TO SERVER");
@@ -478,24 +496,34 @@ void MainWindow::processBinaryMessage(QByteArray message)
     QJsonObject jsonObj = jsonDoc.object();
     int mType = jsonObj["type"].toInt();
 
-    try {
-        ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
+    this->po=ProcessOperation::getInstance(this);
 
-        ProcessOperation po(this);
+       try {
+           ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
 
-        if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate ||
-            mType == AccountUpdate || mType == Logout || mType == Simplemessage
-                || mType == OpenDirectory || mType== CreateFile || mType== OpenFile || mType==ProfileData)
-        {
-            po.process((TypeOperation)mType, socket, jsonObj );
-        }
-        else
-            ui->commet->appendPlainText("(MESSAGE ERROR) Received unexpected message: ");
+           if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
+                   po->checkTypeOperationGranted((TypeOperation)mType).isEmpty()){
+               ui->commet->appendPlainText("***(MESSAGE ERROR)*** Received unexpected message: ");
+               // return whitout do anything.
+               return;
+           }
 
-    }
-    catch (std::exception& me)
-    {
-        ui->commet->appendPlainText( me.what());
-    }
-}
+           po->process((TypeOperation)mType, socket, jsonObj );
+
+           /*
+           if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate ||
+               mType == AccountUpdate || mType == Logout || mType == Simplemessage
+                   || mType == OpenDirectory || mType== CreateFile || mType== OpenFile || mType==ProfileData)
+           {
+               po->process((TypeOperation)mType, socket, jsonObj );
+           }
+           else
+               ui->commet->appendPlainText("(MESSAGE ERROR) Received unexpected message: ");
+           */
+       }
+       catch (std::exception& me)
+       {
+           ui->commet->appendPlainText( me.what());
+           socketAbort(socket);
+       }}
 

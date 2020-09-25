@@ -59,7 +59,7 @@ public slots:
     void serverLoginUnlock(QWebSocket* clientSocket, QString token);
     void serverAccountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
     void serverErrorConnection(QWebSocketProtocol::CloseCode closeCode);
-
+    void socketAbort(QWebSocket* clientSocket);
     /* FILE */
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString file);
@@ -76,6 +76,7 @@ private:
     QSslConfiguration sslconfig;
     QMap<QWebSocket*, QSharedPointer<Client>> clients;
     QMap<QString, UserData> users;
+    ProcessOperation *po;
     int userId;
 
 
