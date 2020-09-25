@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QRegularExpression>
-#include <QValidator>
 
 namespace Ui {
 class RegistrationDialog;
@@ -18,10 +17,11 @@ public:
     ~RegistrationDialog();
 
 private slots:
-
-
     void on_pushButton_register_clicked();
     void on_pushButton_alreadyAnAccount_clicked();
+
+public slots:
+    void onRegistrationFailure(QString errorMessage);
 
 private:
     Ui::RegistrationDialog *ui;

@@ -66,8 +66,6 @@ QJsonDocument BuilderMessageClient::MessageRegisterAccount(QString usr, QString 
     objtosend.insert("type",6);
     objtosend.insert("username",usr);
     objtosend.insert("password",passwd);
-    objtosend.insert("nickname","nickNameDefault");
-    objtosend.insert("image","dafault");
     jsondoc.setObject(objtosend);
     return jsondoc;
 

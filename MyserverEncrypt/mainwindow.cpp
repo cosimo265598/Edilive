@@ -236,8 +236,8 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
             clientSocket->sendBinaryMessage(data);
             return;
         }
-        // client not logged
 
+        // client not logged
         stream << BuilderMessage::MessageChallege(
                       QString(users[username].getSalt()) ,
                       QString(client->challenge(&users[username])));
@@ -286,24 +286,28 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     QDataStream stream (&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_14);
 
+    /*
     if (client->isLogged()){
         stream << BuilderMessage::MessageAccountError("Client already logged in");
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check if username or password are nulls */
+
+    //check if username or password are nulls
     if (!username.compare("") || !password.compare("")){
         stream << BuilderMessage::MessageAccountError("User/Psw can not be empty");
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check username length */
+    //check username length
     if (username.length() > MAX_NAME_LENGTH){
         stream << BuilderMessage::MessageAccountError("Username too long");
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check if this username is already used */
+    */
+    //check if this username is already used
+
     if (users.contains(username)){
         stream << BuilderMessage::MessageAccountError("Username already exist");
         clientSocket->sendBinaryMessage(data);

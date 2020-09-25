@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "registrationdialog.h"
 #include <QRegularExpression>
-#include <QValidator>
+#include <QDebug>
 
 namespace Ui {
 class LoginDialog;
@@ -23,7 +23,7 @@ public:
     ~LoginDialog();
 
 public slots:
-    void onLoginFailure();
+    void onLoginFailure(QString errorMessage);
 
 private slots:
     void on_registration_clicked();

@@ -25,12 +25,14 @@ private:
     RegistrationDialog registrationDialog;
 
 public slots:
-    void onLoginFailure();
+    void onLoginFailure(QString errorMessage);
+    void onRegistrationFailure(QString errorMessage);
 
 signals:
     void loginRequest(QString user, QString password);
-    void loginFailure();
+    void loginFailure(QString errorMessage);
     void registrationRequest(QString user, QString password);
+    void registrationFailure(QString errorMessage);
 
 };
 #endif // STARTUPSTACKEDDIALOG_H

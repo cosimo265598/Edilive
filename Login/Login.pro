@@ -24,6 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     buildermessageclient.cpp \
     client.cpp \
+    connectionwaitingdialog.cpp \
     eventfilterimpl.cpp \
     filehandler.cpp \
     homepage.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
 HEADERS += \
     buildermessageclient.h \
     client.h \
+    connectionwaitingdialog.h \
     eventfilterimpl.h \
     filehandler.h \
     homepage.h \
@@ -51,6 +53,7 @@ HEADERS += \
     user.h
 
 FORMS += \
+    connectionwaitingdialog.ui \
     homepage.ui \
     logindialog.ui \
     profilepage.ui \

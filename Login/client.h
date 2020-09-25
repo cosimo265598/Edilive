@@ -30,13 +30,15 @@
 #include "logindialog.h"
 #include "buildermessageclient.h"
 #include "startupstackeddialog.h"
+#include "connectionwaitingdialog.h"
 
 enum ClientStatus : quint32
 {
-
+    Startup,
     LoginRequest,
-    LoggedIn,
-    RegistrationRequest
+    Connected,
+    RegistrationRequest,
+    Disconnected
 };
 
 class Client : public QObject
@@ -49,12 +51,11 @@ public:
 
 private slots:
 
-    void onLoginRequest(QString user, QString password);
+    void onLoginRequest(QString username, QString password);
+    void onRegistrationRequest(QString username, QString password);
     void onConnected();
     void onSslErrors(const QList<QSslError> &errors);
-    void on_sign_account_clicked();
     void MessageReceivedFromServer(const QByteArray& message);
-    void Registeruser();
     void StartNewWindows();
     void StartEditorText(QString fileeditor);
     void onDisconnection();
@@ -67,12 +68,14 @@ private:
     TextEdit *editor;
     QSharedPointer<QWebSocket> m_webSocket;
     QString urlForConnection;
-    QTimer *reconnectionTimer;
+    QTimer *waitingTimer;
     qint32 reconnectionRetries;
     User *user;
     quint32 clientStatus;
+    ConnectionWaitingDialog waitingDialog;
 
 signals:
-    void loginFailure();
+    void loginFailure(QString errorMessage);
+    void registrationFailure(QString errorMessage);
 };
 #endif // CLIENT_H

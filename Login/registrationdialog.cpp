@@ -6,11 +6,8 @@ RegistrationDialog::RegistrationDialog(QWidget *parent) :
     ui(new Ui::RegistrationDialog)
 {
     ui->setupUi(this);
-    RegistrationDialog::setAttribute(Qt::WA_DeleteOnClose, true);
     RegistrationDialog::setFixedSize(371,465);
-    RegistrationDialog::setWindowTitle("Registration");
     ui->errorMessage->setStyleSheet("color : red");
-    ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
 }
 
 RegistrationDialog::~RegistrationDialog()
@@ -28,19 +25,26 @@ void RegistrationDialog::on_pushButton_register_clicked()
 {
     resetPalette();
 
-    if(ui->username->text().isEmpty() || ui->password->text().isEmpty() || ui->confirmPassword->text().isEmpty()){
+    QString username = ui->username->text().simplified();
+    QString password = ui->password->text().simplified();
+    QString confirmPassword = ui->confirmPassword->text().simplified();
+
+    QRegularExpression regex("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$");
+    QRegularExpressionMatch match = regex.match(username);
+
+    if(username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
         ui->errorMessage->setText("Fill all the fields");
-        if(ui->password->text().isEmpty())
+        if(password.isEmpty())
             ui->password->setStyleSheet(" border: 1px solid red;");
-        if(ui->confirmPassword->text().isEmpty())
+        if(confirmPassword.isEmpty())
             ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
-        if(ui->username->text().isEmpty())
+        if(username.isEmpty())
             ui->username->setStyleSheet(" border: 1px solid red;");
-    }else if(QString::compare(ui->password->text(), ui->confirmPassword->text(), Qt::CaseInsensitive) != 0){
+    }else if(QString::compare(password,confirmPassword, Qt::CaseInsensitive) != 0){
         ui->password->setStyleSheet(" border: 1px solid red;");
         ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
         ui->errorMessage->setText("The two password MUST be equal");
-    }else if(!ui->username->hasAcceptableInput()){
+    }else if(!match.hasMatch()){
         ui->username->setStyleSheet(" border: 1px solid red;");
         ui->errorMessage->setText("Insert a valid email as username");
     }else{
@@ -59,4 +63,8 @@ void RegistrationDialog::on_pushButton_alreadyAnAccount_clicked()
     ui->errorMessage->clear();
 
     emit alreadyAnAccountButtonClicked();
+}
+
+void RegistrationDialog::onRegistrationFailure(QString errorMessage){
+    ui->errorMessage->setText(errorMessage);
 }
