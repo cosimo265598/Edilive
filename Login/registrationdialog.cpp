@@ -7,7 +7,7 @@ RegistrationDialog::RegistrationDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     RegistrationDialog::setAttribute(Qt::WA_DeleteOnClose, true);
-    RegistrationDialog::setFixedSize(371,465);
+    //RegistrationDialog::setFixedSize(371,465);
     RegistrationDialog::setWindowTitle("Registration");
     ui->errorMessage->setStyleSheet("color : red");
     ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));

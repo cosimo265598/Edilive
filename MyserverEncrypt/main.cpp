@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
     const QString pathSilvia =("/scrivania/ProgettoPds/myservertest/MyserverEncrypt/");
 
     // set your working directory
-    QDir().setCurrent(QDir().homePath()+ "/GIT/myservertest/MyserverEncrypt/");
     if(pathMembro.contains("cosimo"))
         QDir().setCurrent(pathMembro+pathCosimo);
     else if(pathMembro.contains("saverio"))

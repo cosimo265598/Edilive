@@ -14,8 +14,8 @@ HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
 {
     ui->setupUi(this);
     //ui->stackedWidget->setCurrentIndex(0);
-    ui->stackedWidget->addWidget(profilePage);
-    connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
+    //ui->stackedWidget->addWidget(profilePage);
+    //connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
     this->eventFilter = new EventFilterImpl(this);
 
     HomePage::show();
@@ -129,5 +129,5 @@ void HomePage::on_pushButton_aggiorna_vista_clicked()
 
 void HomePage::on_pushButton_profile_page_clicked()
 {
-    ui->stackedWidget->setCurrentIndex(1);
+    //ui->stackedWidget->setCurrentIndex(1);
 }

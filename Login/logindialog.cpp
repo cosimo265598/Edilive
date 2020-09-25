@@ -7,7 +7,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     LoginDialog::setAttribute(Qt::WA_DeleteOnClose, true);
-    LoginDialog::setFixedSize(371,465);
+    //LoginDialog::setFixedSize(500,600);
     LoginDialog::setWindowTitle("Login");
     ui->errorMessage->setStyleSheet("color : red");
     ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
