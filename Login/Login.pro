@@ -29,10 +29,10 @@ SOURCES += \
     homepage.cpp \
     logindialog.cpp \
     main.cpp \
+    mainwindowstacked.cpp \
     profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
-    startupsecondstakeddialog.cpp \
     startupstackeddialog.cpp \
     textedit.cpp \
     user.cpp
@@ -44,10 +44,10 @@ HEADERS += \
     filehandler.h \
     homepage.h \
     logindialog.h \
+    mainwindowstacked.h \
     profileimage.h \
     profilepage.h \
     registrationdialog.h \
-    startupsecondstakeddialog.h \
     startupstackeddialog.h \
     textedit.h \
     user.h
@@ -55,9 +55,9 @@ HEADERS += \
 FORMS += \
     homepage.ui \
     logindialog.ui \
+    mainwindowstacked.ui \
     profilepage.ui \
     registrationdialog.ui \
-    startupsecondstakeddialog.ui \
     startupstackeddialog.ui
 
 # Default rules for deployment.

@@ -30,7 +30,7 @@
 #include "logindialog.h"
 #include "buildermessageclient.h"
 #include "startupstackeddialog.h"
-#include "startupsecondstakeddialog.h"
+#include "mainwindowstacked.h"
 
 enum ClientStatus : quint32
 {
@@ -56,14 +56,15 @@ private slots:
     void on_sign_account_clicked();
     void MessageReceivedFromServer(const QByteArray& message);
     void Registeruser();
-    void StartNewWindows();
+    void createMainWindowStacked();
     void StartEditorText(QString fileeditor);
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
+    void onHomePageStartup();
 
 private:
-    startupsecondstakeddialog *stakedSecondDialog;
+    MainWindowStacked *mainWindowStacked;
     StartupStackedDialog *stackedDialog;
     HomePage *homePage;
     TextEdit *editor;
@@ -76,5 +77,6 @@ private:
 
 signals:
     void loginFailure();
+    void loadFileHandlers(QJsonArray);
 };
 #endif // CLIENT_H

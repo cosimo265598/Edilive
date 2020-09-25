@@ -6,25 +6,14 @@
 
 QT_USE_NAMESPACE
 
-HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
+HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::HomePage),
-    client_socket(socket),
-    profilePage(new ProfilePage(this,client_socket))
+    ui(new Ui::HomePage)
 {
     ui->setupUi(this);
-    //ui->stackedWidget->setCurrentIndex(0);
-    //ui->stackedWidget->addWidget(profilePage);
-    //connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
     this->eventFilter = new EventFilterImpl(this);
 
-    HomePage::show();
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenDir());
-    client_socket->sendBinaryMessage(out);
+    emit homePageStartup();
 }
 
 HomePage::~HomePage()
@@ -46,41 +35,7 @@ void HomePage::onFileHandlerClicked(){
 
 void HomePage::createHomepage(QJsonArray paths){
 
-    // clean the view for future update // da rivedere
-    while(ui->gridLayout->count() ) {
-        QWidget* widget = ui->gridLayout->itemAt(0)->widget();
-        if( widget ) {
-        ui->gridLayout->layout()->removeWidget(widget);
-        delete widget;
-        }
-    }
-    int row = 0;
-    int column = 0;
 
-    for(auto entry: paths){
-        QJsonObject dir = entry.toObject();
-        QString filename = dir["filename"].toString();
-        listfile.append(filename);
-
-
-        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, "./"+dir["filename"].toString(), dir["owner"].toString(), dir["lastModified"].toString(),dir["lastRead"].toString());
-        item->installEventFilter(eventFilter);
-        connect(item, &FileHandler::clicked,[filename,dir,this]()
-                    {ui->infoLabel->setText("File Selected:\t"+filename+"\tOwner: "+
-                                                 dir["owner"].toString()+"\tLast Modified: "+
-                                                 dir["lastModified"].toString()+ "\tSize: "+
-                                                 dir["size"].toString() );   });
-        connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerClicked);
-        ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
-        qDebug()<<row<< " "<<column;
-        column = (++column)%6;
-        if(column==0) row++;
-    }
-}
-
-ProfilePage *HomePage::getProfilePage()
-{
-    return this->profilePage;
 }
 
 void HomePage::openReceivedFile(QByteArray data){
@@ -130,4 +85,39 @@ void HomePage::on_pushButton_aggiorna_vista_clicked()
 void HomePage::on_pushButton_profile_page_clicked()
 {
     //ui->stackedWidget->setCurrentIndex(1);
+}
+
+
+void HomePage::onLoadFileHandlers(QJsonArray paths){
+
+    // clean the view for future update // da rivedere
+    while(ui->gridLayout->count() ) {
+        QWidget* widget = ui->gridLayout->itemAt(0)->widget();
+        if( widget ) {
+        ui->gridLayout->layout()->removeWidget(widget);
+        delete widget;
+        }
+    }
+    int row = 0;
+    int column = 0;
+
+    for(auto entry: paths){
+        QJsonObject dir = entry.toObject();
+        QString filename = dir["filename"].toString();
+        listfile.append(filename);
+
+
+        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, "./"+dir["filename"].toString(), dir["owner"].toString(), dir["lastModified"].toString(),dir["lastRead"].toString());
+        item->installEventFilter(eventFilter);
+        connect(item, &FileHandler::clicked,[filename,dir,this]()
+                    {ui->infoLabel->setText("File Selected:\t"+filename+"\tOwner: "+
+                                                 dir["owner"].toString()+"\tLast Modified: "+
+                                                 dir["lastModified"].toString()+ "\tSize: "+
+                                                 dir["size"].toString() );   });
+        connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerClicked);
+        ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
+        qDebug()<<row<< " "<<column;
+        column = (++column)%6;
+        if(column==0) row++;
+    }
 }
