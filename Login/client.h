@@ -30,6 +30,7 @@
 #include "logindialog.h"
 #include "buildermessageclient.h"
 #include "startupstackeddialog.h"
+#include "startupsecondstakeddialog.h"
 
 enum ClientStatus : quint32
 {
@@ -62,6 +63,7 @@ private slots:
     void onConnectionFailure();
 
 private:
+    startupsecondstakeddialog *stakedSecondDialog;
     StartupStackedDialog *stackedDialog;
     HomePage *homePage;
     TextEdit *editor;

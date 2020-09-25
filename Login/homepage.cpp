@@ -13,6 +13,7 @@ HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
     profilePage(new ProfilePage(this,client_socket))
 {
     ui->setupUi(this);
+    //ui->stackedWidget->setCurrentIndex(0);
     ui->stackedWidget->addWidget(profilePage);
     connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
     this->eventFilter = new EventFilterImpl(this);

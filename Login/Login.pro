@@ -32,6 +32,7 @@ SOURCES += \
     profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
+    startupsecondstakeddialog.cpp \
     startupstackeddialog.cpp \
     textedit.cpp \
     user.cpp
@@ -46,6 +47,7 @@ HEADERS += \
     profileimage.h \
     profilepage.h \
     registrationdialog.h \
+    startupsecondstakeddialog.h \
     startupstackeddialog.h \
     textedit.h \
     user.h
@@ -55,6 +57,7 @@ FORMS += \
     logindialog.ui \
     profilepage.ui \
     registrationdialog.ui \
+    startupsecondstakeddialog.ui \
     startupstackeddialog.ui
 
 # Default rules for deployment.

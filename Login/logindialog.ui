@@ -71,6 +71,9 @@
        <height>25</height>
       </rect>
      </property>
+     <property name="text">
+      <string>ciao</string>
+     </property>
     </widget>
     <widget class="QLineEdit" name="username">
      <property name="geometry">
@@ -80,6 +83,9 @@
        <width>331</width>
        <height>25</height>
       </rect>
+     </property>
+     <property name="text">
+      <string>ciao</string>
      </property>
     </widget>
     <widget class="QPushButton" name="login">

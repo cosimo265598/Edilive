@@ -95,15 +95,14 @@ void Client::Registeruser()
 
 void Client::StartNewWindows()
 {
-    /*
-    secondWindows = new ClientFilesystem(this,m_webSocket.get());
-    MainWindow::hide();
-    secondWindows->setWindowTitle(tr("Esplora File"));
-    secondWindows->setMinimumSize(QSize(800, 400));
-    secondWindows->setAttribute(Qt::WA_DeleteOnClose);
-    //secondWindows->setWindowFlags(Qt::Popup);
-    secondWindows->show();
-    */
+
+    qDebug()<<"stakedSecondDialog method";
+    this->stakedSecondDialog=nullptr;
+    qDebug()<<"null pointer";
+    this->stakedSecondDialog = new startupsecondstakeddialog();
+    qDebug()<<"stakedSecondDialog method show";
+    stakedSecondDialog->show();
+
 }
 
 void Client::StartEditorText(QString fileeditor)
@@ -163,11 +162,11 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         case 4:{    // message unlock login
                 qDebug() << "Successfull login";
                 this->stackedDialog->close();
-                delete this->user;
-                this->user = nullptr;
                 this->clientStatus = LoggedIn;
-                this->homePage = new HomePage(m_webSocket.get());
-
+                //this->homePage = new HomePage(m_webSocket.get());
+                this->stakedSecondDialog = new startupsecondstakeddialog();
+                qDebug()<<"created";
+                this->stakedSecondDialog->show();
                 break;
         }
         case 5:{    // message  login error
@@ -186,6 +185,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             //QMessageBox::critical(this, tr("Account Status"),"Account create error: "+jsonObj["error"].toString(),QMessageBox::Ok);
         }break;
         case 10:{    // show dir/document for client
+            //this->stakedSecondDialog.get()
             this->homePage->createHomepage(jsonObj["files"].toArray());
         }break;
         case 13:{    // file gia presente
