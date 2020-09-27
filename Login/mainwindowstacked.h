@@ -5,6 +5,8 @@
 #include <homepage.h>
 #include <profilepage.h>
 
+#include "subscriber.h"
+
 namespace Ui {
 class MainWindowStacked;
 }
@@ -25,8 +27,9 @@ private:
 public slots:
 
 signals:
-    void loadFileHandlers(QJsonArray);
+    void receivedFileHandlers(QJsonArray);
     void fileHandlerClicked(QString fileName);
+    void loadSubscriberInfo(QString username, QString nickname);
 };
 
 #endif // MAINWINDOWSTACKED_H

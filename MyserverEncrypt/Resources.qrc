@@ -2,6 +2,8 @@
     <qresource prefix="/">
         <file>localhost.cert</file>
         <file>localhost.key</file>
+        <file>images/default.jpg</file>
+        <file>images/logo32.png</file>
     </qresource>
     <qresource prefix="/Users"/>
 </RCC>

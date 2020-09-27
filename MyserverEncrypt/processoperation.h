@@ -72,7 +72,7 @@ signals:
     void  loginRequest(QWebSocket* clientSocket, QString username);
     void  loginUnlock(QWebSocket* clientSocket, QString token);
 
-    void  accountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    void  accountCreate(QWebSocket* clientSocket, QString username, QString password);
     //void  accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
     void  SimpleMessage(QWebSocket* clientSocket, QString mess);
 

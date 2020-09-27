@@ -18,8 +18,10 @@
 #include <QToolButton>
 #include <QMessageBox>
 #include <QInputDialog>
+
 #include "filehandler.h"
 #include "eventfilterimpl.h"
+#include "subscriber.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
@@ -45,12 +47,14 @@ private Q_SLOTS:
     void on_pushButton_profile_page_clicked();
 
 public Q_SLOTS:
-     void onLoadFileHandlers(QJsonArray);
+     void onReceivedFileHandlers(QJsonArray);
+     void onLoadSubscriberInfo(QString username, QString nickname);
 
 private:
     Ui::HomePage *ui;
     QWebSocket *client_socket;
     EventFilterImpl *eventFilter;
+
     QStringList listfile;
 
 signals:

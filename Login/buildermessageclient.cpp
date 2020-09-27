@@ -114,7 +114,7 @@ QJsonDocument BuilderMessageClient::MessageOpenFile(QString nomefile)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageOpenProfilePage()
+QJsonDocument BuilderMessageClient::MessageSubscriberInfoRequest()
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;

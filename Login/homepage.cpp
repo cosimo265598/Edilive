@@ -75,7 +75,7 @@ void HomePage::on_pushButton_profile_page_clicked()
 }
 
 
-void HomePage::onLoadFileHandlers(QJsonArray paths){
+void HomePage::onReceivedFileHandlers(QJsonArray paths){
 
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
@@ -107,4 +107,8 @@ void HomePage::onLoadFileHandlers(QJsonArray paths){
         column = (++column)%6;
         if(column==0) row++;
     }
+}
+
+void HomePage::onLoadSubscriberInfo(QString username, QString nickname){
+
 }

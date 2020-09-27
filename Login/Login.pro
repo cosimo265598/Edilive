@@ -35,6 +35,7 @@ SOURCES += \
     profilepage.cpp \
     registrationdialog.cpp \
     startupstackeddialog.cpp \
+    subscriber.cpp \
     textedit.cpp \
     user.cpp
 
@@ -51,6 +52,7 @@ HEADERS += \
     profilepage.h \
     registrationdialog.h \
     startupstackeddialog.h \
+    subscriber.h \
     textedit.h \
     user.h
 

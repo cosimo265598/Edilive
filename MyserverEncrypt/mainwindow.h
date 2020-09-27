@@ -57,7 +57,7 @@ public slots:
     void SimpleTextMessageTest();
     void serverLoginRequest(QWebSocket* clientSocket, QString username);
     void serverLoginUnlock(QWebSocket* clientSocket, QString token);
-    void serverAccountCreate(QWebSocket* clientSocket, QString username, QString nickname, QImage icon, QString password);
+    void serverAccountCreate(QWebSocket* clientSocket, QString username, QString password);
     void serverErrorConnection(QWebSocketProtocol::CloseCode closeCode);
     void socketAbort(QWebSocket* clientSocket);
     /* FILE */

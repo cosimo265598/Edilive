@@ -18,10 +18,12 @@ ProfilePage::ProfilePage(QWidget *parent,QWebSocket* client_socket) :
     mod=setModify(false);
     // make a query for retrive personal data
     QByteArray out;
+    /*
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageOpenProfilePage());
     client_socket->sendBinaryMessage(out);
+    */
 
 }
 

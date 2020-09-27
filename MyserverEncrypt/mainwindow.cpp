@@ -266,7 +266,7 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     else {
         // send message utente non registrato
         ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
-        stream << BuilderMessage::MessageLoginError("Client not registered.");
+        stream << BuilderMessage::MessageLoginError("Username not found");
         clientSocket->sendBinaryMessage(data);
     }
 }
@@ -279,11 +279,7 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
     QDataStream stream (&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_14);
 
-    if (client->isLogged()){
-        stream << BuilderMessage::MessageLoginError("You have to loggin before use the platform");
-        clientSocket->sendBinaryMessage(data);
-        return ;
-    }else if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
+    if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
         ui->commet->appendPlainText( "User " + client->getUsername() + " is logged in");
         client->login(client->getUser());
         stream << BuilderMessage::MessageChallegePassed(QString());
@@ -297,7 +293,7 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
     }
 }
 
-void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username, QString nickname, QImage icon, QString password)
+void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username, QString password)
 {
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;
@@ -331,21 +327,24 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check whitespaces */
+    /*
+    // check whitespaces
     if (!QRegExp("^[^\\s]+$").exactMatch(username)){
         stream << BuilderMessage::MessageAccountError("Username mut not be only whitespaces");
         clientSocket->sendBinaryMessage(data);
         return;
     }
+    */
     // no check on image because are used for the firts time default settings
 
     ui->commet->appendPlainText("Creating new user account "+username);
-
-    UserData user(username, userId++, nickname, password, icon);		/* create a new user		*/
+    QString nick("nick_");
+    userId++;
+    nick.append(userId);
+    UserData user(username, userId, nick, password, QImage(":/images/default.jpg"));		/* create a new user		*/
     users.insert(username, user);               /* insert new user in map	*/
-
-    client->login(&users[username]);			// client is automatically logged in as the new user
-
+    qDebug() << users[username].getNickname();
+    /*
     try
     {	// Add the new user record to the server database
         database.insertUser(user);
@@ -366,6 +365,7 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
         clientSocket->sendBinaryMessage(data);
         return;
     }
+    */
     stream << BuilderMessage::MessageAccountConfirmed("Account Created Correctly");
     clientSocket->sendBinaryMessage(data);
     return;
@@ -462,13 +462,10 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     QDataStream stream (&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_14);
 
-    //debug invio immagine di prova
-    QImage img(QDir().currentPath()+"/logo32.png");
-
-    stream<< BuilderMessage::MessageProfileData(
+    stream<< BuilderMessage::MessageAccountInfo(
                  users[client->getUsername()].getUsername(),
                  users[client->getUsername()].getNickname(),
-                 /*users[client->getUsername()].getIcon()*/img);
+                 users[client->getUsername()].getIcon());
 
     clientSocket->sendBinaryMessage(data);
     qDebug()<<data;

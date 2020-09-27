@@ -8,6 +8,7 @@ Client::Client(QObject *parent) :
     reconnectionRetries(3),
     user(nullptr),
     waitingTimer(new QTimer(this)),
+    subscriber(nullptr),
     clientStatus(Startup)
 {
     this->waitingTimer->setInterval(20000);
@@ -27,8 +28,6 @@ Client::Client(QObject *parent) :
     connect(this, &Client::registrationFailure, stackedDialog, &StartupStackedDialog::onRegistrationFailure);
     connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
 
-    //connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
-
     stackedDialog->show();
 }
 
@@ -40,10 +39,10 @@ void Client::onLoginRequest(QString username, QString password){
 
     user = new User(username, password);
     this->clientStatus = LoginRequest;
-    waitingTimer->start();
+    //waitingTimer->start();
 
-    waitingDialog.setText("Connection to the server...");
-    waitingDialog.exec();
+    //waitingDialog.setText("Connection to the server...");
+    //waitingDialog.exec();
     m_webSocket.get()->open(this->urlForConnection);
 }
 
@@ -51,9 +50,9 @@ void Client::onRegistrationRequest(QString username, QString password){
      user = new User(username, password);
      this->clientStatus = RegistrationRequest;
 
-     waitingDialog.setText("Connection to the server...");
-     waitingDialog.exec();
-     waitingTimer->start();
+     //waitingDialog.setText("Connection to the server...");
+     //waitingDialog.exec();
+     //waitingTimer->start();
      m_webSocket.get()->open(this->urlForConnection);
 }
 
@@ -92,7 +91,7 @@ void Client::onDisconnection(){
         }
         case RegistrationRequest: {
             waitingDialog.close();
-            emit loginFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
+            //emit loginFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
             break;
         }
         case Connected: {
@@ -114,71 +113,52 @@ void Client::onSslErrors(const QList<QSslError> &errors)
     m_webSocket.get()->ignoreSslErrors();
 }
 
-void Client::on_sign_account_clicked()
-{
-    /*
-    // check consistenza password
-    if (ui->psw->text().compare(ui->confpsw->text()) || ui->user->text().isEmpty()){
-        QMessageBox::critical(this, tr("Mandatory data"),tr("Password and confirm password must be ugual.\nUsername can not be empty.\n"),QMessageBox::Ok);
-        return;
-    }
-    connect(m_webSocket.get(), &QWebSocket::connected, this, &MainWindow::Registeruser);
-    m_webSocket.get()->open(this->urlForConnection);
-    */
-
-}
-void Client::Registeruser()
-{
-    /*
-    ui->status->setText("Status: Connected...");
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                            out,
-                            BuilderMessageClient::MessageRegisterAccount(
-                                              ui->user->text(),
-                                              ui->psw->text(),
-                                              QString(),
-                                              QImage()));
-    m_webSocket.get()->sendBinaryMessage(out);
-    */
-}
-
-
 void Client::createMainWindowStacked()
 {
     this->mainWindowStacked = new MainWindowStacked();
 
     //connections MainWindowStacked
-    connect(this, &Client::loadFileHandlers, mainWindowStacked, &MainWindowStacked::loadFileHandlers);
+    connect(this, &Client::receivedFileHandlers, mainWindowStacked, &MainWindowStacked::receivedFileHandlers);
     connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
+    connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
+
+    subscriberInfoRequest();
+    fileHandlersRequest();
+    this->mainWindowStacked->show();
+}
+
+void Client::subscriberInfoRequest(){
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageSubscriberInfoRequest());
+     m_webSocket.get()->sendBinaryMessage(out);
+}
+
+
+void Client::fileHandlersRequest(){
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageOpenDir());
      m_webSocket.get()->sendBinaryMessage(out);
-
-    this->mainWindowStacked->show();
 }
 
-
-void Client::StartEditorText(QString fileeditor)
+void Client::startTextEditor(QString fileName)
 {
-    /*
-    editor= new TextEdit(secondWindows);
-    QCoreApplication::setApplicationName("CoopEditorText");
-    editor->setAttribute(Qt::WA_DeleteOnClose);
+    textEditor= new TextEdit();
+    QCoreApplication::setApplicationName("textEditor");
+    textEditor->setAttribute(Qt::WA_DeleteOnClose);
 
-    const QRect availableGeometry = editor->screen()->availableGeometry();
-    editor->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    editor->move((availableGeometry.width() - editor->width()) / 2,
-            (availableGeometry.height() - editor->height()) / 2);
+    const QRect availableGeometry = textEditor->screen()->availableGeometry();
+    textEditor->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    textEditor->move((availableGeometry.width() - textEditor->width()) / 2,
+            (availableGeometry.height() - textEditor->height()) / 2);
 
-    if (!editor->load(fileeditor))
-        editor->fileNew();
+    if (!textEditor->load(fileName))
+        textEditor->fileNew();
 
-    editor->show();
-    */
+    textEditor->show();
 }
 
 
@@ -186,6 +166,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 {
     QDataStream stream(message);
     stream.setVersion(QDataStream::Qt_5_14);
+    QByteArray out;
     QJsonDocument jsonDoc;
 
     stream >> jsonDoc;
@@ -219,7 +200,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         case 4:{    // message unlock login
                 qDebug() << "Successfull login";
                 this->stackedDialog->close();
-                this->clientStatus = LoggedIn;
+                //this->clientStatus = LoggedIn;
                 Client::createMainWindowStacked();
                 qDebug()<<"created";
                 break;
@@ -231,33 +212,27 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 break;
         }
         case 8:{    // message account confimed
-        /*
                 qDebug() << "Account created";
+                //this->clientStatus = Connected;
+
+                // Automatic login after correct registration
                 this->stackedDialog->close();
-                this->clientStatus = Connected;
-                this->homePage = new HomePage(m_webSocket.get());
+                Client::createMainWindowStacked();
                 break;
         }
-           // QMessageBox::information(this, tr("Account Status"),tr("Account Cretated\n"),QMessageBox::Ok);
-                qDebug() << "Account Status";
-                //this->loginDialog->close();
-                //this->homePage = new HomePage(m_webSocket.get());
-                */
-        }break;
         case 9:{    // message account create error
             qDebug() << "Account creation failure";
             emit registrationFailure(jsonObj["error"].toString());
             break;
         }
         case 10:{    // show dir/document for client
-            emit loadFileHandlers(jsonObj["files"].toArray());
+            emit receivedFileHandlers(jsonObj["files"].toArray());
             break;
         }
         case 13:{    // file gia presente
             //QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
             qDebug() << "Errore nella creazione del file";
     }break;
-        //TODO create text editor component!
         case 11:{    // file in arrivo
             QString fileName = jsonObj["fileName"].toString();
             qDebug()<<"file in arrivo"<< fileName;
@@ -270,14 +245,18 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 file.close();
                 //QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
                 // Aperura editor per l'editing del file
-                StartEditorText(QDir().tempPath()+"/"+ fileName);
+                this->startTextEditor(QDir().tempPath()+"/"+ fileName);
             }else
                 return;
-        }break;
+
+            break;
+        }
         case 17:{
             qDebug()<<jsonObj;
-            //this->homePage->getProfilePage()->viewDataOfClient(jsonObj);
-        }break;
+            saveAccountImage(jsonObj["username"].toString().toUtf8());
+            emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString());
+            break;
+        }
 
         default:         return;
     }
@@ -309,4 +288,26 @@ void Client::onFileHandlerClicked(QString fileName){
                 out,
                 BuilderMessageClient::MessageOpenFile(fileName));
     m_webSocket.get()->sendBinaryMessage(out);
+}
+
+void Client::saveAccountImage(QByteArray serializedImage){
+
+    QImage image;
+    if (image.loadFromData(serializedImage, "JPG")){
+        qDebug()<<"Image was loaded";
+    }else{
+        qDebug()<<"Image was not loaded";
+    }
+
+    if(QFile::exists(":/images/default.jpg"))
+        QFile::remove(":/images/default.jpg");
+
+    QFile file(":/images/default.jpg");
+    if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        image.save(&file, "JPG");
+    }
+    else {
+        qDebug() << "Can't open file";
+    }
+    file.close();
 }
