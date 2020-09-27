@@ -54,6 +54,7 @@ private:
     QStringList listfile;
 
 signals:
+    void fileHandlerClicked(QString fileName);
 
 };
 

@@ -14,7 +14,9 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     //ui->stackedWidget->addWidget(&profile_client);
     ui->stackedWidget->setCurrentIndex(0);
 
+    //connections homePage
     connect(this, &MainWindowStacked::loadFileHandlers, &homePage, &HomePage::onLoadFileHandlers);
+    connect(&homePage, &HomePage::fileHandlerClicked, this, &MainWindowStacked::fileHandlerClicked);
 }
 
 MainWindowStacked::~MainWindowStacked()

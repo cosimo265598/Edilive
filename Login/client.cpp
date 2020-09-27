@@ -99,7 +99,7 @@ void Client::createMainWindowStacked()
 
     //connections MainWindowStacked
     connect(this, &Client::loadFileHandlers, mainWindowStacked, &MainWindowStacked::loadFileHandlers);
-
+    connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -195,6 +195,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             //QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
             qDebug() << "Errore nella creazione del file";
     }break;
+        //TODO create text editor component!
         case 11:{    // file in arrivo
             QString fileName = jsonObj["fileName"].toString();
             qDebug()<<"file in arrivo"<< fileName;
@@ -241,5 +242,13 @@ void Client::onConnectionFailure(){
         //this->secondWindows->hide();
         //MainWindow::show();
     }
+}
 
+void Client::onFileHandlerClicked(QString fileName){
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageOpenFile(fileName));
+    m_webSocket.get()->sendBinaryMessage(out);
 }

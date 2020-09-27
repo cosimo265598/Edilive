@@ -26,6 +26,7 @@ public slots:
 
 signals:
     void loadFileHandlers(QJsonArray);
+    void fileHandlerClicked(QString fileName);
 };
 
 #endif // MAINWINDOWSTACKED_H

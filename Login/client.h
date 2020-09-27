@@ -61,6 +61,7 @@ private slots:
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
+    void onFileHandlerClicked(QString fileName);
 
 private:
     MainWindowStacked *mainWindowStacked;

@@ -21,14 +21,8 @@ HomePage::~HomePage()
 }
 
 void HomePage::onFileHandlerClicked(){
-    QString nomefile = dynamic_cast<FileHandler *>(QObject::sender())->getFilename();
 
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenFile(nomefile));
-    client_socket->sendBinaryMessage(out);
-
+    emit fileHandlerClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
 }
 
 void HomePage::openReceivedFile(QByteArray data){
