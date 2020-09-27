@@ -32,5 +32,6 @@ reparir same problem
 add directory for each new use , 
 show e file as a example on starup
 
-MANISI COSIMO 
+Collaborator
+MANISI COSIMO, MASSANO SAVERIO, SILVIA FOIS
 

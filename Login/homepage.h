@@ -20,7 +20,6 @@
 #include <QInputDialog>
 #include "filehandler.h"
 #include "eventfilterimpl.h"
-#include "profilepage.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
@@ -35,11 +34,9 @@ class HomePage : public QMainWindow
     Q_OBJECT
 
 public:
-    HomePage(QWebSocket *socket = nullptr, QWidget *parent = nullptr);
+    HomePage(QWidget *parent = nullptr);
     ~HomePage();
     void openReceivedFile(QByteArray data);
-    void createHomepage(QJsonArray json);
-    ProfilePage *getProfilePage();
 
 private Q_SLOTS:
     void onFileHandlerClicked();
@@ -47,12 +44,17 @@ private Q_SLOTS:
     void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
 
+public Q_SLOTS:
+     void onLoadFileHandlers(QJsonArray);
+
 private:
     Ui::HomePage *ui;
     QWebSocket *client_socket;
     EventFilterImpl *eventFilter;
     QStringList listfile;
-    ProfilePage *profilePage;
+
+signals:
+    void fileHandlerClicked(QString fileName);
 
 };
 

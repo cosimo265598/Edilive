@@ -30,6 +30,7 @@ SOURCES += \
     homepage.cpp \
     logindialog.cpp \
     main.cpp \
+    mainwindowstacked.cpp \
     profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
@@ -45,6 +46,7 @@ HEADERS += \
     filehandler.h \
     homepage.h \
     logindialog.h \
+    mainwindowstacked.h \
     profileimage.h \
     profilepage.h \
     registrationdialog.h \
@@ -56,6 +58,7 @@ FORMS += \
     connectionwaitingdialog.ui \
     homepage.ui \
     logindialog.ui \
+    mainwindowstacked.ui \
     profilepage.ui \
     registrationdialog.ui \
     startupstackeddialog.ui

@@ -6,11 +6,22 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     // set your working directory
-    const QString pathSaverio = QDir().homePath()+ "/QtProjects/pds-project/myservertest/MyserverEncrypt/";
-    const QString pathCosimo = QDir().homePath()+ "/GIT/myservertest/MyserverEncrypt/";
-    const QString pathSilvia = QDir().homePath()+ "/GIT/myservertest/MyserverEncrypt/"; // CAMBIA CON IL TUO PATH
+    QString pathMembro=QDir().homePath();
 
-    QDir().setCurrent(pathSaverio);
+    const QString pathSaverio("/QtProjects/pds-project/myservertest/MyserverEncrypt/");
+    const QString pathCosimo("/GIT/myservertest/MyserverEncrypt/");
+    const QString pathSilvia =("/scrivania/ProgettoPds/myservertest/MyserverEncrypt/");
+
+    // set your working directory
+    if(pathMembro.contains("cosimo"))
+        QDir().setCurrent(pathMembro+pathCosimo);
+    else if(pathMembro.contains("saverio"))
+        QDir().setCurrent(pathMembro+pathSaverio);
+    else if(pathMembro.contains("silvia"))// silvia
+        QDir().setCurrent(pathMembro+pathSilvia);
+    else
+        QCoreApplication::exit(-1);
+
     MainWindow w;
     w.show();
     w.prepareToStart();

@@ -31,6 +31,7 @@
 #include "buildermessageclient.h"
 #include "startupstackeddialog.h"
 #include "connectionwaitingdialog.h"
+#include "mainwindowstacked.h"
 
 enum ClientStatus : quint32
 {
@@ -56,13 +57,16 @@ private slots:
     void onConnected();
     void onSslErrors(const QList<QSslError> &errors);
     void MessageReceivedFromServer(const QByteArray& message);
-    void StartNewWindows();
+    void Registeruser();
+    void createMainWindowStacked();
     void StartEditorText(QString fileeditor);
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
+    void onFileHandlerClicked(QString fileName);
 
 private:
+    MainWindowStacked *mainWindowStacked;
     StartupStackedDialog *stackedDialog;
     HomePage *homePage;
     TextEdit *editor;
@@ -75,7 +79,8 @@ private:
     ConnectionWaitingDialog waitingDialog;
 
 signals:
-    void loginFailure(QString errorMessage);
     void registrationFailure(QString errorMessage);
+    void loginFailure();
+    void loadFileHandlers(QJsonArray);
 };
 #endif // CLIENT_H

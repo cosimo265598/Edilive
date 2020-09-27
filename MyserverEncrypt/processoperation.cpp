@@ -4,11 +4,13 @@
 #include <QObject>
 #include <memory>
 
+ProcessOperation* ProcessOperation::instance;
+std::once_flag    ProcessOperation::inited;
 
 ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
 {
-    //aggancio il segnale login request della classe process operation a quella presente nel server
-    // signal - slot for login method
+    // signal - slot for login method- registration and first phase untill the text edit
+
     connect(this,&ProcessOperation::loginRequest,
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::serverLoginRequest,Qt::DirectConnection);
@@ -16,7 +18,6 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::serverLoginUnlock,Qt::DirectConnection);
     /*
-     *
      *  Account method */
 
     connect(this,&ProcessOperation::accountCreate,
@@ -24,7 +25,6 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
             &MainWindow::serverAccountCreate,Qt::DirectConnection);
 
     /*
-     *
      *  test message method */
 
     connect(this,&ProcessOperation::SimpleMessage,
@@ -52,6 +52,7 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
 
 
 }
+
 
 void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject& data)
 {
@@ -107,7 +108,7 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
 }
 
 
-QString ProcessOperation::typeOp(TypeOperation type){
+QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
     switch (type)
         {
             case TypeOperation::LoginRequest:			return "LoginRequest";
@@ -119,10 +120,18 @@ QString ProcessOperation::typeOp(TypeOperation type){
             case TypeOperation::AccountUpdate:          return "AccountUpdate";
             case TypeOperation::AccountConfirmed:		return "AccountConfirmed";
             case TypeOperation::AccountError:			return "AccountError";
-            case TypeOperation::Logout:                 return "Logout";
             case TypeOperation::Simplemessage:          return "Simplemessage";
             case TypeOperation::OpenDirectory:          return "OpenDirecory";
+            case TypeOperation::OpenFile:               return "OpenFile";
+            case TypeOperation::CreateFile:             return "CreateFile";
+            case TypeOperation::ErrorFile:              return "ErrorFile";
+            case TypeOperation::Logout:                 return "Logout";
+            case TypeOperation::Failure:                return "Failure";
+            case TypeOperation::ProfileData:            return "ProfileData";
+            // add other case below
             default:                                    return QString();
         }
 }
-ProcessOperation::~ProcessOperation() { }
+ProcessOperation::~ProcessOperation() {
+    qDebug()<<"distructor process operation called";
+}

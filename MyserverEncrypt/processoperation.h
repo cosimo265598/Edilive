@@ -9,6 +9,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QImage>
+#include <mutex>
+#include <iostream>
 
 enum TypeOperation : quint16
 {
@@ -39,6 +41,7 @@ enum TypeOperation : quint16
 
     // personal image
     ProfileData
+    // add other enum below, and do not change the order of list
 
 };
 
@@ -47,10 +50,20 @@ class ProcessOperation: public QObject
     Q_OBJECT
 private:
     TypeOperation tipo;
+    static ProcessOperation *instance;
+    static std::once_flag    inited;
+
+    ProcessOperation(QObject *parent);
 
 public:
-    ProcessOperation(QObject *parent );
-    QString typeOp(TypeOperation type);
+    static ProcessOperation *getInstance (QObject *parent) {
+      std::call_once(inited, [&] () {
+          instance = new ProcessOperation(parent);
+        });
+      return instance;
+    }
+
+    QString checkTypeOperationGranted(TypeOperation type);
     void process(TypeOperation message, QWebSocket* socket, QJsonObject& data);
     ~ProcessOperation();
 

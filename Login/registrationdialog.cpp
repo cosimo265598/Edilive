@@ -6,7 +6,13 @@ RegistrationDialog::RegistrationDialog(QWidget *parent) :
     ui(new Ui::RegistrationDialog)
 {
     ui->setupUi(this);
+<<<<<<< HEAD
     RegistrationDialog::setFixedSize(371,465);
+=======
+    RegistrationDialog::setAttribute(Qt::WA_DeleteOnClose, true);
+    //RegistrationDialog::setFixedSize(371,465);
+    RegistrationDialog::setWindowTitle("Registration");
+>>>>>>> StackedDialogTest
     ui->errorMessage->setStyleSheet("color : red");
 }
 
