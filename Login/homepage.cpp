@@ -12,8 +12,6 @@ HomePage::HomePage(QWidget *parent) :
 {
     ui->setupUi(this);
     this->eventFilter = new EventFilterImpl(this);
-
-    emit homePageStartup();
 }
 
 HomePage::~HomePage()
@@ -30,11 +28,6 @@ void HomePage::onFileHandlerClicked(){
                 out,
                 BuilderMessageClient::MessageOpenFile(nomefile));
     client_socket->sendBinaryMessage(out);
-
-}
-
-void HomePage::createHomepage(QJsonArray paths){
-
 
 }
 

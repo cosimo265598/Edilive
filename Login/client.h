@@ -61,7 +61,6 @@ private slots:
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
-    void onHomePageStartup();
 
 private:
     MainWindowStacked *mainWindowStacked;

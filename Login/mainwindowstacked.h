@@ -25,7 +25,6 @@ private:
 public slots:
 
 signals:
-    void homePageStartup();
     void loadFileHandlers(QJsonArray);
 };
 

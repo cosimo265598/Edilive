@@ -98,8 +98,13 @@ void Client::createMainWindowStacked()
     this->mainWindowStacked = new MainWindowStacked();
 
     //connections MainWindowStacked
-    connect(mainWindowStacked, &MainWindowStacked::homePageStartup, this, &Client::onHomePageStartup);
     connect(this, &Client::loadFileHandlers, mainWindowStacked, &MainWindowStacked::loadFileHandlers);
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageOpenDir());
+     m_webSocket.get()->sendBinaryMessage(out);
 
     this->mainWindowStacked->show();
 }
@@ -237,12 +242,4 @@ void Client::onConnectionFailure(){
         //MainWindow::show();
     }
 
-}
-void Client::onHomePageStartup(){
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenDir());
-     m_webSocket.get()->sendBinaryMessage(out);
 }

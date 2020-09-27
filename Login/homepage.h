@@ -37,7 +37,6 @@ public:
     HomePage(QWidget *parent = nullptr);
     ~HomePage();
     void openReceivedFile(QByteArray data);
-    void createHomepage(QJsonArray json);
 
 private Q_SLOTS:
     void onFileHandlerClicked();
@@ -55,7 +54,6 @@ private:
     QStringList listfile;
 
 signals:
-    void homePageStartup();
 
 };
 
