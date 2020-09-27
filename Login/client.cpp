@@ -231,6 +231,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 break;
         }
         case 8:{    // message account confimed
+        /*
                 qDebug() << "Account created";
                 this->stackedDialog->close();
                 this->clientStatus = Connected;
