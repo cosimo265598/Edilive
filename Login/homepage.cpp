@@ -10,10 +10,10 @@ QT_USE_NAMESPACE
 HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::HomePage),
-    pixmap(new QPixmap())
+    pixmap(new QPixmap()),
+    eventFilter(new EventFilterImpl(this))
 {
     ui->setupUi(this);
-    this->eventFilter = new EventFilterImpl(this);
 }
 
 HomePage::~HomePage()
@@ -28,6 +28,7 @@ void HomePage::onFileHandlerClicked(){
     emit fileHandlerClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
 }
 
+//??????
 void HomePage::openReceivedFile(QByteArray data){
     QString nomeuser="cosimo";
     QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
@@ -49,32 +50,31 @@ void HomePage::on_pushButton_new_file_clicked()
     int ret = diag.exec();
 
     if (ret == QDialog::Accepted){
-         QString filename=diag.textValue();
-         if(filename.isEmpty() || filename.isNull()){
-             QMessageBox::warning(this,tr("Errore creazione file"),
+         QString fileName=diag.textValue();
+         if(fileName.isEmpty() || fileName.isNull()){
+             QMessageBox::warning(this,tr("WARNING"),
                         tr("Il nome del file non è valido.\n"));
              return;
          }
-         QByteArray out;
-         BuilderMessageClient::MessageSendToServer(
-                     out,
-                     BuilderMessageClient::MessageCreateNewFile(filename));
-         client_socket->sendBinaryMessage(out);
+
+         emit createNewFileRequest(fileName);
     }
 }
 
 void HomePage::on_pushButton_aggiorna_vista_clicked()
 {
+    /*
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageOpenDir());
     client_socket->sendBinaryMessage(out);
+    */
 }
 
 void HomePage::on_pushButton_profile_page_clicked()
 {
-    //ui->stackedWidget->setCurrentIndex(1);
+    emit updateAccountClicked();
 }
 
 
@@ -112,16 +112,29 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
     }
 }
 
-void HomePage::onLoadSubscriberInfo(QString username, QString nickname){
+void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
     ui->username->setText(username);
+    //this->pixmap->loadFromData(serializedImage);
+    //ui->accountImage->setPixmap(*pixmap);
     loadImage();
 }
 
 void HomePage::loadImage(){
+
     QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
     QFile file(path);
     file.open(QIODevice::ReadOnly);
-
     this->pixmap->loadFromData(file.readAll());
     ui->accountImage->setPixmap(*pixmap);
+    file.close();
+
+}
+
+void HomePage::onNewFileCreationFailure(QString errorMessage){
+    QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
+}
+
+void HomePage::on_pushButton_Logout_clicked()
+{
+////TODO
 }

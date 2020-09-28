@@ -18,7 +18,7 @@ public:
     static QJsonDocument MessageAccountConfirmed(QString data);
 
     static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles);
-    static QJsonDocument MessageFileClientError(QString error);
+    static QJsonDocument MessageFileCreationError(QString error);
     static QJsonDocument MessageHeaderFile(QString data);
 
     static QJsonDocument MessageAccountInfo(QString username,QString nickname,QImage icon);

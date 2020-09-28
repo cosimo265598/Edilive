@@ -27,10 +27,16 @@ private slots:
     void on_buttonBox_ok_cancel_rejected();
     void on_pushButton_returnToHome_clicked();
 
+public slots:
+    void onLoadSubscriberInfo(QString username, QString nickname);
+
 private:
     Ui::ProfilePage *ui;
     QWebSocket* client_socket;
     bool mod;
+    QPixmap *pixmap;
+
+    void loadImage();
 
 signals:
     void returnToHome();

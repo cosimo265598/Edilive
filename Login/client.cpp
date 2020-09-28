@@ -121,6 +121,8 @@ void Client::createMainWindowStacked()
     connect(this, &Client::receivedFileHandlers, mainWindowStacked, &MainWindowStacked::receivedFileHandlers);
     connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
     connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
+    connect(mainWindowStacked, &MainWindowStacked::createNewFileRequest, this, &Client::onCreateNewFileRequest);
+    connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -232,7 +234,9 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         case 13:{    // file gia presente
             //QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
             qDebug() << "Errore nella creazione del file";
-    }break;
+            emit newFileCreationFailure(jsonObj["error"].toString());
+            break;
+        }
         case 11:{    // file in arrivo
             QString fileName = jsonObj["fileName"].toString();
             qDebug()<<"file in arrivo"<< fileName;
@@ -253,8 +257,8 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         }
         case 17:{
             qDebug()<<jsonObj;
-            saveAccountImage(jsonObj["icon"].toString());
-            emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString());
+            QByteArray serializedImage = saveAccountImage(jsonObj["icon"].toString());
+            emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString(), serializedImage);
             break;
         }
 
@@ -290,7 +294,7 @@ void Client::onFileHandlerClicked(QString fileName){
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
-void Client::saveAccountImage(QString serializedImage){
+QByteArray Client::saveAccountImage(QString serializedImage){
 
      auto const encoded = serializedImage.toLatin1();
      QImage image;
@@ -312,10 +316,22 @@ void Client::saveAccountImage(QString serializedImage){
 
      QFile file(path);
 
-     if(file.open(QIODevice::WriteOnly)) {
+     if(file.open(QIODevice::ReadWrite)) {
         image.save(&file, "PNG");
      }else {
         qDebug() << "Can't open file";
      }
+
+     QByteArray out = file.readAll();
      file.close();
+     return out;
+}
+
+void Client::onCreateNewFileRequest(QString fileName){
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageCreateNewFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
 }

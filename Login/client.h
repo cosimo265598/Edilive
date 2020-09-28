@@ -62,6 +62,7 @@ private slots:
     void onConnectionSuccess();
     void onConnectionFailure();
     void onFileHandlerClicked(QString fileName);
+    void onCreateNewFileRequest(QString fileName);
 
 private:
     MainWindowStacked *mainWindowStacked;
@@ -77,7 +78,7 @@ private:
     Subscriber *subscriber;
     ConnectionWaitingDialog waitingDialog;
 
-    void saveAccountImage(QString serializedImage);
+    QByteArray saveAccountImage(QString serializedImage);
     void createMainWindowStacked();
     void startTextEditor(QString fileName);
     void subscriberInfoRequest();
@@ -87,6 +88,7 @@ signals:
     void registrationFailure(QString errorMessage);
     void loginFailure(QString errorMessage);
     void receivedFileHandlers(QJsonArray);
-    void loadSubscriberInfo(QString username, QString nickname);
+    void loadSubscriberInfo(QString username, QString nickname, QByteArray);
+    void newFileCreationFailure(QString errorMessage);
 };
 #endif // CLIENT_H

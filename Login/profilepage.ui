@@ -42,7 +42,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="profileImage">
+         <widget class="QLabel" name="accountImage">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -147,7 +147,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="username_value">
+       <widget class="QLabel" name="username">
         <property name="font">
          <font>
           <pointsize>20</pointsize>
@@ -171,7 +171,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit_nick">
+       <widget class="QLineEdit" name="nickname">
         <property name="enabled">
          <bool>true</bool>
         </property>

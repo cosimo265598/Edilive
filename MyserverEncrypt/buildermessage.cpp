@@ -76,7 +76,7 @@ QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageFileClientError(QString error)
+QJsonDocument BuilderMessage::MessageFileCreationError(QString error)
 {
     QJsonDocument jsondoc;
     QJsonObject json;

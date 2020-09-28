@@ -46,9 +46,12 @@ private Q_SLOTS:
     void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
 
+    void on_pushButton_Logout_clicked();
+
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
-     void onLoadSubscriberInfo(QString username, QString nickname);
+     void onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedimage);
+     void onNewFileCreationFailure(QString errorMessage);
 
 private:
     Ui::HomePage *ui;
@@ -60,6 +63,8 @@ private:
 
 signals:
     void fileHandlerClicked(QString fileName);
+    void updateAccountClicked();
+    void createNewFileRequest(QString fileName);
 
 };
 

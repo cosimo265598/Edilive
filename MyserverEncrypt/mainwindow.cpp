@@ -408,8 +408,8 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
     QFile filecreate(path);
     if(filecreate.exists()){
         qDebug()<< " File già presente- "<<file;
-        stream << BuilderMessage::MessageFileClientError
-                  ("La tua directory contiene già un file con questo nome.");
+        stream << BuilderMessage::MessageFileCreationError
+                  ("File already exists");
         clientSocket->sendBinaryMessage(data);
         return;
     }
@@ -419,8 +419,8 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         filecreate.close();
         OpenDirOfClient(clientSocket);
     }else{
-        stream << BuilderMessage::MessageFileClientError
-                  ("Impossibile creare il file. Riprova.");
+        stream << BuilderMessage::MessageFileCreationError
+                  ("Error creation the new file.");
         clientSocket->sendBinaryMessage(data);
     }
 }

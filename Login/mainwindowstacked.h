@@ -22,14 +22,16 @@ public:
 private:
     Ui::MainWindowStacked *ui;
     HomePage homePage{nullptr};
-    //ProfilePage profile_client;
+    ProfilePage profile_client;
 
 public slots:
 
 signals:
     void receivedFileHandlers(QJsonArray);
     void fileHandlerClicked(QString fileName);
-    void loadSubscriberInfo(QString username, QString nickname);
+    void loadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
+    void createNewFileRequest(QString fileName);
+    void newFileCreationFailure(QString errorMessage);
 };
 
 #endif // MAINWINDOWSTACKED_H

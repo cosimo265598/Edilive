@@ -213,6 +213,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_Logout">
+         <property name="text">
+          <string>Logout</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
