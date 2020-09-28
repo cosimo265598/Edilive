@@ -11,6 +11,7 @@
 #include <iostream>
 #include "buildermessage.h"
 #include <QFile>
+#include "serverexception.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow),
     m_pWebSocketServer(nullptr)
@@ -24,11 +25,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    SSLconfiguration(sslconfig);
-    m_pWebSocketServer->setSslConfiguration(sslconfig);
+    this->po=ProcessOperation::getInstance(this);
 
     //opening database;
-    database.open(defaultnamedb,ui.get());
+    try {
+        if(!SSLconfiguration(sslconfig))
+            throw StartupException("Impossible to set encryption configuration");
+        m_pWebSocketServer->setSslConfiguration(sslconfig);
+        database.open(defaultnamedb,ui.get());
+    }catch ( DatabaseConnectionException& dce ) {
+        throw StartupException("Connetion database error");
+    }catch(DatabaseCreateException& dcreate_ex){
+        throw StartupException("Creation database table error");
+    }catch(StartupException& se){
+        throw StartupException("Start up problem.");
+    }
 }
 
 MainWindow::~MainWindow()
@@ -40,18 +51,19 @@ void MainWindow::prepareToStart()
 {
     ui->commet->appendPlainText("(INIT STARTED)" );
 
-    //UserData userprova("hello",1,"prova","ciao",QImage());
-    //UserData userprova2("good",2,"prova","tutto",QImage());
-    //database.insertUser(userprova);
-    //database.insertUser(userprova2);
+/*    UserData d(database.readUser("ntipon"));
+    if(d.isEmpty())
+        qDebug()<<"true";
+    qDebug()<<d.getSalt()<<d.getNickname();*/
+
     // Check existence of the required SSL certificate files
     if (!QFile("localhost.key").exists()) {
         ui->commet->appendPlainText("Not find localhost.key - Server can not start!");
-        //throw StartupException("Cannot find private key file: 'server.key'");
+        throw StartupException("Cannot find private key file");
     }
     if (!QFile("localhost.cert").exists()) {
         ui->commet->appendPlainText("Not find localhost.cert - Server can not start!");
-        //throw StartupException("Cannot find local certificate file: 'server.pem'");
+        throw StartupException("Cannot find local certificate file");
     }
 
     // Check existence of (or create) the Users folder
@@ -60,6 +72,8 @@ void MainWindow::prepareToStart()
         ui->commet->appendPlainText("Creating the server Users folder");
         if (!QDir().mkdir("Users")) {
             ui->commet->appendPlainText("Cannot create folder '.\\Users'");
+            throw StartupException("Cannot create folder '.\\Users'");
+
         }
     }
 
@@ -81,13 +95,13 @@ void MainWindow::prepareToStart()
 }
 
 
-void MainWindow::SSLconfiguration(QSslConfiguration& sslConfiguration){
+bool MainWindow::SSLconfiguration(QSslConfiguration& sslConfiguration){
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tSetting configuration SSL ...");
 
     QFile certFile(QStringLiteral(":/localhost.cert"));
     QFile keyFile(QStringLiteral(":/localhost.key"));
-    certFile.open(QIODevice::ReadOnly);
-    keyFile.open(QIODevice::ReadOnly);
+    if ( !certFile.open(QIODevice::ReadOnly) ||  !keyFile.open(QIODevice::ReadOnly) )
+        return false;
     QSslCertificate certificate(&certFile, QSsl::Pem);
     QSslKey sslKey(&keyFile, QSsl::Rsa, QSsl::Pem);
     certFile.close();
@@ -97,8 +111,7 @@ void MainWindow::SSLconfiguration(QSslConfiguration& sslConfiguration){
     sslConfiguration.setPrivateKey(sslKey);
     sslConfiguration.setProtocol(QSsl::TlsV1SslV3);
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tConfiguration SSL finished... ");
-
-
+    return true;
 }
 
 void MainWindow::on_startserver_clicked()
@@ -107,7 +120,7 @@ void MainWindow::on_startserver_clicked()
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tTry to start Server ...");
 
     if (!m_pWebSocketServer->listen(QHostAddress::LocalHost,qint64(ui->nport->value()))) {
-        ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer is already started on this port. Try to change num port.");
+        ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer is busy on this port. Try to change num port.");
     }else {
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tServer started...");
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tIP server:\t"+m_pWebSocketServer->serverAddress().toString()+" on port:\t"+QString::number(m_pWebSocketServer->serverPort()));
@@ -125,15 +138,14 @@ void MainWindow::on_stopserver_clicked()
     if(m_pWebSocketServer->isListening()){
         m_pWebSocketServer->close();
 
-/*
-        QMap<QWebSocket*, QSharedPointer<Client>>::const_iterator i = clients.constBegin();
-        while ( i != clients.constEnd() ) {
-            i.value()->logout();
-            i.key()->close();
-            i.key()->deleteLater();
-            ++i;
+        // utile se viene mandato un messaggio di caduta server a tutti i client
+        for(auto& element : clients.toStdMap()){
+            element.first->close();
+            element.first->deleteLater();
+            element.second->logout();
         }
-*/
+        clients.clear();
+
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tAll client will be disconnected...");
         ui->stopserver->setEnabled(false);
         ui->startserver->setEnabled(true);
@@ -196,7 +208,7 @@ void MainWindow::socketDisconnected()
 void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
 {
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tSsl errors occurred");
-    for(auto e : sslerror){
+    for(auto& e : sslerror){
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tError"+e.errorString());
     }
 }
@@ -208,6 +220,7 @@ void MainWindow::socketAbort(QWebSocket* clientSocket)
     disconnect(clientSocket, &QWebSocket::disconnected, this, &MainWindow::socketDisconnected);
 
     QSharedPointer<Client> client = clients[clientSocket];
+    QString ip=clientSocket->peerAddress().toString();
 
     clientSocket->abort();						/* abort and destroy the socket */
     clientSocket->deleteLater();
@@ -216,10 +229,10 @@ void MainWindow::socketAbort(QWebSocket* clientSocket)
     if (client->isLogged())
     {
         client->logout();
-        ui->commet->appendPlainText("Eject "+client->getUsername()+" ip: "+clientSocket->peerAddress().toString());
+        ui->commet->appendPlainText("Eject "+client->getUsername()+" ip: "+ip);
     }
     else
-        ui->commet->appendPlainText("Shutdown connection to unidentified client");
+        ui->commet->appendPlainText("Shutdown connection client: "+ip);
 }
 
 void MainWindow::serverErrorConnection(QWebSocketProtocol::CloseCode closeCode)
@@ -243,22 +256,23 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     QSharedPointer<Client> client = clients[clientSocket];
 
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
+
 
     if (users.contains(username))
     {
         if (client->isLogged()){
             ui->commet->appendPlainText("Client already logged in as '" + client->getUsername() + "'");
-            stream << BuilderMessage::MessageLoginError("Client: "+client->getUsername()+" is already logged in.");
+            BuilderMessage::MessageSendToClient(
+                        data,
+                        BuilderMessage::MessageLoginError("Client: "+client->getUsername()+" is already logged in."));
             clientSocket->sendBinaryMessage(data);
             return;
         }
         // client not logged
-
-        stream << BuilderMessage::MessageChallege(
+        BuilderMessage::MessageSendToClient(
+                      data,BuilderMessage::MessageChallege(
                       QString(users[username].getSalt()) ,
-                      QString(client->challenge(&users[username])));
+                      QString(client->challenge(&users[username]))));
 
         clientSocket->sendBinaryMessage(data);
 
@@ -266,8 +280,12 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     else {
         // send message utente non registrato
         ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
-        stream << BuilderMessage::MessageLoginError("Client not registered.");
+        BuilderMessage::MessageSendToClient(
+                    data,
+                    BuilderMessage::MessageLoginError("Client not registered."));
+
         clientSocket->sendBinaryMessage(data);
+        socketAbort(clientSocket);
     }
 }
 
@@ -275,24 +293,27 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
 {
     QSharedPointer<Client> client = clients[clientSocket];
 
+
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
 
     if (client->isLogged()){
-        stream << BuilderMessage::MessageLoginError("You have to loggin before use the platform");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageLoginError("You have to loggin before use the platform"));
         clientSocket->sendBinaryMessage(data);
         return ;
     }else if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
         ui->commet->appendPlainText( "User " + client->getUsername() + " is logged in");
         client->login(client->getUser());
-        stream << BuilderMessage::MessageChallegePassed(QString());
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageChallegePassed(QString()));
         clientSocket->sendBinaryMessage(data);
         return ;
     }else{
         client->logout();
-        stream << BuilderMessage::MessageLoginError("Credential inserted are not corrected");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageLoginError("Credential inserted are not corrected"));
         clientSocket->sendBinaryMessage(data);
+        socketAbort(clientSocket);
         return ;
     }
 }
@@ -301,35 +322,38 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
 {
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
 
     if (client->isLogged()){
-        stream << BuilderMessage::MessageAccountError("Client already logged in");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("Client already logged in"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check if username or password are nulls */
     if (!username.compare("") || !password.compare("")){
-        stream << BuilderMessage::MessageAccountError("User/Psw can not be empty");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("User/Psw can not be empty"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check username length */
     if (username.length() > MAX_NAME_LENGTH){
-        stream << BuilderMessage::MessageAccountError("Username too long");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("Username too long"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check if this username is already used */
     if (users.contains(username)){
-        stream << BuilderMessage::MessageAccountError("Username already exist");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("Username already exist"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
     /* check whitespaces */
     if (!QRegExp("^[^\\s]+$").exactMatch(username)){
-        stream << BuilderMessage::MessageAccountError("Username mut not be only whitespaces");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("Username mut not be only whitespaces"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
@@ -338,9 +362,10 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     ui->commet->appendPlainText("Creating new user account "+username);
 
     UserData user(username, userId++, nickname, password, icon);		/* create a new user		*/
-    users.insert(username, user);               /* insert new user in map	*/
+    users.insert(username, user);                                       /* insert new user in map	*/
 
-    client->login(&users[username]);			// client is automatically logged in as the new user
+    client->login(&users[username]);                                    // client is automatically
+                                                                        // logged in as the new user
 
     try
     {	// Add the new user record to the server database
@@ -352,17 +377,18 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
         QFile::copy(QDir().currentPath()+"/example.html",
                     QDir().currentPath()+"/Users/"+client->getUsername()+"/examplefile");
 
-    }
-    catch (QException& dbe) {
+    }catch (DatabaseException& dbe) {
         ui->commet->appendPlainText(dbe.what());
         client->logout();
         users.remove(username);
         QDir(QDir().currentPath()+"/Users").rmdir(client->getUsername());
-        stream << BuilderMessage::MessageAccountError("Internal Error");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountError("Internal Error"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    stream << BuilderMessage::MessageAccountConfirmed("Account Created Correctly");
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountConfirmed("Account Created Correctly"));
     clientSocket->sendBinaryMessage(data);
     return;
 
@@ -376,8 +402,6 @@ void MainWindow::OpenDirOfClient(QWebSocket *clientSocket)
     QJsonArray files;
 
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
 
     // visita della directory
     while (it.hasNext()) {
@@ -390,7 +414,8 @@ void MainWindow::OpenDirOfClient(QWebSocket *clientSocket)
                          {"size", QString::number(it.fileInfo().size()) }
                      });
     }
-    stream << BuilderMessage::MessageOpenDirOfClient(files);
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageOpenDirOfClient(files));
     clientSocket->sendBinaryMessage(data);
 }
 
@@ -455,16 +480,14 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     QSharedPointer<Client> client = clients[clientSocket];
 
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
-
     //debug invio immagine di prova
     QImage img(QDir().currentPath()+"/logo32.png");
 
-    stream<< BuilderMessage::MessageProfileData(
-                 users[client->getUsername()].getUsername(),
-                 users[client->getUsername()].getNickname(),
-                 /*users[client->getUsername()].getIcon()*/img);
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageProfileData(
+                users[client->getUsername()].getUsername(),
+                users[client->getUsername()].getNickname(),
+                 /*users[client->getUsername()].getIcon()*/img));
 
     clientSocket->sendBinaryMessage(data);
     qDebug()<<data;
@@ -485,45 +508,34 @@ void MainWindow::processBinaryMessage(QByteArray message)
     // Fail if the JSON is invalid.
     if (jsonDoc.isNull()){
         qDebug() << "JSON NULL";
-         return ;
+        return ;
     }
     // Make sure the root is an object.
     if (!jsonDoc.isObject()){
-         qDebug() << "JSON not a obj";
-          return ;
+        qDebug() << "JSON not a obj";
+        return ;
     }
 
     QJsonObject jsonObj = jsonDoc.object();
     int mType = jsonObj["type"].toInt();
 
-    this->po=ProcessOperation::getInstance(this);
 
-       try {
-           ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
+    try {
+        ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
 
-           if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
-                   po->checkTypeOperationGranted((TypeOperation)mType).isEmpty()){
-               ui->commet->appendPlainText("***(MESSAGE ERROR)*** Received unexpected message: ");
-               // return whitout do anything.
-               return;
-           }
+        if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
+                po->checkTypeOperationGranted((TypeOperation)mType).isEmpty()){
+            ui->commet->appendPlainText("***(MESSAGE ERROR)*** Received unexpected message: ");
+            // return whitout do anything.
+            return;
+        }
 
-           po->process((TypeOperation)mType, socket, jsonObj );
-
-           /*
-           if (mType == LoginRequest || mType == LoginUnlock || mType == AccountCreate ||
-               mType == AccountUpdate || mType == Logout || mType == Simplemessage
-                   || mType == OpenDirectory || mType== CreateFile || mType== OpenFile || mType==ProfileData)
-           {
-               po->process((TypeOperation)mType, socket, jsonObj );
-           }
-           else
-               ui->commet->appendPlainText("(MESSAGE ERROR) Received unexpected message: ");
-           */
-       }
-       catch (std::exception& me)
-       {
-           ui->commet->appendPlainText( me.what());
-           socketAbort(socket);
-       }}
+        po->process((TypeOperation)mType, socket, jsonObj );
+    }
+    catch (std::exception& me)
+    {
+        ui->commet->appendPlainText( me.what());
+        socketAbort(socket);
+    }
+}
 

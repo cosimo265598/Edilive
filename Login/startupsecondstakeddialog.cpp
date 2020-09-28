@@ -10,7 +10,7 @@ startupsecondstakeddialog::startupsecondstakeddialog(QWidget *parent) :
     startupsecondstakeddialog::setAttribute(Qt::WA_DeleteOnClose, true);
     startupsecondstakeddialog::setFixedSize(Qt::PreferredSize,Qt::PreferredSize);
     ui->stackedWidget->addWidget(&homepage_client);
-    //ui->stackedWidget->addWidget(&profile_client);
+    ui->stackedWidget->addWidget(&profile_client);
     ui->stackedWidget->setCurrentIndex(0);
 
 }

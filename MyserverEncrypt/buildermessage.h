@@ -10,6 +10,9 @@
 class BuilderMessage
 {
 public:
+    static void MessageSendToClient(QByteArray& byte,QJsonDocument jsonToSend);
+    static void MessageSendToClient(QByteArray& byte,QByteArray& appendByte);
+
     static QJsonDocument MessageLogin();
     static QJsonDocument MessageChallege(QString salt, QString nonce);
     static QJsonDocument MessageChallegePassed(QString data);

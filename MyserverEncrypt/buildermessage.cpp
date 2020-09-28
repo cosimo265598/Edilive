@@ -2,6 +2,21 @@
 #include <QBuffer>
 #include <QDebug>
 
+void BuilderMessage::MessageSendToClient(QByteArray &byte,QJsonDocument jsonToSend)
+{
+    QDataStream out(&byte, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_14);
+    out << jsonToSend;
+}
+
+void BuilderMessage::MessageSendToClient(QByteArray &byte, QByteArray &appendByte)
+{
+    QDataStream out(&byte, QIODevice::WriteOnly | QIODevice::Append);
+    out.setVersion(QDataStream::Qt_5_14);
+    out << appendByte;
+}
+
+
 QJsonDocument BuilderMessage::MessageLogin()
 {
     QJsonDocument jsondoc;

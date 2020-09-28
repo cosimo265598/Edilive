@@ -66,6 +66,7 @@ public:
 
     int getMaxUserID();
     QList<UserData> readUsersList();
+    UserData readUser(QString username);
     QStringList readUserDocuments(QString username);
     QStringList readDocumentURIs();
     int countDocEditors(QString docURI);

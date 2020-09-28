@@ -30,6 +30,13 @@ UserData::UserData(QString username, int userId, QString nickname, QByteArray pa
 
 UserData::~UserData() { }
 
+bool UserData::isEmpty()
+{
+    if(this->m_userId==-1)
+        return true;
+    return false;
+}
+
 QString UserData::getUsername() const
 {
     return m_username;

@@ -163,10 +163,10 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 qDebug() << "Successfull login";
                 this->stackedDialog->close();
                 this->clientStatus = LoggedIn;
-                //this->homePage = new HomePage(m_webSocket.get());
-                this->stakedSecondDialog = new startupsecondstakeddialog();
+                this->homePage = new HomePage(m_webSocket.get());
+                //this->stakedSecondDialog = new startupsecondstakeddialog();
                 qDebug()<<"created";
-                this->stakedSecondDialog->show();
+                //this->stakedSecondDialog->show();
                 break;
         }
         case 5:{    // message  login error

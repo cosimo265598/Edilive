@@ -15,6 +15,7 @@ Client::Client(QWebSocket* s) :
 Client::~Client()
 {
     // NOTHING, activeUser is owned by Server and therefore it does NOT need to be destroyed
+    qDebug()<<"Destructor Client";
 }
 
 QWebSocket* Client::getSocket() const

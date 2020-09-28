@@ -1,0 +1,6 @@
+            QByteArray out;
+            BuilderMessageClient::MessageSendToServer(
+                        out,
+                        BuilderMessageClient::MessageLoginUnlock(salt,nonce,this->user->getPassword()));
+            m_webSocket.get()->sendBinaryMessage(out);
+

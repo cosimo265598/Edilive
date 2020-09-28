@@ -39,7 +39,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void SSLconfiguration(QSslConfiguration& conf);
+    bool SSLconfiguration(QSslConfiguration& conf);
+
 private slots:
 
     void on_startserver_clicked();

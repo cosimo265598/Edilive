@@ -35,6 +35,7 @@ public:
 
     ~UserData();
 
+    bool isEmpty();
     /* getters */
     int getUserId() const;
     QString getUsername() const;
