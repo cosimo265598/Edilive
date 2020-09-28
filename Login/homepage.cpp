@@ -2,13 +2,15 @@
 #include "ui_homepage.h"
 #include <QtCore/QDebug>
 #include <QCoreApplication>
+#include <QDir>
 #include "buildermessageclient.h"
 
 QT_USE_NAMESPACE
 
 HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::HomePage)
+    ui(new Ui::HomePage),
+    pixmap(new QPixmap())
 {
     ui->setupUi(this);
     this->eventFilter = new EventFilterImpl(this);
@@ -18,6 +20,7 @@ HomePage::~HomePage()
 {
     delete ui;
     delete eventFilter;
+    delete pixmap;
 }
 
 void HomePage::onFileHandlerClicked(){
@@ -110,5 +113,15 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
 }
 
 void HomePage::onLoadSubscriberInfo(QString username, QString nickname){
+    ui->username->setText(username);
+    loadImage();
+}
 
+void HomePage::loadImage(){
+    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+
+    this->pixmap->loadFromData(file.readAll());
+    ui->accountImage->setPixmap(*pixmap);
 }

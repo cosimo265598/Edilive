@@ -338,12 +338,9 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     // no check on image because are used for the firts time default settings
 
     ui->commet->appendPlainText("Creating new user account "+username);
-    QString nick("nick_");
-    userId++;
-    nick.append(userId);
-    UserData user(username, userId, nick, password, QImage(":/images/default.jpg"));		/* create a new user		*/
+    UserData user(username, userId++, "nickname", password, QImage(":/images/default.png"));		/* create a new user		*/
     users.insert(username, user);               /* insert new user in map	*/
-    qDebug() << users[username].getNickname();
+    qDebug() << users[username].getNickname() << " " << users[username].getUserId() << " " ;
     /*
     try
     {	// Add the new user record to the server database
@@ -412,7 +409,7 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
     if(filecreate.exists()){
         qDebug()<< " File già presente- "<<file;
         stream << BuilderMessage::MessageFileClientError
-                  ("La tua directory contine già un file con questo nome.");
+                  ("La tua directory contiene già un file con questo nome.");
         clientSocket->sendBinaryMessage(data);
         return;
     }
@@ -455,12 +452,14 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
 
 void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
 {
-    qDebug()<<"segnale di aperura dati profilo ricevuto";
+    qDebug()<<"segnale di apertura dati profilo ricevuto";
     QSharedPointer<Client> client = clients[clientSocket];
 
     QByteArray data;
     QDataStream stream (&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_14);
+
+    qDebug() << "USER" << client->getUsername();
 
     stream<< BuilderMessage::MessageAccountInfo(
                  users[client->getUsername()].getUsername(),
@@ -468,7 +467,7 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
                  users[client->getUsername()].getIcon());
 
     clientSocket->sendBinaryMessage(data);
-    qDebug()<<data;
+    //qDebug()<<data;
 }
 
 

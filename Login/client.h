@@ -77,7 +77,7 @@ private:
     Subscriber *subscriber;
     ConnectionWaitingDialog waitingDialog;
 
-    void saveAccountImage(QByteArray serializedImage);
+    void saveAccountImage(QString serializedImage);
     void createMainWindowStacked();
     void startTextEditor(QString fileName);
     void subscriberInfoRequest();

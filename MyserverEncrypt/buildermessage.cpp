@@ -1,6 +1,7 @@
 #include "buildermessage.h"
 #include <QBuffer>
 #include <QDebug>
+#include <QDir>
 
 QJsonDocument BuilderMessage::MessageLogin()
 {
@@ -95,16 +96,21 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico)
+QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico_real)
 {
     bool presentIcon=false;
-    if(!ico.isNull())
+    if(!ico_real.isNull())
         presentIcon=true;
+
+    //test
+    qDebug() << QDir().currentPath()+ "/images/default.png";
+    QImage ico(QDir().currentPath()+ "/images/default.png");
+    //
 
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
-    ico.save(&buffer, "JPG");	// writes image into the bytearray in PNG format
+    ico.save(&buffer, "PNG");	// writes image into the bytearray in PNG format
 
     //
 
@@ -113,12 +119,10 @@ QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickn
     json.insert("type",17);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("icon",QString(buffer.data()));
-    //json.insert("icon",QLatin1String(buffer.data().toBase64()));
+    json.insert("icon",QLatin1String(buffer.data().toBase64()));
     json.insert("icon_present", presentIcon);
 
     jsondoc.setObject(json);
-    qDebug () << nickname;
     return jsondoc;
 }
 

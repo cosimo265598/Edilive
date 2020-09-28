@@ -216,8 +216,8 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 //this->clientStatus = Connected;
 
                 // Automatic login after correct registration
-                this->stackedDialog->close();
-                Client::createMainWindowStacked();
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                m_webSocket.get()->sendBinaryMessage(out);
                 break;
         }
         case 9:{    // message account create error
@@ -253,7 +253,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         }
         case 17:{
             qDebug()<<jsonObj;
-            saveAccountImage(jsonObj["username"].toString().toUtf8());
+            saveAccountImage(jsonObj["icon"].toString());
             emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString());
             break;
         }
@@ -290,24 +290,32 @@ void Client::onFileHandlerClicked(QString fileName){
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
-void Client::saveAccountImage(QByteArray serializedImage){
+void Client::saveAccountImage(QString serializedImage){
 
-    QImage image;
-    if (image.loadFromData(serializedImage, "JPG")){
-        qDebug()<<"Image was loaded";
-    }else{
-        qDebug()<<"Image was not loaded";
-    }
+     auto const encoded = serializedImage.toLatin1();
+     QImage image;
+     image.loadFromData(QByteArray::fromBase64(encoded), "PNG");
 
-    if(QFile::exists(":/images/default.jpg"))
-        QFile::remove(":/images/default.jpg");
+     // DA SISTEMARE IL PATH in modo che sia indipendente (con currentPath, ritorna il path con la cartella temporanea di debug)
+     QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
 
-    QFile file(":/images/default.jpg");
-    if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        image.save(&file, "JPG");
-    }
-    else {
+     if(QFile::exists(path)){
+         qDebug() << "esiste";
+         QFile file(path);
+         file.setPermissions(file.permissions() |
+                             QFileDevice::WriteOwner |
+                             QFileDevice::WriteUser |
+                             QFileDevice::WriteGroup |
+                             QFileDevice::WriteOther);
+         qDebug() << "Rimosso" << file.remove();
+     }
+
+     QFile file(path);
+
+     if(file.open(QIODevice::WriteOnly)) {
+        image.save(&file, "PNG");
+     }else {
         qDebug() << "Can't open file";
-    }
-    file.close();
+     }
+     file.close();
 }

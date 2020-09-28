@@ -54,8 +54,9 @@ private:
     Ui::HomePage *ui;
     QWebSocket *client_socket;
     EventFilterImpl *eventFilter;
-
     QStringList listfile;
+    QPixmap *pixmap;
+    void loadImage();
 
 signals:
     void fileHandlerClicked(QString fileName);
