@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>localhost.cert</file>
         <file>localhost.key</file>
+        <file>images/default.png</file>
     </qresource>
     <qresource prefix="/Users"/>
 </RCC>

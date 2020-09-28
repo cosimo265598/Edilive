@@ -2,49 +2,83 @@
 #include "ui_homepage.h"
 #include <QtCore/QDebug>
 #include <QCoreApplication>
+#include <QDir>
 #include "buildermessageclient.h"
 
 QT_USE_NAMESPACE
 
-HomePage::HomePage(QWebSocket *socket, QWidget *parent) :
+HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::HomePage),
-    client_socket(socket),
-    profilePage(new ProfilePage(this,client_socket))
+    pixmap(new QPixmap()),
+    eventFilter(new EventFilterImpl(this))
 {
     ui->setupUi(this);
-    //ui->stackedWidget->setCurrentIndex(0);
-    //ui->stackedWidget->addWidget(profilePage);
-    //connect(profilePage, &ProfilePage::returnToHome, [this](){ui->stackedWidget->setCurrentIndex(0);});
-    this->eventFilter = new EventFilterImpl(this);
-
-    HomePage::show();
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenDir());
-    client_socket->sendBinaryMessage(out);
 }
 
 HomePage::~HomePage()
 {
     delete ui;
     delete eventFilter;
+    delete pixmap;
 }
 
 void HomePage::onFileHandlerClicked(){
-    QString nomefile = dynamic_cast<FileHandler *>(QObject::sender())->getFilename();
 
+    emit fileHandlerClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
+}
+
+//??????
+void HomePage::openReceivedFile(QByteArray data){
+    QString nomeuser="cosimo";
+    QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
+    file.open(QIODevice::WriteOnly);
+    file.write(data);
+    file.close();
+}
+
+void HomePage::on_pushButton_new_file_clicked()
+{
+
+    QInputDialog diag;
+    diag.setParent(this);
+    diag.setTextValue("senzanome");
+    diag.setWindowFlags(Qt::Dialog);
+    diag.setWindowTitle(tr("Creazione nuovo file"));
+    diag.setLabelText(tr("Nome file: "));
+    diag.resize(400,0);
+    int ret = diag.exec();
+
+    if (ret == QDialog::Accepted){
+         QString fileName=diag.textValue();
+         if(fileName.isEmpty() || fileName.isNull()){
+             QMessageBox::warning(this,tr("WARNING"),
+                        tr("Il nome del file non è valido.\n"));
+             return;
+         }
+
+         emit createNewFileRequest(fileName);
+    }
+}
+
+void HomePage::on_pushButton_aggiorna_vista_clicked()
+{
+    /*
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessageOpenFile(nomefile));
+                BuilderMessageClient::MessageOpenDir());
     client_socket->sendBinaryMessage(out);
-
+    */
 }
 
-void HomePage::createHomepage(QJsonArray paths){
+void HomePage::on_pushButton_profile_page_clicked()
+{
+    emit updateAccountClicked();
+}
+
+
+void HomePage::onReceivedFileHandlers(QJsonArray paths){
 
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
@@ -78,56 +112,29 @@ void HomePage::createHomepage(QJsonArray paths){
     }
 }
 
-ProfilePage *HomePage::getProfilePage()
-{
-    return this->profilePage;
+void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
+    ui->username->setText(username);
+    //this->pixmap->loadFromData(serializedImage);
+    //ui->accountImage->setPixmap(*pixmap);
+    loadImage();
 }
 
-void HomePage::openReceivedFile(QByteArray data){
-    QString nomeuser="cosimo";
-    QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
-    file.open(QIODevice::WriteOnly);
-    file.write(data);
+void HomePage::loadImage(){
+
+    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    this->pixmap->loadFromData(file.readAll());
+    ui->accountImage->setPixmap(*pixmap);
     file.close();
+
 }
 
-void HomePage::on_pushButton_new_file_clicked()
-{
-
-    QInputDialog diag;
-    diag.setParent(this);
-    diag.setTextValue("senzanome");
-    diag.setWindowFlags(Qt::Dialog);
-    diag.setWindowTitle(tr("Creazione nuovo file"));
-    diag.setLabelText(tr("Nome file: "));
-    diag.resize(400,0);
-    int ret = diag.exec();
-
-    if (ret == QDialog::Accepted){
-         QString filename=diag.textValue();
-         if(filename.isEmpty() || filename.isNull()){
-             QMessageBox::warning(this,tr("Errore creazione file"),
-                        tr("Il nome del file non è valido.\n"));
-             return;
-         }
-         QByteArray out;
-         BuilderMessageClient::MessageSendToServer(
-                     out,
-                     BuilderMessageClient::MessageCreateNewFile(filename));
-         client_socket->sendBinaryMessage(out);
-    }
+void HomePage::onNewFileCreationFailure(QString errorMessage){
+    QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
 }
 
-void HomePage::on_pushButton_aggiorna_vista_clicked()
+void HomePage::on_pushButton_Logout_clicked()
 {
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenDir());
-    client_socket->sendBinaryMessage(out);
-}
-
-void HomePage::on_pushButton_profile_page_clicked()
-{
-    //ui->stackedWidget->setCurrentIndex(1);
+////TODO
 }

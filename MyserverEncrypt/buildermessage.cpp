@@ -1,6 +1,7 @@
 #include "buildermessage.h"
 #include <QBuffer>
 #include <QDebug>
+#include <QDir>
 
 void BuilderMessage::MessageSendToClient(QByteArray &byte,QJsonDocument jsonToSend)
 {
@@ -90,7 +91,7 @@ QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageFileClientError(QString error)
+QJsonDocument BuilderMessage::MessageFileCreationError(QString error)
 {
     QJsonDocument jsondoc;
     QJsonObject json;
@@ -110,11 +111,16 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageProfileData(QString username, QString nickname, QImage ico)
+QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico_real)
 {
     bool presentIcon=false;
-    if(!ico.isNull())
+    if(!ico_real.isNull())
         presentIcon=true;
+
+    //test
+    qDebug() << QDir().currentPath()+ "/images/default.png";
+    QImage ico(QDir().currentPath()+ "/images/default.png");
+    //
 
     QByteArray icon;
     QBuffer buffer(&icon);
@@ -128,8 +134,8 @@ QJsonDocument BuilderMessage::MessageProfileData(QString username, QString nickn
     json.insert("type",17);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("ico",QLatin1String(buffer.data().toBase64()));
-    json.insert("ico_present", presentIcon);
+    json.insert("icon",QLatin1String(buffer.data().toBase64()));
+    json.insert("icon_present", presentIcon);
 
     jsondoc.setObject(json);
     return jsondoc;

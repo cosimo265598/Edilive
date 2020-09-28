@@ -30,14 +30,17 @@
 #include "logindialog.h"
 #include "buildermessageclient.h"
 #include "startupstackeddialog.h"
-#include "startupsecondstakeddialog.h"
+#include "connectionwaitingdialog.h"
+#include "mainwindowstacked.h"
+#include "subscriber.h"
 
 enum ClientStatus : quint32
 {
-
+    Startup,
     LoginRequest,
-    LoggedIn,
-    RegistrationRequest
+    Connected,
+    RegistrationRequest,
+    Disconnected
 };
 
 class Client : public QObject
@@ -50,31 +53,42 @@ public:
 
 private slots:
 
-    void onLoginRequest(QString user, QString password);
+    void onLoginRequest(QString username, QString password);
+    void onRegistrationRequest(QString username, QString password);
     void onConnected();
     void onSslErrors(const QList<QSslError> &errors);
-    void on_sign_account_clicked();
     void MessageReceivedFromServer(const QByteArray& message);
-    void Registeruser();
-    void StartNewWindows();
-    void StartEditorText(QString fileeditor);
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
+    void onFileHandlerClicked(QString fileName);
+    void onCreateNewFileRequest(QString fileName);
 
 private:
-    startupsecondstakeddialog *stakedSecondDialog;
+    MainWindowStacked *mainWindowStacked;
     StartupStackedDialog *stackedDialog;
     HomePage *homePage;
-    TextEdit *editor;
+    TextEdit *textEditor;
     QSharedPointer<QWebSocket> m_webSocket;
     QString urlForConnection;
-    QTimer *reconnectionTimer;
+    QTimer *waitingTimer;
     qint32 reconnectionRetries;
     User *user;
     quint32 clientStatus;
+    Subscriber *subscriber;
+    ConnectionWaitingDialog waitingDialog;
+
+    QByteArray saveAccountImage(QString serializedImage);
+    void createMainWindowStacked();
+    void startTextEditor(QString fileName);
+    void subscriberInfoRequest();
+    void fileHandlersRequest();
 
 signals:
-    void loginFailure();
+    void registrationFailure(QString errorMessage);
+    void loginFailure(QString errorMessage);
+    void receivedFileHandlers(QJsonArray);
+    void loadSubscriberInfo(QString username, QString nickname, QByteArray);
+    void newFileCreationFailure(QString errorMessage);
 };
 #endif // CLIENT_H

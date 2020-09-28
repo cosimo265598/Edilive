@@ -318,55 +318,58 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
     }
 }
 
-void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username, QString nickname, QImage icon, QString password)
+void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username, QString password)
 {
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;
 
+    /*
     if (client->isLogged()){
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("Client already logged in"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check if username or password are nulls */
+
+    //check if username or password are nulls
     if (!username.compare("") || !password.compare("")){
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("User/Psw can not be empty"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check username length */
+    //check username length
     if (username.length() > MAX_NAME_LENGTH){
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("Username too long"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check if this username is already used */
+    */
+    //check if this username is already used
+
     if (users.contains(username)){
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("Username already exist"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
-    /* check whitespaces */
+    /*
+    // check whitespaces
     if (!QRegExp("^[^\\s]+$").exactMatch(username)){
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("Username mut not be only whitespaces"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
+    */
     // no check on image because are used for the firts time default settings
 
     ui->commet->appendPlainText("Creating new user account "+username);
-
-    UserData user(username, userId++, nickname, password, icon);		/* create a new user		*/
-    users.insert(username, user);                                       /* insert new user in map	*/
-
-    client->login(&users[username]);                                    // client is automatically
-                                                                        // logged in as the new user
-
+    UserData user(username, userId++, "nickname", password, QImage(":/images/default.png"));		/* create a new user		*/
+    users.insert(username, user);               /* insert new user in map	*/
+    qDebug() << users[username].getNickname() << " " << users[username].getUserId() << " " ;
+    /*
     try
     {	// Add the new user record to the server database
         database.insertUser(user);
@@ -432,8 +435,8 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
     QFile filecreate(path);
     if(filecreate.exists()){
         qDebug()<< " File già presente- "<<file;
-        stream << BuilderMessage::MessageFileClientError
-                  ("La tua directory contine già un file con questo nome.");
+        stream << BuilderMessage::MessageFileCreationError
+                  ("File already exists");
         clientSocket->sendBinaryMessage(data);
         return;
     }
@@ -443,8 +446,8 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         filecreate.close();
         OpenDirOfClient(clientSocket);
     }else{
-        stream << BuilderMessage::MessageFileClientError
-                  ("Impossibile creare il file. Riprova.");
+        stream << BuilderMessage::MessageFileCreationError
+                  ("Error creation the new file.");
         clientSocket->sendBinaryMessage(data);
     }
 }
@@ -476,7 +479,7 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
 
 void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
 {
-    qDebug()<<"segnale di aperura dati profilo ricevuto";
+    qDebug()<<"segnale di apertura dati profilo ricevuto";
     QSharedPointer<Client> client = clients[clientSocket];
 
     QByteArray data;
@@ -490,7 +493,7 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
                  /*users[client->getUsername()].getIcon()*/img));
 
     clientSocket->sendBinaryMessage(data);
-    qDebug()<<data;
+    //qDebug()<<data;
 }
 
 

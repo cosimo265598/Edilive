@@ -6,11 +6,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
-    LoginDialog::setAttribute(Qt::WA_DeleteOnClose, true);
-    //LoginDialog::setFixedSize(500,600);
-    LoginDialog::setWindowTitle("Login");
+    LoginDialog::setFixedSize(371,465);
     ui->errorMessage->setStyleSheet("color : red");
-    ui->username->setValidator(new QRegularExpressionValidator(QRegularExpression("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"), this));
 }
 
 LoginDialog::~LoginDialog()
@@ -18,12 +15,12 @@ LoginDialog::~LoginDialog()
     delete ui;
 }
 
-void LoginDialog::onLoginFailure(){
+void LoginDialog::onLoginFailure(QString errorMessage){
     ui->username->clear();
     ui->password->clear();
     ui->username->setStyleSheet(" border: 1px solid red;");
     ui->password->setStyleSheet(" border: 1px solid red;");
-    ui->errorMessage->setText("ERROR, Username or password wrong");
+    ui->errorMessage->setText(errorMessage);
 }
 
 void LoginDialog::on_registration_clicked()
@@ -41,13 +38,19 @@ void LoginDialog::on_login_clicked()
     ui->username->setStyleSheet("");
     ui->password->setStyleSheet("");
 
-    if(ui->username->text().isEmpty() || ui->password->text().isEmpty()){
+    QString username = ui->username->text().simplified();
+    QString password = ui->password->text().simplified();
+
+    QRegularExpression regex("^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$");
+    QRegularExpressionMatch match = regex.match(username);
+
+    if(username.isEmpty() || password.isEmpty()){
         ui->errorMessage->setText("Fill all the fields");
-        if(ui->password->text().isEmpty())
+        if(password.isEmpty())
             ui->password->setStyleSheet(" border: 1px solid red;");
-        if(ui->username->text().isEmpty())
+        if(password.isEmpty())
             ui->username->setStyleSheet(" border: 1px solid red;");
-    }else if(!ui->username->hasAcceptableInput() && ui->username->text()!="ciao"){ //TODO: remove backdoor "ciao"
+    }else if(!match.hasMatch() && username!="ciao"){ //TODO: remove backdoor "ciao"
         ui->username->setStyleSheet(" border: 1px solid red;");
         ui->errorMessage->setText("Insert a valid email as username");
     }else

@@ -9,9 +9,12 @@ startupsecondstakeddialog::startupsecondstakeddialog(QWidget *parent) :
     ui->setupUi(this);
     startupsecondstakeddialog::setAttribute(Qt::WA_DeleteOnClose, true);
     startupsecondstakeddialog::setFixedSize(Qt::PreferredSize,Qt::PreferredSize);
-    ui->stackedWidget->addWidget(&homepage_client);
-    ui->stackedWidget->addWidget(&profile_client);
+    ui->stackedWidget->addWidget(&homePage);
+    //ui->stackedWidget->addWidget(&profile_client);
     ui->stackedWidget->setCurrentIndex(0);
+    
+    //connections homePage
+    QObject::connect(&homePage, &HomePage::homePageStartup, this, &HomePage::homePageStartup);
 
 }
 

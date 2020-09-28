@@ -46,6 +46,5 @@
         <file>images/mac/editcopy.png</file>
         <file>images/mac/checkbox-checked.png</file>
         <file>images/mac/checkbox.png</file>
-        <file>images/logo32.png</file>
     </qresource>
 </RCC>

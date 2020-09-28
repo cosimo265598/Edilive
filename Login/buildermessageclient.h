@@ -24,7 +24,7 @@ public:
     static QJsonDocument MessageOpenFile(QString nomefile);
 
     // profile managemet
-    static QJsonDocument MessageOpenProfilePage();
+    static QJsonDocument MessageSubscriberInfoRequest();
 };
 
 #endif // BUILDERMESSAGECLIENT_H

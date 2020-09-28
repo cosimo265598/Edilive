@@ -75,8 +75,7 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
         case AccountCreate:{
             QString user    =data.value("username").toString();
             QString password=data.value("password").toString();
-            QString nick    =data.value("nickname").toString();
-            emit accountCreate(socket,user,nick,QImage(),password);
+            emit accountCreate(socket,user,password);
             break;
         }
 
