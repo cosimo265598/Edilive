@@ -28,7 +28,7 @@ public slots:
 
 signals:
     void receivedFileHandlers(QJsonArray);
-    void fileHandlerClicked(QString fileName);
+    void fileHandlerDbClicked(QString fileName);
     void loadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
     void createNewFileRequest(QString fileName);
     void newFileCreationFailure(QString errorMessage);

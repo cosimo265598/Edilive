@@ -119,7 +119,7 @@ void Client::createMainWindowStacked()
 
     //connections MainWindowStacked
     connect(this, &Client::receivedFileHandlers, mainWindowStacked, &MainWindowStacked::receivedFileHandlers);
-    connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
+    connect(mainWindowStacked, &MainWindowStacked::fileHandlerDbClicked, this, &Client::onFileHandlerDbClicked);
     connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
     connect(mainWindowStacked, &MainWindowStacked::createNewFileRequest, this, &Client::onCreateNewFileRequest);
     connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
@@ -285,7 +285,7 @@ void Client::onConnectionFailure(){
     }
 }
 
-void Client::onFileHandlerClicked(QString fileName){
+void Client::onFileHandlerDbClicked(QString fileName){
 
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(

@@ -41,12 +41,15 @@ public:
     void openReceivedFile(QByteArray data);
 
 private Q_SLOTS:
+    void onFileHandlerDbClicked();
     void onFileHandlerClicked();
     void on_pushButton_new_file_clicked();
     void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
 
     void on_pushButton_Logout_clicked();
+
+    void on_pushButton_delete_clicked();
 
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
@@ -59,10 +62,11 @@ private:
     EventFilterImpl *eventFilter;
     QStringList listfile;
     QPixmap *pixmap;
+    FileHandler *selected;
     void loadImage();
 
 signals:
-    void fileHandlerClicked(QString fileName);
+    void fileHandlerDbClicked(QString fileName);
     void updateAccountClicked();
     void createNewFileRequest(QString fileName);
 

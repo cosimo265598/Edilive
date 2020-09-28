@@ -61,7 +61,7 @@ private slots:
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
-    void onFileHandlerClicked(QString fileName);
+    void onFileHandlerDbClicked(QString fileName);
     void onCreateNewFileRequest(QString fileName);
 
 private:
