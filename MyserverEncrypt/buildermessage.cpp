@@ -141,3 +141,13 @@ QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickn
     return jsondoc;
 }
 
+QJsonDocument BuilderMessage::MessageFileDeletionError(QString error)
+{
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",19);
+    json.insert("error",error);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+

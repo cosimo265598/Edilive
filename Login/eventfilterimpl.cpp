@@ -11,6 +11,7 @@ bool EventFilterImpl::eventFilter(QObject *obj, QEvent *event)
         return true;
 
     }else if(event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton){
+
         qDebug() << "Single";
         FileHandler* icon = qobject_cast<FileHandler*>( obj );
         emit icon->clicked();

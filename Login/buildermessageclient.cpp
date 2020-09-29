@@ -123,3 +123,14 @@ QJsonDocument BuilderMessageClient::MessageSubscriberInfoRequest()
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
+
+QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString nomefile)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",17);
+    objtosend.insert("auth",true);
+    objtosend.insert("nomefile",nomefile);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}

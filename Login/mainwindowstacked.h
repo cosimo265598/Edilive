@@ -32,6 +32,7 @@ signals:
     void loadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
     void createNewFileRequest(QString fileName);
     void newFileCreationFailure(QString errorMessage);
+    void deleteFileRequest(QString fileName);
 };
 
 #endif // MAINWINDOWSTACKED_H

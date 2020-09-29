@@ -46,10 +46,8 @@ private Q_SLOTS:
     void on_pushButton_new_file_clicked();
     void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
-
     void on_pushButton_Logout_clicked();
-
-    void on_pushButton_delete_clicked();
+    void onFocusChange(QWidget *old, QWidget *now);
 
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
@@ -64,12 +62,13 @@ private:
     QPixmap *pixmap;
     FileHandler *selected;
     void loadImage();
+    void deleteFile();
 
 signals:
     void fileHandlerDbClicked(QString fileName);
     void updateAccountClicked();
     void createNewFileRequest(QString fileName);
-
+    void deleteFileRequest(QString fileName);
 };
 
 #endif // HOMEPAGE_H

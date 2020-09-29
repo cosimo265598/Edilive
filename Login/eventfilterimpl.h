@@ -5,6 +5,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QScrollArea>
 #include "filehandler.h"
 
 class EventFilterImpl : public QObject

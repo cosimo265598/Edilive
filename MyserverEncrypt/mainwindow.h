@@ -65,6 +65,7 @@ public slots:
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString file);
     void OpenFileForClient(QWebSocket* clientSocket, QString file);
+    void DeleteFileForClient(QWebSocket *clientSocket, QString fileName);
 
     /* Profile data */
     void PersonalDataOfClient (QWebSocket* clientSocket);

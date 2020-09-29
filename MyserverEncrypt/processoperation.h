@@ -40,7 +40,8 @@ enum TypeOperation : quint16
     Failure,
 
     // personal image
-    ProfileData
+    ProfileData,
+    DeleteFile
     // add other enum below, and do not change the order of list
 
 };
@@ -80,6 +81,7 @@ signals:
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString filename);
     void OpenFileForClient(QWebSocket* clientSocket, QString filename);
+    void DeleteFileForClient(QWebSocket* clientSocket, QString filename);
 
     /* Profile */
     void PersonalDataOfClient(QWebSocket* clientSocket);

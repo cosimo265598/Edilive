@@ -21,6 +21,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     connect(&homePage, &HomePage::updateAccountClicked,  [this](){MainWindowStacked::setWindowTitle("Update account"); ui->stackedWidget->setCurrentIndex(1);});
     connect(&homePage, &HomePage::createNewFileRequest, this, &MainWindowStacked::createNewFileRequest);
     connect(this, &MainWindowStacked::newFileCreationFailure, &homePage, &HomePage::onNewFileCreationFailure);
+    connect(&homePage, &HomePage::deleteFileRequest, this, &MainWindowStacked::deleteFileRequest);
 
     //connection ProfilePage
     //connect(&profilePage, &HomePage::updateAccountClicked,  [this](){MainWindowStacked::setWindowTitle("Update account"); ui->stackedWidget->setCurrentIndex(1);});

@@ -63,6 +63,7 @@ private slots:
     void onConnectionFailure();
     void onFileHandlerDbClicked(QString fileName);
     void onCreateNewFileRequest(QString fileName);
+    void onDeleteFileRequest(QString fileName);
 
 private:
     MainWindowStacked *mainWindowStacked;

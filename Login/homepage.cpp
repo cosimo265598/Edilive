@@ -11,10 +11,13 @@ HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::HomePage),
     pixmap(new QPixmap()),
-    selected(nullptr),
-    eventFilter(new EventFilterImpl(this))
+    eventFilter(new EventFilterImpl(this)),
+    selected(nullptr)
 {
     ui->setupUi(this);
+
+    //Prototype -> QApplication::focusChanged(QWidget *old, QWidget *now)
+    connect(qApp, &QApplication::focusChanged, this, &HomePage::onFocusChange);
 
 }
 
@@ -32,7 +35,23 @@ void HomePage::onFileHandlerDbClicked(){
 }
 
 void HomePage::onFileHandlerClicked(){
+    qDebug() << "File Handler";
     selected = dynamic_cast<FileHandler *>(QObject::sender());
+    selected->setFocus();
+    //selected->setStyleSheet("QToolButton:focus:press{ background-color: blue; }");
+}
+
+void HomePage::onFocusChange(QWidget *old, QWidget *now){
+
+    qDebug() << "old " << old;
+    qDebug() << "now " << now;
+    if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
+        qDebug() << "null";
+        selected = nullptr;
+    }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){
+        qDebug() << "delete";
+        deleteFile();
+    }
 }
 
 //?????? --- non serve a nulla questo metotodo è rimasto qui inosservato
@@ -149,10 +168,13 @@ void HomePage::on_pushButton_Logout_clicked()
 }
 
 // TODO: optimize with disabling the cancel button if no file handlers highllighted and
-void HomePage::on_pushButton_delete_clicked()
-{
-    if(selected != nullptr)
-        QMessageBox::critical(this, tr("WARNING"),"Delete the selected file?",QMessageBox::Ok, QMessageBox::Cancel);
-    else
-        QMessageBox::critical(this, tr("WARNING"),"No file selected",QMessageBox::Ok);
+void HomePage::deleteFile(){
+     QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
+     delMsgBox.addButton(QMessageBox::Cancel);
+     if(delMsgBox.exec()==QMessageBox::Ok){
+        qDebug() << "OK";
+        QString fileName = selected -> getFilename();
+        selected = nullptr;
+        emit deleteFileRequest(fileName);
+     }
 }

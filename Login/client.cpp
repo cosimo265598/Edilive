@@ -124,6 +124,7 @@ void Client::createMainWindowStacked()
     connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
     connect(mainWindowStacked, &MainWindowStacked::createNewFileRequest, this, &Client::onCreateNewFileRequest);
     connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
+    connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -234,7 +235,6 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             break;
         }
         case 13:{    // file gia presente
-            //QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
             qDebug() << "Errore nella creazione del file";
             emit newFileCreationFailure(jsonObj["error"].toString());
             break;
@@ -261,6 +261,12 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             qDebug()<<jsonObj;
             QByteArray serializedImage = saveAccountImage(jsonObj["icon"].toString());
             emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString(), serializedImage);
+            break;
+        }
+
+        case 19:{    // file not found
+            qDebug() << "Errore nella eliminazione del file";
+            //emit newFileCreationFailure(jsonObj["error"].toString());
             break;
         }
 
@@ -335,5 +341,13 @@ void Client::onCreateNewFileRequest(QString fileName){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageCreateNewFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onDeleteFileRequest(QString fileName){
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedDeleteFile(fileName));
     this->m_webSocket->sendBinaryMessage(out);
 }

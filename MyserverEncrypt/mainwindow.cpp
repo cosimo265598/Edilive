@@ -473,6 +473,27 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
     clientSocket->sendBinaryMessage(data);
 }
 
+void MainWindow::DeleteFileForClient(QWebSocket *clientSocket, QString fileName)
+{
+    qDebug()<<"segnale delete file ricevuto";
+    QSharedPointer<Client> client = clients[clientSocket];
+    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
+
+    QByteArray data;
+
+    QFile file(path);
+    if(!file.exists()){
+        qDebug()<< "File not found";
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageFileDeletionError("File not found"));
+        clientSocket->sendBinaryMessage(data);
+        return;
+    }else{
+        file.remove();
+        OpenDirOfClient(clientSocket);
+    }
+}
+
 void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
 {
     qDebug()<<"segnale di apertura dati profilo ricevuto";

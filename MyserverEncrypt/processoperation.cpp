@@ -42,6 +42,9 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
     connect(this,&ProcessOperation::OpenFileForClient,
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::OpenFileForClient,Qt::DirectConnection);
+    connect(this,&ProcessOperation::DeleteFileForClient,
+                dynamic_cast<MainWindow*>(this->parent()),
+                &MainWindow::DeleteFileForClient,Qt::DirectConnection);
 
     /*
      * personal data
@@ -102,6 +105,12 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
             break;
         }
 
+        case DeleteFile:{
+            QString file    =data.value("nomefile").toString();
+            emit DeleteFileForClient(socket,file);
+            break;
+        }
+
         default:		// Wrong message type already addressed in readMessage,
             return;		// no need to handle error again
     }
@@ -128,6 +137,7 @@ QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
             case TypeOperation::Logout:                 return "Logout";
             case TypeOperation::Failure:                return "Failure";
             case TypeOperation::ProfileData:            return "ProfileData";
+            case TypeOperation::DeleteFile:             return "DeleteFile";
             // add other case below
             default:                                    return QString();
         }
