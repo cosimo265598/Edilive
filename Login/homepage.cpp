@@ -15,6 +15,7 @@ HomePage::HomePage(QWidget *parent) :
     eventFilter(new EventFilterImpl(this))
 {
     ui->setupUi(this);
+
 }
 
 HomePage::~HomePage()
@@ -34,7 +35,7 @@ void HomePage::onFileHandlerClicked(){
     selected = dynamic_cast<FileHandler *>(QObject::sender());
 }
 
-//??????
+//?????? --- non serve a nulla questo metotodo è rimasto qui inosservato
 void HomePage::openReceivedFile(QByteArray data){
     QString nomeuser="cosimo";
     QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
