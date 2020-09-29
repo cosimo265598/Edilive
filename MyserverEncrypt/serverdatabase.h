@@ -34,6 +34,7 @@
 class ServerDatabase
 {
 private:
+    Ui::MainWindow *ui_of_server;
     // Prepared queries
     QSqlQuery qInsertNewUser;
     QSqlQuery qUpdateUser;
@@ -70,6 +71,8 @@ public:
     QStringList readUserDocuments(QString username);
     QStringList readDocumentURIs();
     int countDocEditors(QString docURI);
+
+
 
 };
 

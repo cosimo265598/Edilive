@@ -10,6 +10,7 @@
 
 void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
 {
+    this->ui_of_server=ui;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     bool creatingDb=true;
 
@@ -80,10 +81,15 @@ void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
 
     // Selection query for one user whit a particular username
     qExistUser.prepare("SELECT * FROM Users WHERE Username = :username");
+
+    this->ui_of_server->commetdb->appendPlainText("Ready");
+
 }
 
 void ServerDatabase::insertUser(const UserData& user)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query insertUser");
+
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
@@ -105,6 +111,8 @@ void ServerDatabase::insertUser(const UserData& user)
 
 void ServerDatabase::updateUser(const UserData& user)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query updateUser");
+
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
@@ -124,6 +132,8 @@ void ServerDatabase::updateUser(const UserData& user)
 
 void ServerDatabase::addDocToUser(QString username, QString uri)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query addDocToUser");
+
     qInsertDocEditor.bindValue(":username", username);
     qInsertDocEditor.bindValue(":uri", uri);
 
@@ -135,6 +145,8 @@ void ServerDatabase::addDocToUser(QString username, QString uri)
 
 void ServerDatabase::removeDocFromUser(QString username, QString uri)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query removeDocFromUser");
+
     qRemoveDocEditor.bindValue(":username", username);
     qRemoveDocEditor.bindValue(":uri", uri);
 
@@ -147,6 +159,8 @@ void ServerDatabase::removeDocFromUser(QString username, QString uri)
 
 void ServerDatabase::removeDoc(QString uri)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query removeDoc");
+
     qRemoveDoc.bindValue(":uri", uri);
 
     if (!qRemoveDoc.exec()){
@@ -158,6 +172,8 @@ void ServerDatabase::removeDoc(QString uri)
 
 int ServerDatabase::getMaxUserID()
 {
+    this->ui_of_server->commetdb->appendPlainText("Query getMaxUserID");
+
     QSqlQuery query;
     if (query.exec("SELECT MAX(UserID) FROM Users") && query.isActive())
     {
@@ -178,6 +194,8 @@ int ServerDatabase::getMaxUserID()
 
 QList<UserData> ServerDatabase::readUsersList()
 {
+    this->ui_of_server->commetdb->appendPlainText("Query readUsersList");
+
     QList<UserData> users;
     QSqlQuery query;
     if (query.exec("SELECT * FROM Users") && query.isActive())
@@ -210,6 +228,8 @@ QList<UserData> ServerDatabase::readUsersList()
 
 UserData ServerDatabase::readUser(QString username)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query readUsers");
+
     qExistUser.bindValue(":username", username);
 
     if (!qExistUser.exec()){
@@ -232,6 +252,8 @@ UserData ServerDatabase::readUser(QString username)
 
 QStringList ServerDatabase::readUserDocuments(QString username)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query readUsersDocuments");
+
     QStringList docs;
     qSelectUserDocs.bindValue(":username", username);
 
@@ -257,6 +279,8 @@ QStringList ServerDatabase::readUserDocuments(QString username)
 
 QStringList ServerDatabase::readDocumentURIs()
 {
+    this->ui_of_server->commetdb->appendPlainText("Query readDocumentURI");
+
     QList<QString> documents;
     QSqlQuery query;
     if (query.exec("SELECT DISTINCT DocURI FROM DocEditors") && query.isActive())
@@ -281,6 +305,8 @@ QStringList ServerDatabase::readDocumentURIs()
 
 int ServerDatabase::countDocEditors(QString docURI)
 {
+    this->ui_of_server->commetdb->appendPlainText("Query countDocEditor");
+
     qCountDocEditors.bindValue(":uri", docURI);
 
     if (qCountDocEditors.exec() && qCountDocEditors.isActive())

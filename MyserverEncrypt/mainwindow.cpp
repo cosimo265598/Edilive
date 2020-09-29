@@ -369,7 +369,7 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     UserData user(username, userId++, "nickname", password, QImage(":/images/default.png"));		/* create a new user		*/
     users.insert(username, user);               /* insert new user in map	*/
     qDebug() << users[username].getNickname() << " " << users[username].getUserId() << " " ;
-    /*
+
     try
     {	// Add the new user record to the server database
         database.insertUser(user);
@@ -429,14 +429,12 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+file);
 
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
 
     QFile filecreate(path);
     if(filecreate.exists()){
         qDebug()<< " File già presente- "<<file;
-        stream << BuilderMessage::MessageFileCreationError
-                  ("File already exists");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageFileCreationError("File already exists"));
         clientSocket->sendBinaryMessage(data);
         return;
     }
@@ -446,8 +444,8 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         filecreate.close();
         OpenDirOfClient(clientSocket);
     }else{
-        stream << BuilderMessage::MessageFileCreationError
-                  ("Error creation the new file.");
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageFileCreationError("Error creation the new file."));
         clientSocket->sendBinaryMessage(data);
     }
 }
@@ -459,15 +457,13 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
     QByteArray data;
-    QDataStream stream (&data, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_14);
-
-    stream << BuilderMessage::MessageHeaderFile(fileName);
+    BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName));
 
     QFile filecreate(path);
     if(filecreate.exists()){
         if (filecreate.open(QIODevice::ReadWrite)){
-            stream << filecreate.readAll();
+            QByteArray contentFile(filecreate.readAll());
+            BuilderMessage::MessageSendToClient(data,contentFile);
             filecreate.close();
         }
     }
@@ -487,7 +483,7 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     QImage img(QDir().currentPath()+"/logo32.png");
 
     BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageProfileData(
+                data,BuilderMessage::MessageAccountInfo(
                 users[client->getUsername()].getUsername(),
                 users[client->getUsername()].getNickname(),
                  /*users[client->getUsername()].getIcon()*/img));

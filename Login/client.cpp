@@ -118,6 +118,7 @@ void Client::createMainWindowStacked()
     this->mainWindowStacked = new MainWindowStacked();
 
     //connections MainWindowStacked
+
     connect(this, &Client::receivedFileHandlers, mainWindowStacked, &MainWindowStacked::receivedFileHandlers);
     connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
     connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
@@ -126,6 +127,7 @@ void Client::createMainWindowStacked()
 
     subscriberInfoRequest();
     fileHandlersRequest();
+
     this->mainWindowStacked->show();
 }
 
