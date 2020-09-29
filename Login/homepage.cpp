@@ -147,6 +147,7 @@ void HomePage::on_pushButton_Logout_clicked()
 ////TODO
 }
 
+// TODO: optimize with disabling the cancel button if no file handlers highllighted and
 void HomePage::on_pushButton_delete_clicked()
 {
     if(selected != nullptr)
