@@ -64,6 +64,7 @@ private slots:
     void onFileHandlerDbClicked(QString fileName);
     void onCreateNewFileRequest(QString fileName);
     void onDeleteFileRequest(QString fileName);
+    void onUpdateProfileRequest(UpdateUser updateUser);
 
 private:
     MainWindowStacked *mainWindowStacked;

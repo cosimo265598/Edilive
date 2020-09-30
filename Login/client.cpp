@@ -125,6 +125,7 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, &MainWindowStacked::createNewFileRequest, this, &Client::onCreateNewFileRequest);
     connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
     connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
+    connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -302,6 +303,7 @@ void Client::onFileHandlerDbClicked(QString fileName){
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
+//Serve in effettivo salvare l'immagine in locale?
 QByteArray Client::saveAccountImage(QString serializedImage){
 
      auto const encoded = serializedImage.toLatin1();
@@ -330,6 +332,7 @@ QByteArray Client::saveAccountImage(QString serializedImage){
         qDebug() << "Can't open file";
      }
 
+     file.seek(0);
      QByteArray out = file.readAll();
      file.close();
      return out;
@@ -349,5 +352,14 @@ void Client::onDeleteFileRequest(QString fileName){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessagedDeleteFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onUpdateProfileRequest(UpdateUser updateUser){
+    qDebug() << "update";
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedUpdateProfileRequest(updateUser));
     this->m_webSocket->sendBinaryMessage(out);
 }

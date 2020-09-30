@@ -37,6 +37,7 @@ SOURCES += \
     startupstackeddialog.cpp \
     subscriber.cpp \
     textedit.cpp \
+    updateuser.cpp \
     user.cpp
 
 HEADERS += \
@@ -54,6 +55,7 @@ HEADERS += \
     startupstackeddialog.h \
     subscriber.h \
     textedit.h \
+    updateuser.h \
     user.h
 
 FORMS += \

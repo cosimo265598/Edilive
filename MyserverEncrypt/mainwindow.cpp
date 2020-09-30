@@ -515,6 +515,27 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     //qDebug()<<data;
 }
 
+void MainWindow::updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage ){
+    qDebug()<<"segnale di modifica dati profilo ricevuto";
+    /*
+         *
+        QSharedPointer<Client> client = clients[clientSocket];
+
+        QByteArray data;
+        //debug invio immagine di prova
+        QImage img(QDir().currentPath()+"/logo32.png");
+
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountInfo(
+                    users[client->getUsername()].getUsername(),
+                    users[client->getUsername()].getNickname(),
+                     //users[client->getUsername()].getIcon()
+    img));
+
+        clientSocket->sendBinaryMessage(data);
+        //qDebug()<<data;
+       */
+}
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {

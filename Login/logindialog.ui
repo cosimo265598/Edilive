@@ -561,6 +561,9 @@
          <property name="text">
           <string>ciao</string>
          </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
         </widget>
        </item>
       </layout>

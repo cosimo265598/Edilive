@@ -69,6 +69,7 @@ public slots:
 
     /* Profile data */
     void PersonalDataOfClient (QWebSocket* clientSocket);
+    void updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage );
 
 private:
     QSharedPointer<Ui::MainWindow> ui;

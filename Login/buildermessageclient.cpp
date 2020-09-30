@@ -134,3 +134,32 @@ QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString nomefile)
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
+
+QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(UpdateUser updateUser)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",7);
+    objtosend.insert("auth",true);
+
+    if(updateUser.getNickname()!=nullptr)
+        objtosend.insert("nickname",updateUser.getNickname());
+    else
+        objtosend.insert("nickname","");
+
+    if(updateUser.getPassword()!=nullptr)
+        objtosend.insert("password",updateUser.getPassword());
+    else
+        objtosend.insert("password","");
+
+    if(updateUser.getSerializedImage()!=nullptr){
+        QByteArray image = updateUser.getSerializedImage();
+        QBuffer buffer(&image);
+        buffer.open(QIODevice::WriteOnly);
+        objtosend.insert("icon",QLatin1String(buffer.data().toBase64()));
+    }else
+        objtosend.insert("icon","");
+
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}

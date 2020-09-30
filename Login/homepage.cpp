@@ -1,9 +1,5 @@
 #include "homepage.h"
-#include "ui_homepage.h"
-#include <QtCore/QDebug>
-#include <QCoreApplication>
-#include <QDir>
-#include "buildermessageclient.h"
+
 
 QT_USE_NAMESPACE
 
@@ -147,17 +143,6 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
     loadImage();
 }
 
-void HomePage::loadImage(){
-
-    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    this->pixmap->loadFromData(file.readAll());
-    ui->accountImage->setPixmap(*pixmap);
-    file.close();
-
-}
-
 void HomePage::onNewFileCreationFailure(QString errorMessage){
     QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
 }
@@ -176,4 +161,13 @@ void HomePage::deleteFile(){
         selected = nullptr;
         emit deleteFileRequest(fileName);
      }
+}
+
+void HomePage::loadImage(){
+    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    this->pixmap->loadFromData(file.readAll());
+    ui->accountImage->setPixmap(*pixmap);
+    file.close();
 }

@@ -53,7 +53,9 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::PersonalDataOfClient,Qt::DirectConnection);
 
-
+    connect(this, &ProcessOperation::accountUpdate,
+            dynamic_cast<MainWindow*>(this->parent()),
+            &MainWindow::updateProfileClient,Qt::DirectConnection);
 }
 
 
@@ -108,6 +110,15 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
         case DeleteFile:{
             QString file    =data.value("nomefile").toString();
             emit DeleteFileForClient(socket,file);
+            break;
+        }
+
+        case AccountUpdate:{
+            QString user    =data.value("nickname").toString();
+            QString password=data.value("password").toString();
+            QString serializedImage=data.value("icon").toString();
+
+            emit accountUpdate(socket,user,password, serializedImage);
             break;
         }
 

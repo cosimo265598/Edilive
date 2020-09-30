@@ -85,6 +85,7 @@ signals:
 
     /* Profile */
     void PersonalDataOfClient(QWebSocket* clientSocket);
+    void accountUpdate(QWebSocket*, QString, QString, QString);
 };
 
 #endif // PROCESSOPERATION_H

@@ -83,7 +83,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="password"/>
+    <widget class="QLineEdit" name="password">
+     <property name="echoMode">
+      <enum>QLineEdit::Password</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="confirmPasswordLabel">
@@ -96,6 +100,9 @@
     <widget class="QLineEdit" name="confirmPassword">
      <property name="text">
       <string/>
+     </property>
+     <property name="echoMode">
+      <enum>QLineEdit::Password</enum>
      </property>
     </widget>
    </item>

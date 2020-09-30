@@ -2,7 +2,6 @@
 #define HOMEPAGE_H
 
 #include <QWidget>
-
 #include <QMainWindow>
 #include <QtCore/QObject>
 #include <QtWebSockets/QWebSocket>
@@ -18,7 +17,12 @@
 #include <QToolButton>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QtCore/QDebug>
+#include <QCoreApplication>
+#include <QDir>
 
+#include "ui_homepage.h"
+#include "buildermessageclient.h"
 #include "filehandler.h"
 #include "eventfilterimpl.h"
 #include "subscriber.h"
@@ -64,8 +68,9 @@ private:
     QStringList listfile;
     QPixmap *pixmap;
     FileHandler *selected;
-    void loadImage();
+
     void deleteFile();
+    void loadImage();
 
 signals:
     void fileHandlerDbClicked(QString fileName);

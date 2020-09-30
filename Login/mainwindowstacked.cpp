@@ -11,7 +11,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     ui->setupUi(this);
     MainWindowStacked::setAttribute(Qt::WA_DeleteOnClose, true);
     ui->stackedWidget->addWidget(&homePage);
-    //ui->stackedWidget->addWidget(&profile_client);
+    ui->stackedWidget->addWidget(&profilePage);
     ui->stackedWidget->setCurrentIndex(0);
 
     //connections homePage
@@ -24,9 +24,9 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     connect(&homePage, &HomePage::deleteFileRequest, this, &MainWindowStacked::deleteFileRequest);
 
     //connection ProfilePage
-    //connect(&profilePage, &HomePage::updateAccountClicked,  [this](){MainWindowStacked::setWindowTitle("Update account"); ui->stackedWidget->setCurrentIndex(1);});
-    //connect(this, &MainWindowStacked::loadSubscriberInfo, &profilePage, &ProfilePage::onLoadSubscriberInfo);
-
+    connect(&profilePage, &ProfilePage::returnToHomeClicked,  [this](){MainWindowStacked::setWindowTitle("HomePage"); ui->stackedWidget->setCurrentIndex(0);});
+    connect(this, &MainWindowStacked::loadSubscriberInfo, &profilePage, &ProfilePage::onLoadSubscriberInfo);
+    connect(&profilePage, &ProfilePage::updateProfileRequest, this, &MainWindowStacked::updateProfileRequest);
 }
 
 MainWindowStacked::~MainWindowStacked()
