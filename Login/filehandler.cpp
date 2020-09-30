@@ -13,7 +13,6 @@ FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &file
     QString buttonStyle = "QToolButton{border:none;}";
 
     QToolButton::setStyleSheet(buttonStyle);
-    QToolButton::setFocusPolicy(Qt::NoFocus);
 
     this->path = path;
     this->owner = owner;

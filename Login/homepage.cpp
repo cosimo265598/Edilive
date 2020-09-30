@@ -11,6 +11,8 @@ HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::HomePage),
     pixmap(new QPixmap()),
+    row(0),
+    column(0),
     eventFilter(new EventFilterImpl(this)),
     selected(nullptr)
 {
@@ -38,7 +40,10 @@ void HomePage::onFileHandlerClicked(){
     qDebug() << "File Handler";
     selected = dynamic_cast<FileHandler *>(QObject::sender());
     selected->setFocus();
-    //selected->setStyleSheet("QToolButton:focus:press{ background-color: blue; }");
+
+    //During the construction of every FileHandler, a style sheet is set in order to have border:none
+    // If element is highlighted, I want a border shown
+    selected->setStyleSheet("");
 }
 
 void HomePage::onFocusChange(QWidget *old, QWidget *now){
@@ -46,21 +51,14 @@ void HomePage::onFocusChange(QWidget *old, QWidget *now){
     qDebug() << "old " << old;
     qDebug() << "now " << now;
     if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
-        qDebug() << "null";
+        //Reset the original stylesheet with no border if the element is no more focused
+        selected->setStyleSheet("QToolButton{border:none;}");
         selected = nullptr;
+
     }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){
         qDebug() << "delete";
         deleteFile();
     }
-}
-
-//?????? --- non serve a nulla questo metotodo è rimasto qui inosservato
-void HomePage::openReceivedFile(QByteArray data){
-    QString nomeuser="cosimo";
-    QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
-    file.open(QIODevice::WriteOnly);
-    file.write(data);
-    file.close();
 }
 
 void HomePage::on_pushButton_new_file_clicked()
@@ -87,6 +85,7 @@ void HomePage::on_pushButton_new_file_clicked()
     }
 }
 
+//NON credo serva
 void HomePage::on_pushButton_aggiorna_vista_clicked()
 {
     /*
@@ -114,6 +113,7 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
         delete widget;
         }
     }
+
     int row = 0;
     int column = 0;
 
@@ -167,7 +167,6 @@ void HomePage::on_pushButton_Logout_clicked()
 ////TODO
 }
 
-// TODO: optimize with disabling the cancel button if no file handlers highllighted and
 void HomePage::deleteFile(){
      QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
      delMsgBox.addButton(QMessageBox::Cancel);

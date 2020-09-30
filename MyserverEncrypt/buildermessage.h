@@ -24,8 +24,10 @@ public:
     static QJsonDocument MessageFileCreationError(QString error);
     static QJsonDocument MessageHeaderFile(QString data);
     static QJsonDocument MessageFileDeletionError(QString error);
+    static QJsonDocument MessageFileCreationSuccess(QString username,QString nickname,QImage icon);//
 
     static QJsonDocument MessageAccountInfo(QString username,QString nickname,QImage icon);
+
 };
 
 

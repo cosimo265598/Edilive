@@ -442,7 +442,9 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         QTextStream out(&filecreate);
         out << "";
         filecreate.close();
+        //fileCreationSuccess(clientSocket, path);
         OpenDirOfClient(clientSocket);
+
     }else{
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageFileCreationError("Error creation the new file."));
@@ -559,3 +561,22 @@ void MainWindow::processBinaryMessage(QByteArray message)
     }
 }
 
+/*
+void MainWindow::fileCreationSuccess(QWebSocket* clientSocket, QString path){
+    QJsonArray files;
+    QByteArray data;
+    QFileInfo fileInfo(path);
+    files.append(QJsonObject{
+                     {"filename", fileInfo.fileName()}, // meglio file name
+                     {"owner", fileInfo.owner()},
+                     {"lastModified",  fileInfo.lastModified().toString()},
+                     {"lastRead", fileInfo.lastRead().toString()},
+                     {"size", QString::number(fileInfo.size()) }
+                 });
+
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageOpenDirOfClient(files));
+    clientSocket->sendBinaryMessage(data);
+}
+
+*/

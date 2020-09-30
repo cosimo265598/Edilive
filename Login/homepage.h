@@ -38,7 +38,6 @@ class HomePage : public QMainWindow
 public:
     HomePage(QWidget *parent = nullptr);
     ~HomePage();
-    void openReceivedFile(QByteArray data);
 
 private Q_SLOTS:
     void onFileHandlerDbClicked();
@@ -56,7 +55,11 @@ public Q_SLOTS:
 
 private:
     Ui::HomePage *ui;
-    QWebSocket *client_socket;
+
+    // row e column da togliere se non ottimizziamo per non ricaricare la pagina ad ogni inserzione, cancellazione
+    int row;
+    int column;
+
     EventFilterImpl *eventFilter;
     QStringList listfile;
     QPixmap *pixmap;
