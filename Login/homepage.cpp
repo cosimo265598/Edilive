@@ -1,9 +1,5 @@
 #include "homepage.h"
-#include "ui_homepage.h"
-#include <QtCore/QDebug>
-#include <QCoreApplication>
-#include <QDir>
-#include "buildermessageclient.h"
+
 
 QT_USE_NAMESPACE
 
@@ -11,9 +7,15 @@ HomePage::HomePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::HomePage),
     pixmap(new QPixmap()),
-    eventFilter(new EventFilterImpl(this))
+    row(0),
+    column(0),
+    eventFilter(new EventFilterImpl(this)),
+    selected(nullptr)
 {
     ui->setupUi(this);
+
+    //Prototype -> QApplication::focusChanged(QWidget *old, QWidget *now)
+    connect(qApp, &QApplication::focusChanged, this, &HomePage::onFocusChange);
 
 }
 
@@ -22,20 +24,37 @@ HomePage::~HomePage()
     delete ui;
     delete eventFilter;
     delete pixmap;
+    delete selected;
+}
+
+void HomePage::onFileHandlerDbClicked(){
+
+    emit fileHandlerDbClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
 }
 
 void HomePage::onFileHandlerClicked(){
+    qDebug() << "File Handler";
+    selected = dynamic_cast<FileHandler *>(QObject::sender());
+    selected->setFocus();
 
-    emit fileHandlerClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
+    //During the construction of every FileHandler, a style sheet is set in order to have border:none
+    // If element is highlighted, I want a border shown
+    selected->setStyleSheet("");
 }
 
-//?????? --- non serve a nulla questo metotodo è rimasto qui inosservato
-void HomePage::openReceivedFile(QByteArray data){
-    QString nomeuser="cosimo";
-    QFile file("/home/"+nomeuser+"/tmp/prova.txt"); // change path
-    file.open(QIODevice::WriteOnly);
-    file.write(data);
-    file.close();
+void HomePage::onFocusChange(QWidget *old, QWidget *now){
+
+    qDebug() << "old " << old;
+    qDebug() << "now " << now;
+    if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
+        //Reset the original stylesheet with no border if the element is no more focused
+        selected->setStyleSheet("QToolButton{border:none;}");
+        selected = nullptr;
+
+    }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){
+        qDebug() << "delete";
+        deleteFile();
+    }
 }
 
 void HomePage::on_pushButton_new_file_clicked()
@@ -62,6 +81,7 @@ void HomePage::on_pushButton_new_file_clicked()
     }
 }
 
+//NON credo serva
 void HomePage::on_pushButton_aggiorna_vista_clicked()
 {
     /*
@@ -89,6 +109,7 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
         delete widget;
         }
     }
+
     int row = 0;
     int column = 0;
 
@@ -105,7 +126,9 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
                                                  dir["owner"].toString()+"\tLast Modified: "+
                                                  dir["lastModified"].toString()+ "\tSize: "+
                                                  dir["size"].toString() );   });
-        connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerClicked);
+        connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerDbClicked);
+        connect(item, &FileHandler::clicked,this, &HomePage::onFileHandlerClicked);
+
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
         qDebug()<<row<< " "<<column;
         column = (++column)%6;
@@ -120,17 +143,6 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
     loadImage();
 }
 
-void HomePage::loadImage(){
-
-    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    this->pixmap->loadFromData(file.readAll());
-    ui->accountImage->setPixmap(*pixmap);
-    file.close();
-
-}
-
 void HomePage::onNewFileCreationFailure(QString errorMessage){
     QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
 }
@@ -138,4 +150,24 @@ void HomePage::onNewFileCreationFailure(QString errorMessage){
 void HomePage::on_pushButton_Logout_clicked()
 {
 ////TODO
+}
+
+void HomePage::deleteFile(){
+     QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
+     delMsgBox.addButton(QMessageBox::Cancel);
+     if(delMsgBox.exec()==QMessageBox::Ok){
+        qDebug() << "OK";
+        QString fileName = selected -> getFilename();
+        selected = nullptr;
+        emit deleteFileRequest(fileName);
+     }
+}
+
+void HomePage::loadImage(){
+    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    this->pixmap->loadFromData(file.readAll());
+    ui->accountImage->setPixmap(*pixmap);
+    file.close();
 }

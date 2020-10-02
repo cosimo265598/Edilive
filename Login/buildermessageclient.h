@@ -4,6 +4,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QImage>
+#include <QBuffer>
+
+#include "updateuser.h"
 
 class BuilderMessageClient
 {
@@ -22,9 +25,11 @@ public:
     static QJsonDocument MessageCreateNewFile(QString nomefile);
     static QJsonDocument MessageGenericErrorFile(QString data);
     static QJsonDocument MessageOpenFile(QString nomefile);
+    static QJsonDocument MessagedDeleteFile(QString nomefile);
 
     // profile managemet
     static QJsonDocument MessageSubscriberInfoRequest();
+    static QJsonDocument MessagedUpdateProfileRequest(UpdateUser);
 };
 
 #endif // BUILDERMESSAGECLIENT_H

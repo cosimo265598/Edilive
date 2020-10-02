@@ -11,6 +11,7 @@ FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &file
     QToolButton::setIconSize(QSize(100,100));
     QToolButton::setMaximumSize(QSize(100,130));
     QString buttonStyle = "QToolButton{border:none;}";
+
     QToolButton::setStyleSheet(buttonStyle);
 
     this->path = path;

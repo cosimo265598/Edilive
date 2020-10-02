@@ -3,41 +3,33 @@
 #include <QDialogButtonBox>
 #include <QDebug>
 #include "buildermessageclient.h"
-#include <QWebSocket>
-#include <QPixmap>
-#include <QBitmap>
-#include <QFile>
-#include <QDir>
 
-ProfilePage::ProfilePage(QWidget *parent,QWebSocket* client_socket) :
+
+ProfilePage::ProfilePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ProfilePage),
-    client_socket(client_socket),
-    pixmap(new QPixmap())
+    pixmap(new QPixmap()),
+    updateUser(new UpdateUser())
 {
     ui->setupUi(this);
-    mod=setModify(false);
-    // make a query for retrive personal data
-    QByteArray out;
-    /*
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenProfilePage());
-    client_socket->sendBinaryMessage(out);
-    */
-
 }
 
 ProfilePage::~ProfilePage()
 {
     delete ui;
+    delete pixmap;
+    delete updateUser;
 }
 
 
 void ProfilePage::on_buttonBox_ok_cancel_accepted()
 {
-
-    qDebug()<<"sicuro ?";
+    if(updateUser->getPassword() == nullptr && updateUser->getNickname() == nullptr && updateUser->getSerializedImage() == nullptr){
+        QMessageBox::critical(this, tr("WARNING"),"No changes detected",QMessageBox::Ok);
+        return;
+    }
+    emit updateProfileRequest(*updateUser);
+    updateUser->reset();
 }
 
 void ProfilePage::on_buttonBox_ok_cancel_rejected()
@@ -45,33 +37,9 @@ void ProfilePage::on_buttonBox_ok_cancel_rejected()
     qDebug()<<"sicuro ?" <<"rejected";
 }
 
-void ProfilePage::viewDataOfClient(QJsonObject j)
-{
-    QString path=QDir().tempPath()+"/avatar.png";
-    bool stateicon=j.value("ico_present").toBool();
-    if(stateicon){
-        // l'immagine del profilo non è quella di default
-        auto data=j.value("ico").toString().toLatin1();
-        QPixmap p;
-        p.loadFromData(QByteArray::fromBase64(data), "PNG");
-
-        if(!p.save(path)){
-            qDebug()<<"not saved for error";
-            return;
-        }
-
-        setImageProfile(path);
-    } else {
-        // usare l'immagine di default
-        QString pathdefault=":/icons_pack/avatar_default.png";
-        setImageProfile(pathdefault);
-
-    }
-    //ui->lineEdit_nick->setText(j.value("nickname").toString());
-    //ui->username_value->setText(j.value("username").toString());
-
-}
-
+/* Lasciamo perdere il discorso della immagine circolare???
+ *
+ *
 void ProfilePage::setImageProfile(QString& path)
 {
     QPixmap pixmap(path);
@@ -79,25 +47,21 @@ void ProfilePage::setImageProfile(QString& path)
     //ui->profileImage->setPixmap(scaled);
 
 }
-
-bool ProfilePage::setModify(bool value)
-{
-    //ui->lineEdit_nick->setEnabled(value);
-    ui->lineEdit_password->setEnabled(value);
-    ui->lineEdit_confirm_password->setEnabled(value);
-    return value;
-}
+*/
 
 void ProfilePage::on_pushButton_returnToHome_clicked()
 {
-    emit returnToHome();
+    emit returnToHomeClicked();
 }
 
-void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname){
+void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
     ui->username->setText(username);
     ui->nickname->setText(nickname);
+    //this->pixmap->loadFromData(serializedImage);
+    //ui->accountImage->setPixmap(*pixmap);
     loadImage();
 }
+
 
 void ProfilePage::loadImage(){
     QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
@@ -106,4 +70,41 @@ void ProfilePage::loadImage(){
     this->pixmap->loadFromData(file.readAll());
     ui->accountImage->setPixmap(*pixmap);
     file.close();
+}
+
+
+void ProfilePage::on_pushButton_changeImage_clicked()
+{
+    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image (PNG format)"), QDir::homePath(), tr("Image Files (*.png)"));
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    QByteArray serializedImage = file.readAll();
+    file.close();
+    this->pixmap->loadFromData(serializedImage);
+    ui->accountImage->setPixmap(*pixmap);
+    updateUser->setSerializedImage(serializedImage);
+}
+
+void ProfilePage::on_nickname_editingFinished()
+{
+    if(ui->nickname->text()==nullptr)
+        updateUser->setNickname(nullptr);
+    else
+        updateUser->setNickname(ui->nickname->text());
+}
+
+void ProfilePage::on_password_editingFinished()
+{
+    if(ui->password->text() != ui->confirmPassword->text())
+       updateUser->setPassword(nullptr);
+    else
+       updateUser->setPassword(ui->password->text());
+}
+
+void ProfilePage::on_confirmPassword_editingFinished()
+{
+    if(ui->confirmPassword->text() != ui->password->text())
+        updateUser->setPassword(nullptr);
+    else
+        updateUser->setPassword(ui->password->text());
 }

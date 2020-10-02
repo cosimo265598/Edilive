@@ -65,9 +65,11 @@ public slots:
     void OpenDirOfClient(QWebSocket* clientSocket);
     void CreateFileForClient(QWebSocket* clientSocket, QString file);
     void OpenFileForClient(QWebSocket* clientSocket, QString file);
+    void DeleteFileForClient(QWebSocket *clientSocket, QString fileName);
 
     /* Profile data */
     void PersonalDataOfClient (QWebSocket* clientSocket);
+    void updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage );
 
 private:
     QSharedPointer<Ui::MainWindow> ui;
@@ -79,6 +81,7 @@ private:
     QMap<QString, UserData> users;
     ProcessOperation *po;
     int userId;
+    //void fileCreationSuccess(QWebSocket* clientSocket, QString fileName);
 
 
 };

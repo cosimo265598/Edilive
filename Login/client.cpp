@@ -120,10 +120,12 @@ void Client::createMainWindowStacked()
     //connections MainWindowStacked
 
     connect(this, &Client::receivedFileHandlers, mainWindowStacked, &MainWindowStacked::receivedFileHandlers);
-    connect(mainWindowStacked, &MainWindowStacked::fileHandlerClicked, this, &Client::onFileHandlerClicked);
+    connect(mainWindowStacked, &MainWindowStacked::fileHandlerDbClicked, this, &Client::onFileHandlerDbClicked);
     connect(this, &Client::loadSubscriberInfo, mainWindowStacked, &MainWindowStacked::loadSubscriberInfo);
     connect(mainWindowStacked, &MainWindowStacked::createNewFileRequest, this, &Client::onCreateNewFileRequest);
     connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
+    connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
+    connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -234,7 +236,6 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             break;
         }
         case 13:{    // file gia presente
-            //QMessageBox::critical(secondWindows, tr("Errore nella creazione del file"),jsonObj["error"].toString(),QMessageBox::Ok);
             qDebug() << "Errore nella creazione del file";
             emit newFileCreationFailure(jsonObj["error"].toString());
             break;
@@ -264,6 +265,12 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             break;
         }
 
+        case 19:{    // file not found
+            qDebug() << "Errore nella eliminazione del file";
+            //emit newFileCreationFailure(jsonObj["error"].toString());
+            break;
+        }
+
         default:         return;
     }
 }
@@ -287,7 +294,7 @@ void Client::onConnectionFailure(){
     }
 }
 
-void Client::onFileHandlerClicked(QString fileName){
+void Client::onFileHandlerDbClicked(QString fileName){
 
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
@@ -296,6 +303,7 @@ void Client::onFileHandlerClicked(QString fileName){
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
+//Serve in effettivo salvare l'immagine in locale?
 QByteArray Client::saveAccountImage(QString serializedImage){
 
      auto const encoded = serializedImage.toLatin1();
@@ -324,6 +332,7 @@ QByteArray Client::saveAccountImage(QString serializedImage){
         qDebug() << "Can't open file";
      }
 
+     file.seek(0);
      QByteArray out = file.readAll();
      file.close();
      return out;
@@ -335,5 +344,22 @@ void Client::onCreateNewFileRequest(QString fileName){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageCreateNewFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onDeleteFileRequest(QString fileName){
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedDeleteFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onUpdateProfileRequest(UpdateUser updateUser){
+    qDebug() << "update";
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedUpdateProfileRequest(updateUser));
     this->m_webSocket->sendBinaryMessage(out);
 }

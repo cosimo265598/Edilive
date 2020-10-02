@@ -454,7 +454,9 @@ void MainWindow::CreateFileForClient(QWebSocket *clientSocket, QString file)
         QTextStream out(&filecreate);
         out << "";
         filecreate.close();
+        //fileCreationSuccess(clientSocket, path);
         OpenDirOfClient(clientSocket);
+
     }else{
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageFileCreationError("Error creation the new file."));
@@ -485,6 +487,27 @@ void MainWindow::OpenFileForClient(QWebSocket *clientSocket, QString fileName)
     clientSocket->sendBinaryMessage(data);
 }
 
+void MainWindow::DeleteFileForClient(QWebSocket *clientSocket, QString fileName)
+{
+    qDebug()<<"segnale delete file ricevuto";
+    QSharedPointer<Client> client = clients[clientSocket];
+    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
+
+    QByteArray data;
+
+    QFile file(path);
+    if(!file.exists()){
+        qDebug()<< "File not found";
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageFileDeletionError("File not found"));
+        clientSocket->sendBinaryMessage(data);
+        return;
+    }else{
+        file.remove();
+        OpenDirOfClient(clientSocket);
+    }
+}
+
 void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
 {
     qDebug()<<"segnale di apertura dati profilo ricevuto";
@@ -504,6 +527,27 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     //qDebug()<<data;
 }
 
+void MainWindow::updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage ){
+    qDebug()<<"segnale di modifica dati profilo ricevuto";
+    /*
+         *
+        QSharedPointer<Client> client = clients[clientSocket];
+
+        QByteArray data;
+        //debug invio immagine di prova
+        QImage img(QDir().currentPath()+"/logo32.png");
+
+        BuilderMessage::MessageSendToClient(
+                    data,BuilderMessage::MessageAccountInfo(
+                    users[client->getUsername()].getUsername(),
+                    users[client->getUsername()].getNickname(),
+                     //users[client->getUsername()].getIcon()
+    img));
+
+        clientSocket->sendBinaryMessage(data);
+        //qDebug()<<data;
+       */
+}
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {
@@ -550,3 +594,22 @@ void MainWindow::processBinaryMessage(QByteArray message)
     }
 }
 
+/*
+void MainWindow::fileCreationSuccess(QWebSocket* clientSocket, QString path){
+    QJsonArray files;
+    QByteArray data;
+    QFileInfo fileInfo(path);
+    files.append(QJsonObject{
+                     {"filename", fileInfo.fileName()}, // meglio file name
+                     {"owner", fileInfo.owner()},
+                     {"lastModified",  fileInfo.lastModified().toString()},
+                     {"lastRead", fileInfo.lastRead().toString()},
+                     {"size", QString::number(fileInfo.size()) }
+                 });
+
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageOpenDirOfClient(files));
+    clientSocket->sendBinaryMessage(data);
+}
+
+*/

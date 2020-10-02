@@ -2,7 +2,6 @@
 #define HOMEPAGE_H
 
 #include <QWidget>
-
 #include <QMainWindow>
 #include <QtCore/QObject>
 #include <QtWebSockets/QWebSocket>
@@ -18,7 +17,12 @@
 #include <QToolButton>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QtCore/QDebug>
+#include <QCoreApplication>
+#include <QDir>
 
+#include "ui_homepage.h"
+#include "buildermessageclient.h"
 #include "filehandler.h"
 #include "eventfilterimpl.h"
 #include "subscriber.h"
@@ -38,15 +42,15 @@ class HomePage : public QMainWindow
 public:
     HomePage(QWidget *parent = nullptr);
     ~HomePage();
-    void openReceivedFile(QByteArray data);
 
 private Q_SLOTS:
+    void onFileHandlerDbClicked();
     void onFileHandlerClicked();
     void on_pushButton_new_file_clicked();
     void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
-
     void on_pushButton_Logout_clicked();
+    void onFocusChange(QWidget *old, QWidget *now);
 
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
@@ -55,17 +59,24 @@ public Q_SLOTS:
 
 private:
     Ui::HomePage *ui;
-    QWebSocket *client_socket;
+
+    // row e column da togliere se non ottimizziamo per non ricaricare la pagina ad ogni inserzione, cancellazione
+    int row;
+    int column;
+
     EventFilterImpl *eventFilter;
     QStringList listfile;
     QPixmap *pixmap;
+    FileHandler *selected;
+
+    void deleteFile();
     void loadImage();
 
 signals:
-    void fileHandlerClicked(QString fileName);
+    void fileHandlerDbClicked(QString fileName);
     void updateAccountClicked();
     void createNewFileRequest(QString fileName);
-
+    void deleteFileRequest(QString fileName);
 };
 
 #endif // HOMEPAGE_H
