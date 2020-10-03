@@ -78,6 +78,9 @@ void MainWindow::prepareToStart()
     }
 
     // Read The database file , avoid to interview each time the db
+    QList<UserData> listUser=database.readUsersList();
+    /* Possible implementation , load at the begining in map
+
     for (UserData user : database.readUsersList() )
     {
         for (QString docUri : database.readUserDocuments(user.getUsername()))
@@ -85,11 +88,12 @@ void MainWindow::prepareToStart()
             user.addDocument(docUri);
         }
         users.insert(user.getUsername(), user);
-    }
+    }*/
+
     // Initialize the counter
     userId = database.getMaxUserID();
 
-    ui->commet->appendPlainText("Users counter: "+ QString::number(users.count()) );
+    ui->commet->appendPlainText("Users in database: "+ QString::number(listUser.count()) );
 
     ui->commet->appendPlainText("(INIT COMPLETE )" );
 }
@@ -254,8 +258,35 @@ void MainWindow::SimpleTextMessageTest(){
 */
 void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     QSharedPointer<Client> client = clients[clientSocket];
-
     QByteArray data;
+
+    try {
+        UserData user(database.readUser(username));
+
+        if(user.isEmpty()){            // utente non registrato, non presente nel db.
+            ui->commet->appendPlainText("Client not Registered "+username);
+            BuilderMessage::MessageSendToClient(
+                        data,
+                        BuilderMessage::MessageLoginError("Client not registered."));
+
+            clientSocket->sendBinaryMessage(data);
+            socketAbort(clientSocket);
+
+        }else{
+            for (QString docUri : database.readUserDocuments(user.getUsername()))
+                user.addDocument(docUri);
+            users.insert(user.getUsername(), user);
+        }
+    }  catch (DatabaseReadException& re) {
+        users.remove(username);
+        ui->commet->appendPlainText("Databaseread problem during the query excution");
+        BuilderMessage::MessageSendToClient(
+                    data,
+                    BuilderMessage::MessageLoginError("Error database sever"));
+        clientSocket->sendBinaryMessage(data);
+        socketAbort(clientSocket);
+        return;
+    }
 
 
     if (users.contains(username))
@@ -277,6 +308,7 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
         clientSocket->sendBinaryMessage(data);
 
     }
+    /*
     else {
         // send message utente non registrato
         ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
@@ -286,7 +318,7 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
 
         clientSocket->sendBinaryMessage(data);
         socketAbort(clientSocket);
-    }
+    }*/
 }
 
 void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
@@ -314,6 +346,7 @@ void MainWindow::serverLoginUnlock(QWebSocket *clientSocket, QString token)
                     data,BuilderMessage::MessageLoginError("Credential inserted are not corrected"));
         clientSocket->sendBinaryMessage(data);
         socketAbort(clientSocket);
+        users.remove(client->getUsername());
         return ;
     }
 }
@@ -323,46 +356,24 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;
 
-    /*
-    if (client->isLogged()){
-        BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountError("Client already logged in"));
-        clientSocket->sendBinaryMessage(data);
-        return;
-    }
-
-    //check if username or password are nulls
-    if (!username.compare("") || !password.compare("")){
-        BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountError("User/Psw can not be empty"));
-        clientSocket->sendBinaryMessage(data);
-        return;
-    }
-    //check username length
-    if (username.length() > MAX_NAME_LENGTH){
-        BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountError("Username too long"));
-        clientSocket->sendBinaryMessage(data);
-        return;
-    }
-    */
     //check if this username is already used
-
-    if (users.contains(username)){
+    try {
+        UserData user(database.readUser(username));
+        if(!user.isEmpty()){
+            BuilderMessage::MessageSendToClient(
+                        data,BuilderMessage::MessageAccountError("Username already exist"));
+            clientSocket->sendBinaryMessage(data);
+            return;
+        }
+    }  catch (DatabaseReadException& re) {
+        ui->commet->appendPlainText("Databaseread problem during the query execution");
         BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountError("Username already exist"));
+                    data,
+                    BuilderMessage::MessageLoginError("Error database sever during registration phase"));
         clientSocket->sendBinaryMessage(data);
+        socketAbort(clientSocket);
         return;
     }
-    /*
-    // check whitespaces
-    if (!QRegExp("^[^\\s]+$").exactMatch(username)){
-        BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountError("Username mut not be only whitespaces"));
-        clientSocket->sendBinaryMessage(data);
-        return;
-    }
-    */
     // no check on image because are used for the firts time default settings
 
     ui->commet->appendPlainText("Creating new user account "+username);
@@ -388,6 +399,7 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
         BuilderMessage::MessageSendToClient(
                     data,BuilderMessage::MessageAccountError("Internal Error"));
         clientSocket->sendBinaryMessage(data);
+        socketAbort(clientSocket);
         return;
     }
     BuilderMessage::MessageSendToClient(

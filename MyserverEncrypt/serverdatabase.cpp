@@ -228,13 +228,13 @@ QList<UserData> ServerDatabase::readUsersList()
 
 UserData ServerDatabase::readUser(QString username)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query readUsers");
+    this->ui_of_server->commetdb->appendPlainText("Query readUser");
 
     qExistUser.bindValue(":username", username);
 
     if (!qExistUser.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error add doc to user";
-        throw DatabaseWriteException(qExistUser.lastQuery().toStdString(), qExistUser.lastError());
+        qDebug()<<LOG_PRINT_DB+"Error read user";
+        throw DatabaseReadException(qExistUser.lastQuery().toStdString(), qExistUser.lastError());
     }
     if(qExistUser.first()){
         UserData user(qExistUser.value("Username").toString(),
