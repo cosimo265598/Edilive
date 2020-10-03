@@ -1,5 +1,6 @@
 #include "mainwindowstacked.h"
 #include "ui_mainwindowstacked.h"
+#include <QSizePolicy>
 
 MainWindowStacked::MainWindowStacked(QWidget *parent) :
     QWidget(parent),
@@ -8,11 +9,14 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     ui->setupUi(this);
 
     qDebug()<<"called costructor second dialog";
-    ui->setupUi(this);
+
+    //this->setFixedSize(1200, 800);
+
     MainWindowStacked::setAttribute(Qt::WA_DeleteOnClose, true);
     ui->stackedWidget->addWidget(&homePage);
     ui->stackedWidget->addWidget(&profilePage);
     ui->stackedWidget->setCurrentIndex(0);
+
 
     //connections homePage
     connect(this, &MainWindowStacked::receivedFileHandlers, &homePage, &HomePage::onReceivedFileHandlers);

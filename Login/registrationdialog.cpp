@@ -6,7 +6,7 @@ RegistrationDialog::RegistrationDialog(QWidget *parent) :
     ui(new Ui::RegistrationDialog)
 {
     ui->setupUi(this);
-    RegistrationDialog::setFixedSize(371,465);
+    //RegistrationDialog::setFixedSize(371,465);
     ui->errorMessage->setStyleSheet("color : red");
 }
 

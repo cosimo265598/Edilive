@@ -134,6 +134,7 @@ void Client::createMainWindowStacked()
 }
 
 void Client::subscriberInfoRequest(){
+
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,

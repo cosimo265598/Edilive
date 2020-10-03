@@ -35,7 +35,7 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-class HomePage : public QMainWindow
+class HomePage : public QWidget
 {
     Q_OBJECT
 

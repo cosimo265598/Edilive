@@ -7,7 +7,7 @@ StartupStackedDialog::StartupStackedDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     StartupStackedDialog::setAttribute(Qt::WA_DeleteOnClose, true);
-    StartupStackedDialog::setFixedSize(371,465);
+    //StartupStackedDialog::setFixedSize(371,465);
     ui->stackedWidget->addWidget(&loginDialog);
     ui->stackedWidget->addWidget(&registrationDialog);
     ui->stackedWidget->setCurrentIndex(0);
