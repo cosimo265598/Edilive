@@ -11,7 +11,7 @@ Client::Client(QObject *parent) :
     subscriber(nullptr),
     clientStatus(Startup)
 {
-    this->waitingTimer->setInterval(20000);
+    this->waitingTimer->setInterval(6000);
 
     m_webSocket = QSharedPointer<QWebSocket>( new QWebSocket("client",QWebSocketProtocol::VersionLatest,this) );
 
@@ -205,6 +205,9 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
         case 4:{    // message unlock login
                 qDebug() << "Successfull login";
+                waitingTimer->stop();
+                waitingDialog.hide();
+
                 this->stackedDialog->close();
                 //this->clientStatus = LoggedIn;
                 Client::createMainWindowStacked();
@@ -212,6 +215,9 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 break;
         }
         case 5:{    // message  login error
+                waitingTimer->stop();
+                waitingDialog.hide();
+
                 delete this->user;
                 this->user = nullptr;
                 emit loginFailure(jsonObj["error"].toString());
@@ -285,13 +291,6 @@ void Client::onConnectionFailure(){
 
     qDebug() << "Failure";
     this->m_webSocket->abort();
-    if(this->reconnectionRetries > 0){
-        this->reconnectionRetries --;
-        this->m_webSocket.get()->open(this->urlForConnection);
-    }else{
-        //this->secondWindows->hide();
-        //MainWindow::show();
-    }
 }
 
 void Client::onFileHandlerDbClicked(QString fileName){

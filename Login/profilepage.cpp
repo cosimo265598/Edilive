@@ -8,7 +8,6 @@
 ProfilePage::ProfilePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ProfilePage),
-    pixmap(new QPixmap()),
     updateUser(new UpdateUser())
 {
     ui->setupUi(this);
@@ -17,7 +16,6 @@ ProfilePage::ProfilePage(QWidget *parent) :
 ProfilePage::~ProfilePage()
 {
     delete ui;
-    delete pixmap;
     delete updateUser;
 }
 
@@ -64,17 +62,15 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
 
 
 void ProfilePage::loadImage(){
-    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    this->pixmap->loadFromData(file.readAll());
-    ui->accountImage->setPixmap(*pixmap);
-    file.close();
+    QPixmap pixmap(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+    QPixmap scaled = pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation);
+    ui->accountImage->setPixmap(scaled);
 }
 
 
 void ProfilePage::on_pushButton_changeImage_clicked()
 {
+    /*
     QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image (PNG format)"), QDir::homePath(), tr("Image Files (*.png)"));
     QFile file(path);
     file.open(QIODevice::ReadOnly);
@@ -83,6 +79,7 @@ void ProfilePage::on_pushButton_changeImage_clicked()
     this->pixmap->loadFromData(serializedImage);
     ui->accountImage->setPixmap(*pixmap);
     updateUser->setSerializedImage(serializedImage);
+    */
 }
 
 void ProfilePage::on_nickname_editingFinished()

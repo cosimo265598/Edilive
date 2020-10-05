@@ -45,7 +45,6 @@ public slots:
 
 private:
     Ui::ProfilePage *ui;
-    QPixmap *pixmap;
     UpdateUser *updateUser;
 
     void loadImage();
