@@ -6,7 +6,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
-    LoginDialog::setFixedSize(371,465);
+    //LoginDialog::setFixedSize(371,465);
     ui->errorMessage->setStyleSheet("color : red");
 }
 

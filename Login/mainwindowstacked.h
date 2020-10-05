@@ -2,6 +2,7 @@
 #define MAINWINDOWSTACKED_H
 
 #include <QWidget>
+#include <QMainWindow>
 #include <homepage.h>
 #include <profilepage.h>
 
@@ -21,8 +22,8 @@ public:
 
 private:
     Ui::MainWindowStacked *ui;
-    HomePage homePage{this};
-    ProfilePage profilePage{this};
+    HomePage homePage;
+    ProfilePage profilePage;
 
 public slots:
 

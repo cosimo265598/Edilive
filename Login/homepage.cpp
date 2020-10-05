@@ -1,10 +1,10 @@
 #include "homepage.h"
-
+#include <QSizePolicy>
 
 QT_USE_NAMESPACE
 
 HomePage::HomePage(QWidget *parent) :
-    QMainWindow(parent),
+    QWidget(parent),
     ui(new Ui::HomePage),
     pixmap(new QPixmap()),
     row(0),
@@ -13,12 +13,10 @@ HomePage::HomePage(QWidget *parent) :
     selected(nullptr)
 {
     ui->setupUi(this);
-
     //Prototype -> QApplication::focusChanged(QWidget *old, QWidget *now)
     connect(qApp, &QApplication::focusChanged, this, &HomePage::onFocusChange);
 
 }
-
 HomePage::~HomePage()
 {
     delete ui;

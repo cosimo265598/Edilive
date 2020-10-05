@@ -13,16 +13,11 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QStackedWidget" name="stackedWidget">
-   <property name="geometry">
-    <rect>
-     <x>9</x>
-     <y>9</y>
-     <width>351</width>
-     <height>451</height>
-    </rect>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget"/>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
