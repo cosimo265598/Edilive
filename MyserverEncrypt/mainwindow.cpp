@@ -514,39 +514,31 @@ void MainWindow::PersonalDataOfClient(QWebSocket *clientSocket)
     QSharedPointer<Client> client = clients[clientSocket];
 
     QByteArray data;
-    //debug invio immagine di prova
-    QImage img(QDir().currentPath()+"/logo32.png");
 
     BuilderMessage::MessageSendToClient(
                 data,BuilderMessage::MessageAccountInfo(
                 users[client->getUsername()].getUsername(),
                 users[client->getUsername()].getNickname(),
-                 /*users[client->getUsername()].getIcon()*/img));
+                users[client->getUsername()].getIcon()));
 
     clientSocket->sendBinaryMessage(data);
     //qDebug()<<data;
 }
 
-void MainWindow::updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage ){
+void MainWindow::updateProfileClient(QWebSocket *clientSocket, QString nickname, QString password, QString stringifiedImage ){
     qDebug()<<"segnale di modifica dati profilo ricevuto";
-    /*
-         *
-        QSharedPointer<Client> client = clients[clientSocket];
 
-        QByteArray data;
-        //debug invio immagine di prova
-        QImage img(QDir().currentPath()+"/logo32.png");
+    QSharedPointer<Client> client = clients[clientSocket];
+    QByteArray data;
+    QImage image;
+    image.loadFromData(QByteArray::fromBase64(stringifiedImage.toLatin1()),"PNG");
 
-        BuilderMessage::MessageSendToClient(
-                    data,BuilderMessage::MessageAccountInfo(
-                    users[client->getUsername()].getUsername(),
-                    users[client->getUsername()].getNickname(),
-                     //users[client->getUsername()].getIcon()
-    img));
+    users[client->getUsername()].update(nickname, password, image);
 
-        clientSocket->sendBinaryMessage(data);
-        //qDebug()<<data;
-       */
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountUpdateSuccess("Update success"));
+
+    clientSocket->sendBinaryMessage(data);
 }
 
 void MainWindow::processBinaryMessage(QByteArray message)

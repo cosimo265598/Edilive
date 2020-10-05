@@ -53,7 +53,7 @@ public:
     void setNickname(QString newNickname);
     void setIcon(QImage newIcon);
     void setPassword(QString newPassword);
-    void update(QString nickname, QImage icon, QString password);
+    void update(QString nickname, QString password, QImage icon);
     void rollback(const UserData& backup);
     void generateSalt(QByteArray &salt);
 };

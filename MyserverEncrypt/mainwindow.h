@@ -81,8 +81,6 @@ private:
     QMap<QString, UserData> users;
     ProcessOperation *po;
     int userId;
-    //void fileCreationSuccess(QWebSocket* clientSocket, QString fileName);
-
 
 };
 #endif // MAINWINDOW_H

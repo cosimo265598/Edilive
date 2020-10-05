@@ -43,6 +43,17 @@ enum ClientStatus : quint32
     Disconnected
 };
 
+struct loginUser_t{
+    QString username;
+    QString password;
+};
+
+struct subscriber_t{
+    QString username;
+    QString nickname;
+    QByteArray serializedImage;
+};
+
 class Client : public QObject
 {
     Q_OBJECT
@@ -64,7 +75,7 @@ private slots:
     void onFileHandlerDbClicked(QString fileName);
     void onCreateNewFileRequest(QString fileName);
     void onDeleteFileRequest(QString fileName);
-    void onUpdateProfileRequest(UpdateUser updateUser);
+    void onUpdateProfileRequest(updateUser_t);
 
 private:
     MainWindowStacked *mainWindowStacked;
@@ -75,11 +86,14 @@ private:
     QString urlForConnection;
     QTimer *waitingTimer;
     qint32 reconnectionRetries;
-    User *user;
     quint32 clientStatus;
-    Subscriber *subscriber;
+    subscriber_t subscriber;
     ConnectionWaitingDialog waitingDialog;
+    loginUser_t user;
+    updateUser_t updateUser;
 
+    void resetUser();
+    void resetUpdateUser();
     QByteArray saveAccountImage(QString serializedImage);
     void createMainWindowStacked();
     void startTextEditor(QString fileName);
@@ -90,7 +104,8 @@ signals:
     void registrationFailure(QString errorMessage);
     void loginFailure(QString errorMessage);
     void receivedFileHandlers(QJsonArray);
-    void loadSubscriberInfo(QString username, QString nickname, QByteArray);
+    void loadSubscriberInfo(QString, QString, QByteArray);
     void newFileCreationFailure(QString errorMessage);
+    void updateSuccess();
 };
 #endif // CLIENT_H

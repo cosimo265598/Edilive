@@ -6,7 +6,6 @@ QT_USE_NAMESPACE
 HomePage::HomePage(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HomePage),
-    pixmap(new QPixmap()),
     row(0),
     column(0),
     eventFilter(new EventFilterImpl(this)),
@@ -21,7 +20,6 @@ HomePage::~HomePage()
 {
     delete ui;
     delete eventFilter;
-    delete pixmap;
     delete selected;
 }
 
@@ -41,9 +39,6 @@ void HomePage::onFileHandlerClicked(){
 }
 
 void HomePage::onFocusChange(QWidget *old, QWidget *now){
-
-    qDebug() << "old " << old;
-    qDebug() << "now " << now;
     if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
         //Reset the original stylesheet with no border if the element is no more focused
         selected->setStyleSheet("QToolButton{border:none;}");
@@ -128,7 +123,6 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
         connect(item, &FileHandler::clicked,this, &HomePage::onFileHandlerClicked);
 
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
-        qDebug()<<row<< " "<<column;
         column = (++column)%6;
         if(column==0) row++;
     }
@@ -136,10 +130,22 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
 
 void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
     ui->username->setText(username);
-    //this->pixmap->loadFromData(serializedImage);
-    //ui->accountImage->setPixmap(*pixmap);
-    loadImage();
+    loadImage(serializedImage);
 }
+
+void HomePage::loadImage(QByteArray serializedImage){
+    QPixmap pixmap;
+    if (serializedImage == nullptr){
+        //pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+    }else{
+        qDebug() << "load";
+        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
+    }
+
+    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+}
+
 
 void HomePage::onNewFileCreationFailure(QString errorMessage){
     QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
@@ -159,13 +165,4 @@ void HomePage::deleteFile(){
         selected = nullptr;
         emit deleteFileRequest(fileName);
      }
-}
-
-void HomePage::loadImage(){
-    QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    this->pixmap->loadFromData(file.readAll());
-    ui->accountImage->setPixmap(*pixmap);
-    file.close();
 }

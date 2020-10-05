@@ -29,7 +29,7 @@ public:
 
     // profile managemet
     static QJsonDocument MessageSubscriberInfoRequest();
-    static QJsonDocument MessagedUpdateProfileRequest(UpdateUser);
+    static QJsonDocument MessagedUpdateProfileRequest(QString nickname, QString password, QByteArray serializedImage);
 };
 
 #endif // BUILDERMESSAGECLIENT_H

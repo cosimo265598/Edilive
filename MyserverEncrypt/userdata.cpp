@@ -3,6 +3,7 @@
 #include <QDataStream>
 #include <QRandomGenerator>
 #include <QCryptographicHash>
+#include <QDebug>
 
 // carateri per il salt alla passw
 const QString UserData::saltCharacters = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
@@ -113,9 +114,11 @@ void UserData::setPassword(QString newPassword)
     m_passwd = hash.result();
 }
 
-void UserData::update(QString nickname, QImage icon, QString password)
+void UserData::update(QString nickname, QString password, QImage icon)
 {
-    setNickname(nickname);
+    qDebug() << nickname.isEmpty();
+    if(!nickname.isEmpty())
+        setNickname(nickname);
     if (!icon.isNull())
         setIcon(icon);
     if (!password.isEmpty())

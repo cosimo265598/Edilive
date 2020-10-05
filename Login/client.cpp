@@ -6,15 +6,10 @@ Client::Client(QObject *parent) :
     stackedDialog(new StartupStackedDialog()),
     urlForConnection("wss://localhost:1234"),
     reconnectionRetries(3),
-    user(nullptr),
     waitingTimer(new QTimer(this)),
-    subscriber(nullptr),
     clientStatus(Startup)
 {
-    this->waitingTimer->setInterval(6000);
-
     m_webSocket = QSharedPointer<QWebSocket>( new QWebSocket("client",QWebSocketProtocol::VersionLatest,this) );
-
     connect(m_webSocket.get(), QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),this, &Client::onSslErrors);
     connect(m_webSocket.get(), &QWebSocket::binaryMessageReceived, this, &Client::MessageReceivedFromServer);
     connect(m_webSocket.get(), &QWebSocket::disconnected, this, &Client::onDisconnection);
@@ -28,6 +23,9 @@ Client::Client(QObject *parent) :
     connect(this, &Client::registrationFailure, stackedDialog, &StartupStackedDialog::onRegistrationFailure);
     connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
 
+    resetUser();
+    this->waitingTimer->setInterval(6000);
+
     stackedDialog->show();
 }
 
@@ -37,7 +35,9 @@ Client::~Client()
 
 void Client::onLoginRequest(QString username, QString password){
 
-    user = new User(username, password);
+    user.username = username;
+    user.password = password;
+
     this->clientStatus = LoginRequest;
     //waitingTimer->start();
 
@@ -47,7 +47,9 @@ void Client::onLoginRequest(QString username, QString password){
 }
 
 void Client::onRegistrationRequest(QString username, QString password){
-     user = new User(username, password);
+     user.username = username;
+     user.password = password;
+
      this->clientStatus = RegistrationRequest;
 
      //waitingDialog.setText("Connection to the server...");
@@ -61,25 +63,31 @@ void Client::onConnected(){
 
     switch(this->clientStatus){
         case LoginRequest: {     
-            BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+            BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
             m_webSocket.get()->sendBinaryMessage(out);
             break;
         }
         case RegistrationRequest: {
-            BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(this->user->getUsername(),this->user->getPassword()));
+            BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(user.username,user.password));
             m_webSocket.get()->sendBinaryMessage(out);
             break;
         }
         case Disconnected: {
+        /*
             waitingDialog.setText("Reconnection...");
             this->waitingTimer->stop();
             this->waitingTimer->start();
             waitingDialog.exec();
+            */
             break;
         }
     }
 }
 
+void Client::resetUser(){
+    user.username.clear();
+    user.password.clear();
+}
 
 void Client::onDisconnection(){
     qDebug() << "DISCONNECTED";
@@ -126,6 +134,7 @@ void Client::createMainWindowStacked()
     connect(this, &Client::newFileCreationFailure, mainWindowStacked, &MainWindowStacked::newFileCreationFailure);
     connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
     connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
+    connect(this, &Client::updateSuccess, mainWindowStacked, &MainWindowStacked::updateSuccess);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -178,7 +187,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
     stream >> jsonDoc;
 
-    qDebug() << jsonDoc;
+    //qDebug() << jsonDoc;
 
     if (jsonDoc.isNull()) {
         std::cout << "Failed to create JSON doc." << std::endl;
@@ -200,18 +209,19 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             QByteArray out;
             BuilderMessageClient::MessageSendToServer(
                         out,
-                        BuilderMessageClient::MessageLoginUnlock(salt,nonce,this->user->getPassword()));
+                        BuilderMessageClient::MessageLoginUnlock(salt,nonce,user.password));
             m_webSocket.get()->sendBinaryMessage(out);
         } break;
 
         case 4:{    // message unlock login
                 qDebug() << "Successfull login";
-                waitingTimer->stop();
-                waitingDialog.hide();
+                //waitingTimer->stop();
+                //waitingDialog.hide();
 
                 this->stackedDialog->close();
                 //this->clientStatus = LoggedIn;
                 Client::createMainWindowStacked();
+                resetUser();
                 qDebug()<<"created";
                 break;
         }
@@ -219,8 +229,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 waitingTimer->stop();
                 waitingDialog.hide();
 
-                delete this->user;
-                this->user = nullptr;
+                resetUser();
                 emit loginFailure(jsonObj["error"].toString());
                 break;
         }
@@ -229,12 +238,13 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
                 //this->clientStatus = Connected;
 
                 // Automatic login after correct registration
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
                 m_webSocket.get()->sendBinaryMessage(out);
                 break;
         }
         case 9:{    // message account create error
             qDebug() << "Account creation failure";
+            resetUser();
             emit registrationFailure(jsonObj["error"].toString());
             break;
         }
@@ -266,9 +276,19 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             break;
         }
         case 17:{
-            qDebug()<<jsonObj;
-            QByteArray serializedImage = saveAccountImage(jsonObj["icon"].toString());
-            emit loadSubscriberInfo(jsonObj["username"].toString(), jsonObj["nickname"].toString(), serializedImage);
+            qDebug()<<"load Info";
+            QByteArray serializedImage;
+            if(jsonObj["icon_present"].toBool()){
+                auto const encoded = jsonObj["icon"].toString().toLatin1();
+                serializedImage = QByteArray::fromBase64(encoded);
+            }else
+                serializedImage = nullptr;
+
+            subscriber.username = jsonObj["username"].toString();
+            subscriber.nickname = jsonObj["nickname"].toString();
+            subscriber.serializedImage = serializedImage;
+
+            emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
             break;
         }
 
@@ -277,11 +297,21 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             //emit newFileCreationFailure(jsonObj["error"].toString());
             break;
         }
+        case 20:{
+            if(updateUser.nickname!=nullptr)
+                subscriber.nickname = updateUser.nickname;
+            if(updateUser.serializedImage!=nullptr)
+                subscriber.serializedImage = updateUser.serializedImage;
+
+            loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
+            resetUpdateUser();
+        break;
+        }
+
 
         default:         return;
     }
 }
-
 
 void Client::onConnectionSuccess(){
     //this->reconnectionTimer->stop();
@@ -303,6 +333,42 @@ void Client::onFileHandlerDbClicked(QString fileName){
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
+
+void Client::onCreateNewFileRequest(QString fileName){
+
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageCreateNewFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onDeleteFileRequest(QString fileName){
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedDeleteFile(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onUpdateProfileRequest(updateUser_t updateUser){
+    qDebug() << "update";
+    this->updateUser = updateUser;
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedUpdateProfileRequest(updateUser.nickname, updateUser.password, updateUser.serializedImage));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::resetUpdateUser(){
+    updateUser.username.clear();
+    updateUser.nickname.clear();
+    updateUser.password.clear();
+    updateUser.serializedImage.clear();
+}
+
+/*
 //Serve in effettivo salvare l'immagine in locale?
 QByteArray Client::saveAccountImage(QString serializedImage){
 
@@ -338,28 +404,4 @@ QByteArray Client::saveAccountImage(QString serializedImage){
      return out;
 }
 
-void Client::onCreateNewFileRequest(QString fileName){
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageCreateNewFile(fileName));
-    this->m_webSocket->sendBinaryMessage(out);
-}
-
-void Client::onDeleteFileRequest(QString fileName){
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessagedDeleteFile(fileName));
-    this->m_webSocket->sendBinaryMessage(out);
-}
-
-void Client::onUpdateProfileRequest(UpdateUser updateUser){
-    qDebug() << "update";
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessagedUpdateProfileRequest(updateUser));
-    this->m_webSocket->sendBinaryMessage(out);
-}
+*/

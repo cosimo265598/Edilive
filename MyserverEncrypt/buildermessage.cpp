@@ -111,23 +111,18 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico_real)
+QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico)
 {
     bool presentIcon=false;
-    if(!ico_real.isNull())
+    if(!ico.isNull())
         presentIcon=true;
 
-    //test
-    qDebug() << QDir().currentPath()+ "/images/default.png";
-    QImage ico(QDir().currentPath()+ "/images/default.png");
-    //
+    qDebug()  << presentIcon;
 
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
     ico.save(&buffer, "PNG");	// writes image into the bytearray in PNG format
-
-    //
 
     QJsonDocument jsondoc;
     QJsonObject json;
@@ -151,3 +146,11 @@ QJsonDocument BuilderMessage::MessageFileDeletionError(QString error)
     return jsondoc;
 }
 
+QJsonDocument BuilderMessage::MessageAccountUpdateSuccess(QString msg){
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",20);
+    json.insert("message",msg);
+    jsondoc.setObject(json);
+    return jsondoc;
+}

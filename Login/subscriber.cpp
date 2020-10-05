@@ -7,14 +7,14 @@ Subscriber::Subscriber(QString username, QString nickname, QByteArray serialized
 {
 }
 
-QString Subscriber::getUsername(){
+QString& Subscriber::getUsername(){
     return this->username;
 }
 
-QString Subscriber::getNickname(){
+QString& Subscriber::getNickname(){
     return this->nickname;
 }
 
-QByteArray Subscriber::getSerializedImage(){
+QByteArray& Subscriber::getSerializedImage(){
     return this->serializedImage;
 }

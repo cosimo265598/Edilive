@@ -27,7 +27,7 @@ public:
     static QJsonDocument MessageFileCreationSuccess(QString username,QString nickname,QImage icon);//
 
     static QJsonDocument MessageAccountInfo(QString username,QString nickname,QImage icon);
-
+    static QJsonDocument MessageAccountUpdateSuccess(QString);
 };
 
 

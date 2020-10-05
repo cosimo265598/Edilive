@@ -30,11 +30,12 @@ public slots:
 signals:
     void receivedFileHandlers(QJsonArray);
     void fileHandlerDbClicked(QString fileName);
-    void loadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
+    void loadSubscriberInfo(QString, QString, QByteArray);
     void createNewFileRequest(QString fileName);
     void newFileCreationFailure(QString errorMessage);
     void deleteFileRequest(QString fileName);
-    void updateProfileRequest(UpdateUser updateUser);
+    void updateProfileRequest(updateUser_t);
+    void updateSuccess();
 };
 
 #endif // MAINWINDOWSTACKED_H

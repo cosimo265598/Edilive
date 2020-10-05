@@ -54,7 +54,7 @@ private Q_SLOTS:
 
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
-     void onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedimage);
+     void onLoadSubscriberInfo(QString, QString, QByteArray);
      void onNewFileCreationFailure(QString errorMessage);
 
 private:
@@ -66,11 +66,10 @@ private:
 
     EventFilterImpl *eventFilter;
     QStringList listfile;
-    QPixmap *pixmap;
     FileHandler *selected;
 
     void deleteFile();
-    void loadImage();
+    void loadImage(QByteArray serializedImage);
 
 signals:
     void fileHandlerDbClicked(QString fileName);

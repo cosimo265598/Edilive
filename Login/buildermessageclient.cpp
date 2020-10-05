@@ -135,26 +135,25 @@ QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString nomefile)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(UpdateUser updateUser)
+QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nickname, QString password, QByteArray serializedImage)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",7);
     objtosend.insert("auth",true);
 
-    if(updateUser.getNickname()!=nullptr)
-        objtosend.insert("nickname",updateUser.getNickname());
+    if(nickname!=nullptr)
+        objtosend.insert("nickname",nickname);
     else
         objtosend.insert("nickname","");
 
-    if(updateUser.getPassword()!=nullptr)
-        objtosend.insert("password",updateUser.getPassword());
+    if(password!=nullptr)
+        objtosend.insert("password",password);
     else
         objtosend.insert("password","");
 
-    if(updateUser.getSerializedImage()!=nullptr){
-        QByteArray image = updateUser.getSerializedImage();
-        QBuffer buffer(&image);
+    if(serializedImage!=nullptr){
+        QBuffer buffer(&serializedImage);
         buffer.open(QIODevice::WriteOnly);
         objtosend.insert("icon",QLatin1String(buffer.data().toBase64()));
     }else

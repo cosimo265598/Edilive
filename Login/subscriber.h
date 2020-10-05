@@ -14,9 +14,9 @@ private:
     QByteArray serializedImage;
 
 public:
-    QString getUsername();
-    QString getNickname();
-    QByteArray getSerializedImage();
+    QString& getUsername();
+    QString& getNickname();
+    QByteArray& getSerializedImage();
 };
 
 #endif // SUBSCRIBER_H

@@ -37,8 +37,7 @@ SOURCES += \
     startupstackeddialog.cpp \
     subscriber.cpp \
     textedit.cpp \
-    updateuser.cpp \
-    user.cpp
+    updateuser.cpp
 
 HEADERS += \
     buildermessageclient.h \
@@ -55,8 +54,7 @@ HEADERS += \
     startupstackeddialog.h \
     subscriber.h \
     textedit.h \
-    updateuser.h \
-    user.h
+    updateuser.h
 
 FORMS += \
     connectionwaitingdialog.ui \

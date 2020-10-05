@@ -14,6 +14,15 @@
 #include <QMessageBox>
 
 #include "updateuser.h"
+#include "subscriber.h"
+
+struct updateUser_t{
+    QString username;
+    QString nickname;
+    QString password;
+    QByteArray serializedImage;
+};
+
 
 namespace Ui {
 class ProfilePage;
@@ -26,32 +35,28 @@ class ProfilePage : public QMainWindow
 public:
     explicit ProfilePage(QWidget *parent = nullptr);
     ~ProfilePage();
-    //void setImageProfile(QString& path);
 
 private slots:
     void on_buttonBox_ok_cancel_accepted();
     void on_buttonBox_ok_cancel_rejected();
     void on_pushButton_returnToHome_clicked();
     void on_pushButton_changeImage_clicked();
-
     void on_nickname_editingFinished();
-
     void on_password_editingFinished();
-
     void on_confirmPassword_editingFinished();
 
 public slots:
-    void onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
+    void onLoadSubscriberInfo(QString, QString, QByteArray);
 
 private:
     Ui::ProfilePage *ui;
-    UpdateUser *updateUser;
-
-    void loadImage();
+    updateUser_t updateUser;
+    void loadImage(QByteArray);
+    void resetUpdateUser();
 
 signals:
     void returnToHomeClicked();
-    void updateProfileRequest(UpdateUser updateUser);
+    void updateProfileRequest(updateUser_t);
 };
 
 #endif // PROFILEPAGE_H
