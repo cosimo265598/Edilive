@@ -57,6 +57,7 @@ private:
 signals:
     void returnToHomeClicked();
     void updateProfileRequest(updateUser_t);
+    void resetSubscriberInfo();
 };
 
 #endif // PROFILEPAGE_H

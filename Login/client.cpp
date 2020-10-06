@@ -135,6 +135,7 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
     connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
     connect(this, &Client::updateSuccess, mainWindowStacked, &MainWindowStacked::updateSuccess);
+    connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -303,7 +304,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             if(updateUser.serializedImage!=nullptr)
                 subscriber.serializedImage = updateUser.serializedImage;
 
-            loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
+            emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
             resetUpdateUser();
         break;
         }

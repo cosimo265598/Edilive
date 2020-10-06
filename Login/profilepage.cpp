@@ -37,7 +37,7 @@ void ProfilePage::on_buttonBox_ok_cancel_rejected()
     if(updateUser.nickname != nullptr || updateUser.password != nullptr || updateUser.serializedImage != nullptr){
         if(QMessageBox::critical(this, tr("WARNING"),"Delete changes? The operation will not reversible",QMessageBox::Ok, QMessageBox::Cancel ) == 0x00000400){
             resetUpdateUser();
-            emit returnToHomeClicked();
+            emit resetSubscriberInfo();
         }
     }
 }

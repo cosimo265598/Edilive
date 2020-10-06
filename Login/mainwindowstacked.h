@@ -36,6 +36,7 @@ signals:
     void deleteFileRequest(QString fileName);
     void updateProfileRequest(updateUser_t);
     void updateSuccess();
+    void resetSubscriberInfo();
 };
 
 #endif // MAINWINDOWSTACKED_H
