@@ -81,6 +81,7 @@ private:
     QMap<QString, UserData> users;
     ProcessOperation *po;
     int userId;
+    QThreadPool *pool;
 
 };
 #endif // MAINWINDOW_H

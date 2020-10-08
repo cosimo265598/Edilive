@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <textedit.h>
+#include <QAbstractSocket>
 
 
 #include "mainwindow.h"
@@ -40,7 +41,8 @@ enum ClientStatus : quint32
     LoginRequest,
     Connected,
     RegistrationRequest,
-    Disconnected
+    Disconnected,
+    ReConnect
 };
 
 struct loginUser_t{
@@ -77,9 +79,14 @@ private slots:
     void onDeleteFileRequest(QString fileName);
     void onUpdateProfileRequest(updateUser_t);
 
+private slots:
+    void ping();
+    void errorSocket(QAbstractSocket::SocketError error);
+    void closeControll();
+
 private:
-    MainWindowStacked *mainWindowStacked;
-    StartupStackedDialog *stackedDialog;
+    MainWindowStacked *mainWindowStacked=nullptr;
+    StartupStackedDialog *stackedDialog=nullptr;
     HomePage *homePage;
     TextEdit *textEditor;
     QSharedPointer<QWebSocket> m_webSocket;
@@ -87,7 +94,8 @@ private:
     QTimer *waitingTimer;
     qint32 reconnectionRetries;
     quint32 clientStatus;
-    subscriber_t subscriber;
+    quint32 old_clientstatus;
+    Subscriber *subscriber;
     ConnectionWaitingDialog waitingDialog;
     loginUser_t user;
     updateUser_t updateUser;
@@ -99,6 +107,7 @@ private:
     void startTextEditor(QString fileName);
     void subscriberInfoRequest();
     void fileHandlersRequest();
+
 
 signals:
     void registrationFailure(QString errorMessage);
