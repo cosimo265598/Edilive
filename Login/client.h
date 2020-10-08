@@ -25,7 +25,7 @@
 
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "ui_mainwindowstacked.h"
 #include "user.h"
 #include "homepage.h"
 #include "logindialog.h"
