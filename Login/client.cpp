@@ -84,16 +84,16 @@ void Client::onConnected(){
             // make login again
             qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
             if(old_clientstatus==LoginRequest){
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
                 m_webSocket.get()->sendBinaryMessage(out);
                 old_clientstatus=LoginRequest;
             }
             else if(old_clientstatus==RegistrationRequest){
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(this->user->getUsername(),this->user->getPassword()));
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(user.username,user.password));
                 m_webSocket.get()->sendBinaryMessage(out);
                 old_clientstatus=RegistrationRequest;
             }else{
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
                 m_webSocket.get()->sendBinaryMessage(out);
                 old_clientstatus=ReConnect;
             }
@@ -395,32 +395,6 @@ void Client::resetUpdateUser(){
     updateUser.nickname.clear();
     updateUser.password.clear();
     updateUser.serializedImage.clear();
-}
-
-void Client::onCreateNewFileRequest(QString fileName){
-
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageCreateNewFile(fileName));
-    this->m_webSocket->sendBinaryMessage(out);
-}
-
-void Client::onDeleteFileRequest(QString fileName){
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessagedDeleteFile(fileName));
-    this->m_webSocket->sendBinaryMessage(out);
-}
-
-void Client::onUpdateProfileRequest(UpdateUser updateUser){
-    qDebug() << "update";
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessagedUpdateProfileRequest(updateUser));
-    this->m_webSocket->sendBinaryMessage(out);
 }
 
 void Client::ping()

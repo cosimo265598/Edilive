@@ -95,7 +95,7 @@ private:
     qint32 reconnectionRetries;
     quint32 clientStatus;
     quint32 old_clientstatus;
-    Subscriber *subscriber;
+    subscriber_t subscriber;
     ConnectionWaitingDialog waitingDialog;
     loginUser_t user;
     updateUser_t updateUser;
