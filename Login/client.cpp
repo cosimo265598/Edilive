@@ -1,5 +1,5 @@
 #include "client.h"
-
+#include "connectionwaitingdialog.h"
 
 Client::Client(QObject *parent) :
     QObject(parent),
@@ -18,9 +18,16 @@ Client::Client(QObject *parent) :
     connect(m_webSocket.get(), QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),this, &Client::onSslErrors);
     connect(m_webSocket.get(), &QWebSocket::binaryMessageReceived, this, &Client::MessageReceivedFromServer);
     connect(m_webSocket.get(), &QWebSocket::disconnected, this, &Client::onDisconnection);
-    connect(m_webSocket.get(), &QWebSocket::connected, this, &Client::onConnectionSuccess);
-    connect(this->waitingTimer, &QTimer::timeout, this, &Client::onConnectionFailure);
+    //connect(m_webSocket.get(), &QWebSocket::connected, this, &Client::onConnectionSuccess);
+    //connect(this->waitingTimer, &QTimer::timeout, this, &Client::onConnectionFailure);
     connect(m_webSocket.get(), &QWebSocket::connected, this, &Client::onConnected);
+
+
+    //connection waitingdialog connect signal
+    connect(m_webSocket.get(), &QWebSocket::stateChanged, &waitingDialog, &ConnectionWaitingDialog::changeState);
+    connect(&waitingDialog, &ConnectionWaitingDialog::tryToConnectAgain,this,&Client::ping);
+    connect(m_webSocket.get(), QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &Client::errorSocket);
+    connect(&waitingDialog, &ConnectionWaitingDialog::finished,this,&Client::closeControll);
 
     //connections StartupDialog
     connect(stackedDialog, &StartupStackedDialog::loginRequest, this, &Client::onLoginRequest);
@@ -35,24 +42,22 @@ Client::~Client()
 {
 }
 
+
 void Client::onLoginRequest(QString username, QString password){
 
+    qDebug()<<"onloginRequest";
     user = new User(username, password);
     this->clientStatus = LoginRequest;
-    //waitingTimer->start();
-
-    //waitingDialog.setText("Connection to the server...");
-    //waitingDialog.exec();
+    old_clientstatus=clientStatus;
     m_webSocket.get()->open(this->urlForConnection);
 }
 
 void Client::onRegistrationRequest(QString username, QString password){
-     user = new User(username, password);
-     this->clientStatus = RegistrationRequest;
+    qDebug()<<"onRegistation request";
 
-     //waitingDialog.setText("Connection to the server...");
-     //waitingDialog.exec();
-     //waitingTimer->start();
+     user = new User(username, password);
+     old_clientstatus=clientStatus;
+     this->clientStatus = RegistrationRequest;
      m_webSocket.get()->open(this->urlForConnection);
 }
 
@@ -60,22 +65,39 @@ void Client::onConnected(){
     QByteArray out;
 
     switch(this->clientStatus){
-        case LoginRequest: {     
+        case LoginRequest: {
+            old_clientstatus=clientStatus;
             BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
             m_webSocket.get()->sendBinaryMessage(out);
             break;
         }
         case RegistrationRequest: {
+            old_clientstatus=clientStatus;
             BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(this->user->getUsername(),this->user->getPassword()));
             m_webSocket.get()->sendBinaryMessage(out);
             break;
         }
         case Disconnected: {
-            waitingDialog.setText("Reconnection...");
-            this->waitingTimer->stop();
-            this->waitingTimer->start();
-            waitingDialog.exec();
             break;
+        }
+        case ReConnect:{
+            // make login again
+            qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
+            if(old_clientstatus==LoginRequest){
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                m_webSocket.get()->sendBinaryMessage(out);
+                old_clientstatus=LoginRequest;
+            }
+            else if(old_clientstatus==RegistrationRequest){
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(this->user->getUsername(),this->user->getPassword()));
+                m_webSocket.get()->sendBinaryMessage(out);
+                old_clientstatus=RegistrationRequest;
+            }else{
+                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
+                m_webSocket.get()->sendBinaryMessage(out);
+                old_clientstatus=ReConnect;
+            }
+        break;
         }
     }
 }
@@ -85,22 +107,21 @@ void Client::onDisconnection(){
     qDebug() << "DISCONNECTED";
     switch(this->clientStatus){
         case LoginRequest: {
-            waitingDialog.close();
             emit loginFailure("Login failure, impossible to contact the server (DISCONNECTED)");
             break;
         }
         case RegistrationRequest: {
-            waitingDialog.close();
-            //emit loginFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
+            emit registrationFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
             break;
         }
         case Connected: {
-            waitingDialog.setText("Reconnection...");
-            this->waitingTimer->stop();
-            this->waitingTimer->start();
-            waitingDialog.exec();
             break;
         }
+        case ReConnect:{
+            break;
+        }
+        default:
+            return;
     }
 }
 
@@ -196,19 +217,34 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         case 2:{   // message challange login
             QString salt =jsonObj["salt"].toString();
             QString nonce =jsonObj["nonce"].toString();
-
             QByteArray out;
             BuilderMessageClient::MessageSendToServer(
                         out,
                         BuilderMessageClient::MessageLoginUnlock(salt,nonce,this->user->getPassword()));
             m_webSocket.get()->sendBinaryMessage(out);
-        } break;
-
+            break;
+        }
         case 4:{    // message unlock login
-                qDebug() << "Successfull login";
-                this->stackedDialog->close();
-                //this->clientStatus = LoggedIn;
-                Client::createMainWindowStacked();
+                old_clientstatus=clientStatus;
+                clientStatus=Connected;
+                qDebug()<<"Successfull login : old "<<old_clientstatus<<" new "<<clientStatus;
+
+                if(old_clientstatus==LoginRequest || old_clientstatus==RegistrationRequest){
+                    qDebug()<<"QUESTO IF ";
+                    this->stackedDialog->close();
+                    this->stackedDialog=nullptr;
+                    createMainWindowStacked();
+                    return;
+                }
+                if(old_clientstatus==ReConnect ){
+                    qDebug()<<"SECODNO IF ";
+
+                    if(stackedDialog!=nullptr){
+                        this->stackedDialog->close();
+                        this->stackedDialog=nullptr;
+                        createMainWindowStacked();
+                    }
+                }
                 qDebug()<<"created";
                 break;
         }
@@ -221,7 +257,6 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         case 8:{    // message account confimed
                 qDebug() << "Account created";
                 //this->clientStatus = Connected;
-
                 // Automatic login after correct registration
                 BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(this->user->getUsername()));
                 m_webSocket.get()->sendBinaryMessage(out);
@@ -363,4 +398,28 @@ void Client::onUpdateProfileRequest(UpdateUser updateUser){
                 out,
                 BuilderMessageClient::MessagedUpdateProfileRequest(updateUser));
     this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::ping()
+{
+    qDebug()<<"ping called - "<< old_clientstatus << " new "<< clientStatus;
+    this->clientStatus=ReConnect;
+    m_webSocket.get()->open(this->urlForConnection);
+}
+
+void Client::errorSocket(QAbstractSocket::SocketError error)
+{
+    qDebug()<<"Socket error: - "<<error;
+}
+
+void Client::closeControll()
+{
+    if(waitingDialog.result()==QDialog::DialogCode::Rejected){
+        qDebug()<<"No way to recover the connectio - app should be close";
+        if(mainWindowStacked!=nullptr)
+            mainWindowStacked->close();
+    }else{
+        qDebug()<<"Connection recovered";
+    }
+
 }

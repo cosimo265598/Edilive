@@ -2,6 +2,11 @@
 #define CONNECTIONWAITINGDIALOG_H
 
 #include <QDialog>
+#include <QAbstractSocket>
+#include <QTimer>
+
+#define MAX_RETRY 3
+#define MAX_TIMEOUT 6000
 
 namespace Ui {
 class ConnectionWaitingDialog;
@@ -15,9 +20,20 @@ public:
     ConnectionWaitingDialog(QWidget *parent = nullptr);
     ~ConnectionWaitingDialog();
     void setText(QString message);
+    void setNumberRetry();
+    int resultOfRetry();
+
+public slots:
+    void changeState(QAbstractSocket::SocketState state);
+    void timeout();
+
+signals:
+    void tryToConnectAgain();
 
 private:
     Ui::ConnectionWaitingDialog *ui;
+    QTimer timer;
+    int number_retry;
 };
 
 #endif // CONNECTIONWAITINGDIALOG_H

@@ -27,6 +27,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
     this->po=ProcessOperation::getInstance(this);
 
+    //thread poll config
+    pool = new QThreadPool(this);
+    pool->setMaxThreadCount(std::thread::hardware_concurrency());
+
     //opening database;
     try {
         if(!SSLconfiguration(sslconfig))
@@ -384,12 +388,15 @@ void MainWindow::serverAccountCreate(QWebSocket *clientSocket, QString username,
     try
     {	// Add the new user record to the server database
         database.insertUser(user);
-        if (!QDir(QDir().currentPath()+"/Users").mkdir(client->getUsername())) {
-            ui->commet->appendPlainText("Cannot create folder for Users"+ client->getUsername());
+        if (!QDir(QDir().currentPath()+"/Users").mkdir(username)) {
+            ui->commet->appendPlainText("Cannot create folder for Users: "+ client->getUsername());
+            throw DatabaseCreateException("Can not create folder for new user",QSqlError());
         }
         // inserimento di un file di prova
-        QFile::copy(QDir().currentPath()+"/example.html",
-                    QDir().currentPath()+"/Users/"+client->getUsername()+"/examplefile");
+        bool state=QFile::copy(QDir().currentPath()+"/example.html",
+                    QDir().currentPath()+"/Users/"+username+"/examplefile");
+        if(state)
+            throw DatabaseCreateException("Can not copy file example for new user",QSqlError());
 
     }catch (DatabaseException& dbe) {
         ui->commet->appendPlainText(dbe.what());
@@ -586,6 +593,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
         }
 
         po->process((TypeOperation)mType, socket, jsonObj );
+
     }
     catch (std::exception& me)
     {
@@ -593,23 +601,3 @@ void MainWindow::processBinaryMessage(QByteArray message)
         socketAbort(socket);
     }
 }
-
-/*
-void MainWindow::fileCreationSuccess(QWebSocket* clientSocket, QString path){
-    QJsonArray files;
-    QByteArray data;
-    QFileInfo fileInfo(path);
-    files.append(QJsonObject{
-                     {"filename", fileInfo.fileName()}, // meglio file name
-                     {"owner", fileInfo.owner()},
-                     {"lastModified",  fileInfo.lastModified().toString()},
-                     {"lastRead", fileInfo.lastRead().toString()},
-                     {"size", QString::number(fileInfo.size()) }
-                 });
-
-    BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageOpenDirOfClient(files));
-    clientSocket->sendBinaryMessage(data);
-}
-
-*/
