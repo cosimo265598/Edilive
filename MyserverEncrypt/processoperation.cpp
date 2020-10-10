@@ -61,6 +61,7 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
 
 void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject& data)
 {
+    QThreadPool::globalInstance()->start(TaskFactory::createTask(message));
 
     switch (message)
     {

@@ -20,6 +20,8 @@
 #include <QtNetwork/QSslKey>
 #include <QDateTime>
 #include <QTextCursor>
+#include <QtConcurrent>
+#include <QRunnable>
 #include <userdata.h>
 
 
@@ -27,6 +29,7 @@
 #include "client.h"
 #include "serverdatabase.h"
 #include "processoperation.h"
+#include "tasks.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

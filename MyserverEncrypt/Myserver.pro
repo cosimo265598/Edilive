@@ -2,7 +2,7 @@ QT       += core gui
 QT       += network
 QT       += websockets
 QT       += sql
-
+QT       += concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
@@ -22,21 +22,25 @@ SOURCES += \
     #../Client/user.cpp \
     buildermessage.cpp \
     client.cpp \
+    createfile.cpp \
     main.cpp \
     mainwindow.cpp \
     processoperation.cpp \
     serverdatabase.cpp \
     serverexception.cpp \
+    taskfactory.cpp \
     userdata.cpp
 
 HEADERS += \
     #../Client/user.h \
     buildermessage.h \
     client.h \
+    createfile.h \
     mainwindow.h \
     processoperation.h \
     serverdatabase.h \
     serverexception.h \
+    taskfactory.h \
     userdata.h
 
 FORMS += \

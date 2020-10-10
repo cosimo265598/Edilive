@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     //thread poll config
     pool = new QThreadPool(this);
     pool->setMaxThreadCount(std::thread::hardware_concurrency());
-
+    
     //opening database;
     try {
         if(!SSLconfiguration(sslconfig))
@@ -177,6 +177,7 @@ void MainWindow::onNewConnection(){
 
 
     // Create a new client object
+
     QSharedPointer<Client> client(new Client(pSocket));
     clients.insert(pSocket, client);
 
@@ -265,6 +266,7 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     QByteArray data;
 
     try {
+
         UserData user(database.readUser(username));
 
         if(user.isEmpty()){            // utente non registrato, non presente nel db.
@@ -275,6 +277,8 @@ void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
 
             clientSocket->sendBinaryMessage(data);
             socketAbort(clientSocket);
+
+
 
         }else{
             for (QString docUri : database.readUserDocuments(user.getUsername()))
@@ -583,6 +587,8 @@ void MainWindow::processBinaryMessage(QByteArray message)
             // return whitout do anything.
             return;
         }
+
+        // QUi dispatch nel pool
 
         po->process((TypeOperation)mType, socket, jsonObj );
 

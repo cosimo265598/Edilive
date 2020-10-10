@@ -413,8 +413,12 @@ void Client::closeControll()
 {
     if(waitingDialog.result()==QDialog::DialogCode::Rejected){
         qDebug()<<"No way to recover the connectio - app should be close";
-        if(mainWindowStacked!=nullptr)
-            mainWindowStacked->close();
+        if(mainWindowStacked!=nullptr){
+             stackedDialog = new StartupStackedDialog();
+             stackedDialog->show();
+             mainWindowStacked->close();
+        }
+
     }else{
         qDebug()<<"Connection recovered";
     }
