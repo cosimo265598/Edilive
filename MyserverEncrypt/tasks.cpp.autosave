@@ -1,17 +1,18 @@
 #include "tasks.h"
 
 Tasks::Tasks(QObject *parent, QWebSocket *clientSocket,
-             QJsonObject request, ServerDatabase* database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
+             QJsonObject request, ServerDatabase database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
     QObject(parent),
     clients(clients),
     users(users),
-    database(database),
     clientSocket(clientSocket),
     type(type),
-    request(request)
+    request(request),
+    database(database)
 {
+    database.
     qDebug() << "creato";
-   // clientSocket->moveToThread(QThread::currentThread());
+    clientSocket->moveToThread(QThread::currentThread());
 }
 
 void Tasks::serverLoginRequest(QWebSocket* clientSocket, QJsonObject request){
@@ -22,7 +23,7 @@ void Tasks::serverLoginRequest(QWebSocket* clientSocket, QJsonObject request){
     QByteArray data;
 
     qDebug() << database ;
-    qDebug() << database->getMaxUserID();
+    qDebug() << database.getMaxUserID();
 
     /*
     try {

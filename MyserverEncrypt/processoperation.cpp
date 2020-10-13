@@ -63,7 +63,7 @@ ProcessOperation::ProcessOperation(QObject *parent, ServerDatabase& database, QM
 QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject data)
 {
 
-    socket->moveToThread(nullptr);
+    //socket->moveToThread(nullptr);
     switch (message)
     {
 
@@ -71,7 +71,7 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
 
         case LoginRequest:{
             QString username    =data.value("username").toString();
-            return new Tasks(nullptr, socket, data,  database,clients, users, LoginRequest);
+            return new Tasks(nullptr, socket, data,  &database,clients, users, LoginRequest);
             //emit loginRequest(socket,username);
             break;
         }
@@ -88,7 +88,7 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
             socket->moveToThread(nullptr);
             qDebug() << "chiamo runnable";
 
-            return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
+            //return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
 
             //emit accountCreate(socket,user,password);
             break;

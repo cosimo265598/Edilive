@@ -172,7 +172,7 @@ void ServerDatabase::removeDoc(QString uri)
 
 int ServerDatabase::getMaxUserID()
 {
-    this->ui_of_server->commetdb->appendPlainText("Query getMaxUserID");
+    //this->ui_of_server->commetdb->appendPlainText("Query getMaxUserID");
 
     QSqlQuery query;
     if (query.exec("SELECT MAX(UserID) FROM Users") && query.isActive())
