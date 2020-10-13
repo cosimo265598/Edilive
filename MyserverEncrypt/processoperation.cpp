@@ -71,7 +71,10 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
 
         case LoginRequest:{
             QString username    =data.value("username").toString();
-            return new Tasks(nullptr, socket, data,  &database,clients, users, LoginRequest);
+
+            users.insert("ciao", UserData("ciao",2,"ciao","ciao",QImage()));
+
+            return new Tasks(nullptr, socket, data, database,clients, users, LoginRequest);
             //emit loginRequest(socket,username);
             break;
         }

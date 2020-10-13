@@ -1,17 +1,17 @@
 #include "tasks.h"
 
 Tasks::Tasks(QObject *parent, QWebSocket *clientSocket,
-             QJsonObject request, ServerDatabase* database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
+             QJsonObject request, ServerDatabase database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
     QObject(parent),
     clients(clients),
     users(users),
-    database(database),
     clientSocket(clientSocket),
     type(type),
     request(request)
 {
+    //database.open(defaultnamedb, "ciao", nullptr);
     qDebug() << "creato";
-   // clientSocket->moveToThread(QThread::currentThread());
+    clientSocket->moveToThread(QThread::currentThread());
 }
 
 void Tasks::serverLoginRequest(QWebSocket* clientSocket, QJsonObject request){
@@ -21,9 +21,20 @@ void Tasks::serverLoginRequest(QWebSocket* clientSocket, QJsonObject request){
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;
 
-    qDebug() << database ;
-    qDebug() << database->getMaxUserID();
+    //qDebug() << &database;
+    //qDebug() << database.getMaxUserID();
 
+    qDebug() << QThread::currentThread();
+    this->thread()->currentThread()->msleep(15000);
+
+    if(users[username].isEmpty()){            // utente non registrato, non presente nel db.
+        //ui->commet->appendPlainText("Client not Registered "+username);
+        BuilderMessage::MessageSendToClient(
+                    data,
+                    BuilderMessage::MessageLoginError("Client not registered." + username));
+
+        clientSocket->sendBinaryMessage(data);
+}
     /*
     try {
         qDebug() << &database;

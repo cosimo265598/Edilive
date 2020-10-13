@@ -6,22 +6,24 @@
 #include <QByteArray>
 #include <QBuffer>
 #include <serverexception.h>
+#include <QRandomGenerator>
 
-
-void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
+void ServerDatabase::open(QString dbName, QString connName, Ui::MainWindow* ui)
 {
     this->ui_of_server=ui;
+
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     bool creatingDb=true;
 
     if(QFile::exists(dbName)){
         creatingDb=false;
-        ui->commetdb->appendPlainText("----- Caricamento db esistente.");
+        //ui->commetdb->appendPlainText("----- Caricamento db esistente.");
     }
+
     db.setDatabaseName(dbName);
     if (!db.open()) {
         qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
-        ui->commetdb->appendPlainText("----- ERORRE apertura db esistente"+db.lastError().text());
+        //ui->commetdb->appendPlainText("----- ERORRE apertura db esistente"+db.lastError().text());
         throw DatabaseConnectionException(db.lastError());
 
     }
@@ -32,14 +34,14 @@ void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
         QSqlQuery userTable(db);								// Query to create the Users table
         if (!userTable.exec(usertable) )
         {
-            ui->commetdb->appendPlainText("----- ERORRE creazione tabella USER "+db.lastError().text());
+            //ui->commetdb->appendPlainText("----- ERORRE creazione tabella USER "+db.lastError().text());
             throw DatabaseCreateException(userTable.lastQuery().toStdString(), userTable.lastError());
         }
 
         QSqlQuery docTable(db);								  // Query to create the DocEditors table
         if (!docTable.exec(documentable))
         {
-            ui->commetdb->appendPlainText("----- ERORRE creazione tabella DOCURI "+db.lastError().text());
+            //ui->commetdb->appendPlainText("----- ERORRE creazione tabella DOCURI "+db.lastError().text());
             throw DatabaseCreateException(docTable.lastQuery().toStdString(), docTable.lastError());
 
         }
@@ -82,7 +84,7 @@ void ServerDatabase::open(QString dbName, Ui::MainWindow* ui)
     // Selection query for one user whit a particular username
     qExistUser.prepare("SELECT * FROM Users WHERE Username = :username");
 
-    this->ui_of_server->commetdb->appendPlainText("Ready");
+    //this->ui_of_server->commetdb->appendPlainText("Ready");
 
 }
 
@@ -198,6 +200,7 @@ QList<UserData> ServerDatabase::readUsersList()
 
     QList<UserData> users;
     QSqlQuery query;
+
     if (query.exec("SELECT * FROM Users") && query.isActive())
     {
         // Read all the users' information from the database and load them in memory

@@ -55,7 +55,7 @@ public:
 
     // Database connection and initialization
     // the database file is created if it doesn't exist
-    void open(QString dbName, Ui::MainWindow* ui);
+    void open(QString dbName, QString connName, Ui::MainWindow* ui);
 
     // Queries
 

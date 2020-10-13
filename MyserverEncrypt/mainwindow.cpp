@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
         if(!SSLconfiguration(sslconfig))
             throw StartupException("Impossible to set encryption configuration");
         m_pWebSocketServer->setSslConfiguration(sslconfig);
-        database.open(defaultnamedb,ui.get());
+        database.open(defaultnamedb, "default_connection", ui.get());
     }catch ( DatabaseConnectionException& dce ) {
         throw StartupException("Connetion database error");
     }catch(DatabaseCreateException& dcreate_ex){
