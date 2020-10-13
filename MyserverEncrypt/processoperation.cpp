@@ -7,7 +7,8 @@
 ProcessOperation* ProcessOperation::instance;
 std::once_flag    ProcessOperation::inited;
 
-ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
+ProcessOperation::ProcessOperation(QObject *parent, ServerDatabase& database, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users
+):QObject(parent)
 {
     // signal - slot for login method- registration and first phase untill the text edit
 
@@ -59,10 +60,10 @@ ProcessOperation::ProcessOperation(QObject *parent):QObject(parent)
 }
 
 
-void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject& data)
+QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject data)
 {
-    QThreadPool::globalInstance()->start(TaskFactory::createTask(message));
 
+    socket->moveToThread(nullptr);
     switch (message)
     {
 
@@ -81,7 +82,14 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
         case AccountCreate:{
             QString user    =data.value("username").toString();
             QString password=data.value("password").toString();
-            emit accountCreate(socket,user,password);
+
+            qDebug() << "disassocio thread";
+            socket->moveToThread(nullptr);
+            qDebug() << "chiamo runnable";
+
+            return new Tasks(nullptr, socket, data,  &database,&clients, &users, AccountCreate);
+
+            //emit accountCreate(socket,user,password);
             break;
         }
 
@@ -124,7 +132,7 @@ void ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonO
         }
 
         default:		// Wrong message type already addressed in readMessage,
-            return;		// no need to handle error again
+            return nullptr;		// no need to handle error again
     }
 }
 

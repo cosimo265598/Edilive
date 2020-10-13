@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    this->po=ProcessOperation::getInstance(this);
+    this->po=ProcessOperation::getInstance(this, database, clients, users);
 
     //thread poll config
     pool = new QThreadPool(this);
@@ -577,6 +577,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
     QJsonObject jsonObj = jsonDoc.object();
     int mType = jsonObj["type"].toInt();
 
+    socket->flush();
 
     try {
         ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
@@ -590,7 +591,10 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
         // QUi dispatch nel pool
 
-        po->process((TypeOperation)mType, socket, jsonObj );
+        QThreadPool::globalInstance()->start(po->process((TypeOperation)mType, socket, jsonObj));
+
+        //po->process((TypeOperation)mType, socket, jsonObj );
+
 
     }
     catch (std::exception& me)

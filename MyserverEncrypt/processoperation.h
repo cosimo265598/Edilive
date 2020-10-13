@@ -11,7 +11,15 @@
 #include <QImage>
 #include <mutex>
 #include <iostream>
-#include "taskfactory.h"
+#include <QRunnable>
+#include <QThreadPool>
+
+#include "tasks.h"
+#include "serverdatabase.h"
+#include "serverexception.h"
+#include "userdata.h"
+#include "client.h"
+
 
 class ProcessOperation: public QObject
 {
@@ -20,19 +28,24 @@ private:
     TypeOperation tipo;
     static ProcessOperation *instance;
     static std::once_flag    inited;
+    //Tasks *tasks;
+    QMap<QWebSocket*, QSharedPointer<Client>> clients;
+    QMap<QString, UserData> users;
+    ServerDatabase database;
 
-    ProcessOperation(QObject *parent);
+    ProcessOperation(QObject *parent, ServerDatabase& database, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users);
+    void serverAccountCreate(QWebSocket *clientSocket, QJsonObject request);
 
 public:
-    static ProcessOperation *getInstance (QObject *parent) {
+    static ProcessOperation *getInstance (QObject *parent, ServerDatabase& database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
       std::call_once(inited, [&] () {
-          instance = new ProcessOperation(parent);
+          instance = new ProcessOperation(parent, database, clients, users);
         });
       return instance;
     }
 
     QString checkTypeOperationGranted(TypeOperation type);
-    void process(TypeOperation message, QWebSocket* socket, QJsonObject& data);
+    QRunnable *process(TypeOperation message, QWebSocket* socket, QJsonObject data);
     ~ProcessOperation();
 
 signals:
