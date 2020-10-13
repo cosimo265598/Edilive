@@ -71,7 +71,8 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
 
         case LoginRequest:{
             QString username    =data.value("username").toString();
-            emit loginRequest(socket,username);
+            return new Tasks(nullptr, socket, data,  database,clients, users, LoginRequest);
+            //emit loginRequest(socket,username);
             break;
         }
         case LoginUnlock:{
@@ -87,7 +88,7 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
             socket->moveToThread(nullptr);
             qDebug() << "chiamo runnable";
 
-            return new Tasks(nullptr, socket, data,  &database,&clients, &users, AccountCreate);
+            return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
 
             //emit accountCreate(socket,user,password);
             break;

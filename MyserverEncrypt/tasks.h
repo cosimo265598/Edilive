@@ -51,15 +51,16 @@ class Tasks : public QObject, public QRunnable
     Q_OBJECT
 public:
     Tasks(QObject *parent, QWebSocket *clientSocket,
-          QJsonObject request, ServerDatabase* database, QMap<QWebSocket*, QSharedPointer<Client>>* clients, QMap<QString, UserData>* users, TypeOperation type );
+          QJsonObject request, ServerDatabase database, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData> users, TypeOperation type );
     void serverAccountCreate(QWebSocket *socket, QJsonObject request);
+    void serverLoginRequest(QWebSocket* clientSocket, QJsonObject request);
     void test(QJsonObject m);
     void run() override;
 
 private:
-    QMap<QWebSocket*, QSharedPointer<Client>> *clients;
-    QMap<QString, UserData>* users;
-    ServerDatabase* database;
+    QMap<QWebSocket*, QSharedPointer<Client>> clients;
+    QMap<QString, UserData> users;
+    ServerDatabase database;
     TypeOperation type;
     QWebSocket *clientSocket;
     QJsonObject request;
