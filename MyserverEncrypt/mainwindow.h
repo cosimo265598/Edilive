@@ -78,13 +78,12 @@ private:
     QSharedPointer<Ui::MainWindow> ui;
     QSharedPointer<QWebSocketServer> m_pWebSocketServer;
    // QList<QWebSocket *> m_clients;
-    ServerDatabase database;
     QSslConfiguration sslconfig;
     QMap<QWebSocket*, QSharedPointer<Client>> clients;
     QMap<QString, UserData> users;
     ProcessOperation *po;
     int userId;
     QThreadPool *pool;
-
+    ServerDatabase database;
 };
 #endif // MAINWINDOW_H

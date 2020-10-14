@@ -33,13 +33,13 @@ private:
     QMap<QString, UserData> users;
     ServerDatabase database;
 
-    ProcessOperation(QObject *parent, ServerDatabase& database, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users);
+    ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users);
     void serverAccountCreate(QWebSocket *clientSocket, QJsonObject request);
 
 public:
-    static ProcessOperation *getInstance (QObject *parent, ServerDatabase& database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
+    static ProcessOperation *getInstance (QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
       std::call_once(inited, [&] () {
-          instance = new ProcessOperation(parent, database, clients, users);
+          instance = new ProcessOperation(parent, clients, users);
         });
       return instance;
     }

@@ -1,17 +1,19 @@
 #include "tasks.h"
 
 Tasks::Tasks(QObject *parent, QWebSocket *clientSocket,
-             QJsonObject request, ServerDatabase database, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
+             QJsonObject request, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
     QObject(parent),
     clients(clients),
     users(users),
     clientSocket(clientSocket),
     type(type),
-    request(request)
+    request(request),
+    threadId(QString::number((quintptr)QThread::currentThreadId()))
 {
-    //database.open(defaultnamedb, "ciao", nullptr);
+
     qDebug() << "creato";
     clientSocket->moveToThread(QThread::currentThread());
+    db.open(defaultnamedb,threadId,nullptr);
 }
 
 void Tasks::serverLoginRequest(QWebSocket* clientSocket, QJsonObject request){
@@ -114,4 +116,9 @@ void Tasks::run(){
         default: qDebug() << "No Task";
 
     }
+}
+
+Tasks::~Tasks()
+{
+    this->db.removeDatabase(threadId);
 }

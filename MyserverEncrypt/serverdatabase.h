@@ -35,6 +35,9 @@ class ServerDatabase
 {
 private:
     Ui::MainWindow *ui_of_server;
+
+    QSqlDatabase db;
+
     // Prepared queries
     QSqlQuery qInsertNewUser;
     QSqlQuery qUpdateUser;
@@ -49,12 +52,13 @@ public:
 
     // Neutral ctor and dtor; the initialization work is done inside open()
 
-    ServerDatabase() {};
+    ServerDatabase();
 
-    ~ServerDatabase() {};
+    ~ServerDatabase();
 
     // Database connection and initialization
     // the database file is created if it doesn't exist
+
     void open(QString dbName, QString connName, Ui::MainWindow* ui);
 
     // Queries
@@ -64,15 +68,13 @@ public:
     void addDocToUser(QString username, QString uri);
     void removeDocFromUser(QString username, QString uri);
     void removeDoc(QString uri);
-
+    void removeDatabase(QString connectionName);
     int getMaxUserID();
     QList<UserData> readUsersList();
     UserData readUser(QString username);
     QStringList readUserDocuments(QString username);
     QStringList readDocumentURIs();
     int countDocEditors(QString docURI);
-
-
 
 };
 

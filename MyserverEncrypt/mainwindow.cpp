@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    this->po=ProcessOperation::getInstance(this, database, clients, users);
+    this->po=ProcessOperation::getInstance(this, clients, users);
 
     //thread poll config
     pool = new QThreadPool(this);
@@ -36,9 +36,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
         if(!SSLconfiguration(sslconfig))
             throw StartupException("Impossible to set encryption configuration");
         m_pWebSocketServer->setSslConfiguration(sslconfig);
-        database.open(defaultnamedb, "default_connection", ui.get());
+
+        database.open(defaultnamedb, QString("default_connection"), ui.get());
     }catch ( DatabaseConnectionException& dce ) {
-        throw StartupException("Connetion database error");
+        throw StartupException("Connection database error");
     }catch(DatabaseCreateException& dcreate_ex){
         throw StartupException("Creation database table error");
     }catch(StartupException& se){
@@ -261,6 +262,8 @@ void MainWindow::SimpleTextMessageTest(){
 /*
  *  LOGIN METHOD
 */
+
+
 void MainWindow::serverLoginRequest(QWebSocket* clientSocket, QString username){
     QSharedPointer<Client> client = clients[clientSocket];
     QByteArray data;

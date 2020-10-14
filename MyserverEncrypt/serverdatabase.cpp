@@ -8,27 +8,14 @@
 #include <serverexception.h>
 #include <QRandomGenerator>
 
-void ServerDatabase::open(QString dbName, QString connName, Ui::MainWindow* ui)
+void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow* ui)
 {
     this->ui_of_server=ui;
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    bool creatingDb=true;
-
-    if(QFile::exists(dbName)){
-        creatingDb=false;
-        //ui->commetdb->appendPlainText("----- Caricamento db esistente.");
-    }
-
-    db.setDatabaseName(dbName);
-    if (!db.open()) {
-        qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
-        //ui->commetdb->appendPlainText("----- ERORRE apertura db esistente"+db.lastError().text());
-        throw DatabaseConnectionException(db.lastError());
-
-    }
-    if (creatingDb)
+    if (!QFile::exists(dbName))
     {
+        //ui->commetdb->appendPlainText("----- Caricamento db esistente.");
+
         // Database initialization queries
 
         QSqlQuery userTable(db);								// Query to create the Users table
@@ -46,6 +33,23 @@ void ServerDatabase::open(QString dbName, QString connName, Ui::MainWindow* ui)
 
         }
     }
+
+    /*
+    if(QFile::exists(dbName)){
+        creatingDb=false;
+        //ui->commetdb->appendPlainText("----- Caricamento db esistente.");
+    }
+    */
+
+    this->db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(dbName);
+
+    if (!db.open()) {
+        qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
+        //ui->commetdb->appendPlainText("----- ERORRE apertura db esistente"+db.lastError().text());
+        throw DatabaseConnectionException(db.lastError());
+    }
+
 
     // Prepare all var-arg queries, leave only parameter binding for later
 
@@ -87,6 +91,15 @@ void ServerDatabase::open(QString dbName, QString connName, Ui::MainWindow* ui)
     //this->ui_of_server->commetdb->appendPlainText("Ready");
 
 }
+
+ServerDatabase::ServerDatabase()
+{
+}
+
+ServerDatabase::~ServerDatabase()
+{
+}
+
 
 void ServerDatabase::insertUser(const UserData& user)
 {
@@ -169,6 +182,11 @@ void ServerDatabase::removeDoc(QString uri)
         qDebug()<<LOG_PRINT_DB+"Error remove doc ";
         throw DatabaseWriteException(qRemoveDocEditor.lastQuery().toStdString(), qRemoveDocEditor.lastError());
     }
+}
+
+void ServerDatabase::removeDatabase(QString connectionName)
+{
+    this->db.removeDatabase(connectionName);
 }
 
 
