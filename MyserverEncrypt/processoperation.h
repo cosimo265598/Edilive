@@ -43,8 +43,8 @@ public:
       return instance;
     }
 
-    QString checkTypeOperationGranted(TypeOperation type);
-    QRunnable *process(TypeOperation message, QWebSocket* socket, QJsonObject data);
+    //QString checkTypeOperationGranted(TypeOperation type);
+    void process(QWebSocket* socket, QJsonObject data);
     ~ProcessOperation();
 
 signals:
@@ -65,6 +65,11 @@ signals:
     /* Profile */
     void PersonalDataOfClient(QWebSocket* clientSocket);
     void accountUpdate(QWebSocket*, QString, QString, QString);
+
+public slots:
+    void onMessageError(QWebSocket* socket, QString errorMessage);
+    void onMessageChallenge(QWebSocket* socket, QString salt, QString challenge);
+    void onMessageChallengePassed(QWebSocket* , QString);
 };
 
 #endif // PROCESSOPERATION_H

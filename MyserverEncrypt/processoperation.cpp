@@ -57,39 +57,21 @@ ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPoi
     connect(this, &ProcessOperation::accountUpdate,
             dynamic_cast<MainWindow*>(this->parent()),
             &MainWindow::updateProfileClient,Qt::DirectConnection);
+
 }
 
 
-QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, QJsonObject data)
+void ProcessOperation::process(QWebSocket* socket, QJsonObject data)
 {
+    TypeOperation typeOp = (TypeOperation)(data["type"].toInt());
 
-    //socket->moveToThread(nullptr);
-    switch (message)
+    switch (typeOp)
     {
-
-         /* LOGIN MESSAGES */
-
-        case LoginRequest:{
-
-            //QString username    =data.value("username").toString();
-
-            //users.insert("ciao", UserData("ciao",2,"ciao","ciao",QImage()));
-
-            return new Tasks(nullptr, socket, data,clients, users, LoginRequest);
-            //emit loginRequest(socket,username);
-            break;
-        }
-        case LoginUnlock:{
-            QString token    =data.value("challange").toString();
-            emit loginUnlock(socket,token);
-            break;
-        }
         case AccountCreate:{
             QString user    =data.value("username").toString();
             QString password=data.value("password").toString();
 
             qDebug() << "disassocio thread";
-            socket->moveToThread(nullptr);
             qDebug() << "chiamo runnable";
 
             //return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
@@ -137,11 +119,24 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
         }
 
         default:		// Wrong message type already addressed in readMessage,
-            return nullptr;		// no need to handle error again
+        break;
+            //return;		// no need to handle error again
     }
+
+    qDebug() << "Main thread  " << QThread::currentThread()->currentThreadId();
+
+    Tasks *task = new Tasks(nullptr, data, socket, clients, users, typeOp);
+
+    connect(task,&Tasks::errorMessage, this, &ProcessOperation::onMessageError);
+    connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge);
+    connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed);
+
+    QThreadPool::globalInstance()->start(task);
+
+
 }
 
-
+/*
 QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
     switch (type)
         {
@@ -167,6 +162,36 @@ QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
             default:                                    return QString();
         }
 }
+
+*/
 ProcessOperation::~ProcessOperation() {
     qDebug()<<"distructor process operation called";
 }
+
+void ProcessOperation::onMessageError(QWebSocket* socket, QString errorMessage)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,
+                BuilderMessage::MessageLoginError(errorMessage));
+
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onMessageChallenge(QWebSocket* socket, QString salt, QString challenge)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                  data,BuilderMessage::MessageChallege(salt, challenge));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onMessageChallengePassed(QWebSocket * socket, QString d)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageChallegePassed(d));
+    socket->sendBinaryMessage(data);
+}
+
+

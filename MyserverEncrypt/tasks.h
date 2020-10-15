@@ -42,9 +42,9 @@ enum TypeOperation : quint16
 
     // personal image
     ProfileData,
-    DeleteFile
+    DeleteFile,
     // add other enum below, and do not change the order of list
-
+    UnknowMessage
 };
 
 
@@ -52,10 +52,11 @@ class Tasks : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    Tasks(QObject *parent, QWebSocket *clientSocket,
-          QJsonObject request, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type );
-    void serverAccountCreate(QWebSocket *socket, QJsonObject request);
+    Tasks(QObject *parent,
+          QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type );
+    void serverAccountCreate(QJsonObject request);
     void serverLoginRequest();
+    void serverLoginUnlock();
     void test(QJsonObject m);
     void run() override;
     ~Tasks();
@@ -63,14 +64,15 @@ public:
 private:
     QMap<QWebSocket*, QSharedPointer<Client>>& clients;
     QMap<QString, UserData>& users;
-    ServerDatabase database;
-    TypeOperation type;
-    QWebSocket *clientSocket;
+    TypeOperation typeOp;
     QJsonObject request;
     QString threadId;
+    QWebSocket* socket;
 
 signals:
-
+    void errorMessage(QWebSocket*,QString);
+    void messageChallenge(QWebSocket*, QString, QString);
+    void messageChallegePassed(QWebSocket*, QString);
 };
 
 #endif // TASKS_H

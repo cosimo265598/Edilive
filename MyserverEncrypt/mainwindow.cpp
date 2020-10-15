@@ -85,7 +85,7 @@ void MainWindow::prepareToStart()
 
     // Read The database file , avoid to interview each time the db
     QList<UserData> listUser=database.readUsersList();
-    /* Possible implementation , load at the begining in map
+    // Possible implementation , load at the begining in map
 
     for (UserData user : database.readUsersList() )
     {
@@ -94,7 +94,7 @@ void MainWindow::prepareToStart()
             user.addDocument(docUri);
         }
         users.insert(user.getUsername(), user);
-    }*/
+    }
 
     // Initialize the counter
     userId = database.getMaxUserID();
@@ -560,6 +560,7 @@ void MainWindow::updateProfileClient(QWebSocket *clientSocket, QString nickname,
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {
+    qDebug() << "new binary";
     QWebSocket* socket = dynamic_cast<QWebSocket*>(sender());
     if (socket == nullptr || !socket->isValid())
         return;
@@ -583,25 +584,20 @@ void MainWindow::processBinaryMessage(QByteArray message)
     QJsonObject jsonObj = jsonDoc.object();
     int mType = jsonObj["type"].toInt();
 
-    socket->flush();
-
     try {
         ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
 
+        /*
         if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
                 po->checkTypeOperationGranted((TypeOperation)mType).isEmpty()){
             ui->commet->appendPlainText("***(MESSAGE ERROR)*** Received unexpected message: ");
             // return whitout do anything.
             return;
         }
+        */
 
         // QUi dispatch nel pool
-
-        QThreadPool::globalInstance()->start(po->process((TypeOperation)mType, socket, jsonObj));
-
-        //po->process((TypeOperation)mType, socket, jsonObj );
-
-
+        po->process(socket, jsonObj );
     }
     catch (std::exception& me)
     {

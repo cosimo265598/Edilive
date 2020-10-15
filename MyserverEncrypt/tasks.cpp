@@ -1,56 +1,48 @@
 #include "tasks.h"
 
-Tasks::Tasks(QObject *parent, QWebSocket *clientSocket,
-             QJsonObject request, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type) :
+Tasks::Tasks(QObject *parent,
+             QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp) :
     QObject(parent),
     clients(clients),
     users(users),
-    clientSocket(clientSocket),
-    type(type),
+    typeOp(typeOp),
+    socket(socket),
     request(request),
     threadId(QString::number((quintptr)QThread::currentThreadId()))
 {
 
     qDebug() << "creato";
-    clientSocket->moveToThread(QThread::currentThread());
-    this->database.open(defaultnamedb,threadId,nullptr);
+    qDebug() << "ThreadPool  " << QThread::currentThread()->currentThreadId();
+    //this->database.open(defaultnamedb,threadId,nullptr);
 }
 
 void Tasks::serverLoginRequest(){
 
+    ServerDatabase database;
+    database.open(defaultnamedb,threadId,nullptr);
+
+    qDebug() << users.size();
     QString username = request["username"].toString();
 
-    QSharedPointer<Client> client = clients[this->clientSocket];
-
-    QByteArray data;
+    QSharedPointer<Client> client = clients[socket];
 
     qDebug() << QThread::currentThread();
     //this->thread()->currentThread()->msleep(15000);
 
     if(users[username].isEmpty()){            // utente non registrato, non presente nel db.
         //ui->commet->appendPlainText("Client not Registered "+username);
-        BuilderMessage::MessageSendToClient(
-                    data,
-                    BuilderMessage::MessageLoginError("Client not registered." + username));
-
-        clientSocket->sendBinaryMessage(data);
+        emit errorMessage(socket, "Client not registered." + username);
     }
 
     try {
         qDebug() << "Try";
         UserData user(database.readUser(username));
-        qDebug() << "Empty?";
+
+        qDebug() << user.getUserId();
 
         if(user.isEmpty()){            // utente non registrato, non presente nel db.
             //ui->commet->appendPlainText("Client not Registered "+username);
-            BuilderMessage::MessageSendToClient(
-                        data,
-                        BuilderMessage::MessageLoginError("Client not registered."));
-
-            clientSocket->sendBinaryMessage(data);
-            //socketAbort(clientSocket);
-
-
+            emit errorMessage(socket, "Client not registered.");
         }else{
             qDebug() << "leggo file";
 
@@ -62,71 +54,76 @@ void Tasks::serverLoginRequest(){
     }  catch (DatabaseReadException& re) {
         users.remove(username);
         //ui->commet->appendPlainText("Databaseread problem during the query excution");
-        BuilderMessage::MessageSendToClient(
-                    data,
-                    BuilderMessage::MessageLoginError("Error database sever"));
-        clientSocket->sendBinaryMessage(data);
-        //socketAbort(clientSocket);
-        clientSocket->moveToThread(QCoreApplication::instance()->thread());
+        emit errorMessage(socket, "Error database sever");
         return;
     }
 
     qDebug() << "Ok go on";
-
     qDebug() << users.size();
 
     if (users.contains(username))
     {
         if (client.get()->isLogged()){
             //ui->commet->appendPlainText("Client already logged in as '" + client->getUsername() + "'");
-            BuilderMessage::MessageSendToClient(
-                        data,
-                        BuilderMessage::MessageLoginError("Client: "+client->getUsername()+" is already logged in."));
-            clientSocket->sendBinaryMessage(data);
-            clientSocket->moveToThread(QCoreApplication::instance()->thread());
+            emit errorMessage(socket, "Client: "+client->getUsername()+" is already logged in.");
             return;
         }
         // client not logged
-        BuilderMessage::MessageSendToClient(
-                      data,BuilderMessage::MessageChallege(
-                      QString(users[username].getSalt()) ,
-                      QString(client->challenge(&users[username]))));
-        qDebug() << "prima di send";
-        clientSocket->sendBinaryMessage(data);
-        qDebug() << "dopo send";
-        clientSocket->moveToThread(QCoreApplication::instance()->thread());
+        emit messageChallenge(socket, QString(users[username].getSalt()), QString(client->challenge(&users[username])));
     }
 
     else {
         // send message utente non registrato
         //ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
-        BuilderMessage::MessageSendToClient(
-                    data,
-                    BuilderMessage::MessageLoginError("Client not registered."));
-
-        clientSocket->sendBinaryMessage(data);
-        //socketAbort(clientSocket);
-        clientSocket->moveToThread(QCoreApplication::instance()->thread());
+        emit errorMessage(socket, "Client not registered.");
     }
-
-
 }
 
+void Tasks::serverLoginUnlock()
+{
+    qDebug() << "provo a completare";
+
+    ServerDatabase database;
+    database.open(defaultnamedb,threadId,nullptr);
+
+    QString token = request.value("challange").toString();
+    QSharedPointer<Client> client = clients[socket];
+
+    QByteArray data;
+
+    if (client->isLogged()){
+        emit errorMessage(socket, "You have to loggin before use the platform");
+        return ;
+
+    }else if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
+        //ui->commet->appendPlainText( "User " + client->getUsername() + " is logged in");
+        client->login(client->getUser());
+        emit messageChallegePassed(socket, QString());
+        return ;
+    }else{
+        users.remove(client->getUsername());
+        client->logout();
+        emit errorMessage(socket, "Credential inserted are not corrected");
+        return ;
+    }
+}
 
 void Tasks::test(QJsonObject m){
     qDebug() << m["username"].toString() << QThread::currentThreadId();
 }
 
 void Tasks::run(){
-    switch (type) {
+    switch (typeOp) {
         //case AccountCreate: this->serverAccountCreate(clientSocket,request);break;
-        case LoginRequest: this->serverLoginRequest();break;
+        case TypeOperation::LoginRequest: this->serverLoginRequest();break;
+        case TypeOperation::LoginUnlock: this->serverLoginUnlock();break;
         default: qDebug() << "No Task";
-
     }
 }
 
 Tasks::~Tasks()
 {
-    this->database.removeDatabase(threadId);
+    //this->database.removeDatabase(threadId);
+    qDebug() << "Return to main thread  " << QCoreApplication::instance()->thread();
+    QSqlDatabase::removeDatabase(threadId);
 }
