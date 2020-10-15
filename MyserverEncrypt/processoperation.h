@@ -29,11 +29,10 @@ private:
     static ProcessOperation *instance;
     static std::once_flag    inited;
     //Tasks *tasks;
-    QMap<QWebSocket*, QSharedPointer<Client>> clients;
-    QMap<QString, UserData> users;
-    ServerDatabase database;
+    QMap<QWebSocket*, QSharedPointer<Client>>& clients;
+    QMap<QString, UserData>& users;
 
-    ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users);
+    ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users);
     void serverAccountCreate(QWebSocket *clientSocket, QJsonObject request);
 
 public:

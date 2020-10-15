@@ -55,7 +55,7 @@ public:
     Tasks(QObject *parent, QWebSocket *clientSocket,
           QJsonObject request, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type );
     void serverAccountCreate(QWebSocket *socket, QJsonObject request);
-    void serverLoginRequest(QWebSocket* clientSocket, QJsonObject request);
+    void serverLoginRequest();
     void test(QJsonObject m);
     void run() override;
     ~Tasks();
@@ -67,7 +67,6 @@ private:
     TypeOperation type;
     QWebSocket *clientSocket;
     QJsonObject request;
-    ServerDatabase db;
     QString threadId;
 
 signals:

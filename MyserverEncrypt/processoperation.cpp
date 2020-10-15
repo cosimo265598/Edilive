@@ -7,8 +7,8 @@
 ProcessOperation* ProcessOperation::instance;
 std::once_flag    ProcessOperation::inited;
 
-ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>> clients, QMap<QString, UserData>& users
-):QObject(parent)
+ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users
+):QObject(parent), clients(clients), users(users)
 {
     // signal - slot for login method- registration and first phase untill the text edit
 
@@ -94,7 +94,7 @@ QRunnable *ProcessOperation::process(TypeOperation message, QWebSocket* socket, 
 
             //return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
 
-            //emit accountCreate(socket,user,password);
+            emit accountCreate(socket,user,password);
             break;
         }
 

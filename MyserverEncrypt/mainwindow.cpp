@@ -37,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
             throw StartupException("Impossible to set encryption configuration");
         m_pWebSocketServer->setSslConfiguration(sslconfig);
 
-        database.open(defaultnamedb, QString("default_connection"), ui.get());
+        database.open(defaultnamedb, QString("dafault"), ui.get());
+
     }catch ( DatabaseConnectionException& dce ) {
         throw StartupException("Connection database error");
     }catch(DatabaseCreateException& dcreate_ex){
@@ -181,6 +182,8 @@ void MainWindow::onNewConnection(){
 
     QSharedPointer<Client> client(new Client(pSocket));
     clients.insert(pSocket, client);
+
+    qDebug() << pSocket;
 
     ui->num_client->display(ui->num_client->intValue()+1);
 
