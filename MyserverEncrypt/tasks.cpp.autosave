@@ -310,6 +310,7 @@ void Tasks::run(){
 
 Tasks::~Tasks()
 {
+    //Sistema 
     database.removeDatabase(this->threadId);
     qDebug() << "Returning to main thread  " << QCoreApplication::instance()->thread();
 }
