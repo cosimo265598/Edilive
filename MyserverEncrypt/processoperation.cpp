@@ -8,132 +8,142 @@ ProcessOperation* ProcessOperation::instance;
 std::once_flag    ProcessOperation::inited;
 
 ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users
-):QObject(parent), clients(clients), users(users)
+):QObject(parent),
+    clients(clients),
+    users(users)
 {
-    // signal - slot for login method- registration and first phase untill the text edit
+}
 
-    connect(this,&ProcessOperation::loginRequest,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::serverLoginRequest,Qt::DirectConnection);
-    connect(this,&ProcessOperation::loginUnlock,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::serverLoginUnlock,Qt::DirectConnection);
-    /*
-     *  Account method */
+Tasks *ProcessOperation::createTask(QObject *parent,
+                                    QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp)
+{
+    Tasks *task = new Tasks(nullptr, request, socket, clients, users, typeOp);
 
-    connect(this,&ProcessOperation::accountCreate,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::serverAccountCreate,Qt::DirectConnection);
+    connect(task,&Tasks::loginError, this, &ProcessOperation::onLoginError);
+    connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge);
+    connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed);
+    connect(task,&Tasks::accountCreationError, this, &ProcessOperation::onAccountCreationError);
+    connect(task,&Tasks::accountConfirmed, this, &ProcessOperation::onAccountConfirmed);
+    connect(task,&Tasks::openDirOfClient, this, &ProcessOperation::onOpenDirOfClient);
+    connect(task,&Tasks::personalDataOfClient, this, &ProcessOperation::onPersonalDataOfClient);
+    connect(task,&Tasks::accountUpdateSuccess, this, &ProcessOperation::onAccountUpdateSuccess);
+    connect(task,&Tasks::fileCreationError, this, &ProcessOperation::onFileCreationError);
+    connect(task,&Tasks::fileDeletionError, this, &ProcessOperation::onFileDeletionError);
+    connect(task,&Tasks::openFile, this, &ProcessOperation::onOpenFile);
 
-    /*
-     *  test message method */
-
-    connect(this,&ProcessOperation::SimpleMessage,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::SimpleTextMessageTest,Qt::DirectConnection);
-    /*
-     * client file
-     */
-    connect(this,&ProcessOperation::OpenDirOfClient,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::OpenDirOfClient,Qt::DirectConnection);
-    connect(this,&ProcessOperation::CreateFileForClient,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::CreateFileForClient,Qt::DirectConnection);
-    connect(this,&ProcessOperation::OpenFileForClient,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::OpenFileForClient,Qt::DirectConnection);
-    connect(this,&ProcessOperation::DeleteFileForClient,
-                dynamic_cast<MainWindow*>(this->parent()),
-                &MainWindow::DeleteFileForClient,Qt::DirectConnection);
-
-    /*
-     * personal data
-     */
-    connect(this,&ProcessOperation::PersonalDataOfClient,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::PersonalDataOfClient,Qt::DirectConnection);
-
-    connect(this, &ProcessOperation::accountUpdate,
-            dynamic_cast<MainWindow*>(this->parent()),
-            &MainWindow::updateProfileClient,Qt::DirectConnection);
-
+    return task;
 }
 
 
-void ProcessOperation::process(QWebSocket* socket, QJsonObject data)
+void ProcessOperation::process(QWebSocket* socket, QJsonObject request)
 {
-    TypeOperation typeOp = (TypeOperation)(data["type"].toInt());
+    TypeOperation typeOp = (TypeOperation)(request["type"].toInt());
 
-    switch (typeOp)
-    {
-        case AccountCreate:{
-            QString user    =data.value("username").toString();
-            QString password=data.value("password").toString();
-
-            qDebug() << "disassocio thread";
-            qDebug() << "chiamo runnable";
-
-            //return new Tasks(nullptr, socket, data,  database,clients, users, AccountCreate);
-
-            emit accountCreate(socket,user,password);
-            break;
-        }
-
-        case Simplemessage:{
-            emit SimpleMessage(socket,QString("hello message for testing sended\n"));
-            break;
-        }
-        case OpenDirectory:{
-            emit OpenDirOfClient(socket);
-            break;
-        }
-        case CreateFile:{
-            QString file    =data.value("nomefile").toString();
-            emit CreateFileForClient(socket,file);
-            break;
-        }
-        case OpenFile:{
-            QString file    =data.value("nomefile").toString();
-            emit OpenFileForClient(socket,file);
-            break;
-        }
-        case ProfileData:{
-            emit PersonalDataOfClient(socket);
-            break;
-        }
-
-        case DeleteFile:{
-            QString file    =data.value("nomefile").toString();
-            emit DeleteFileForClient(socket,file);
-            break;
-        }
-
-        case AccountUpdate:{
-            QString user    =data.value("nickname").toString();
-            QString password=data.value("password").toString();
-            QString serializedImage=data.value("icon").toString();
-
-            emit accountUpdate(socket,user,password, serializedImage);
-            break;
-        }
-
-        default:		// Wrong message type already addressed in readMessage,
-        break;
-            //return;		// no need to handle error again
-    }
-
-    qDebug() << "Main thread  " << QThread::currentThread()->currentThreadId();
-
-    Tasks *task = new Tasks(nullptr, data, socket, clients, users, typeOp);
-
-    connect(task,&Tasks::errorMessage, this, &ProcessOperation::onMessageError);
-    connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge);
-    connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed);
+    Tasks *task = this->createTask(nullptr, request, socket, clients, users, typeOp);
 
     QThreadPool::globalInstance()->start(task);
+}
 
+ProcessOperation::~ProcessOperation() {
+    qDebug()<<"distructor process operation called";
+}
 
+void ProcessOperation::onLoginError(QWebSocket* socket, QString errorMessage)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,
+                BuilderMessage::MessageLoginError(errorMessage));
+
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onMessageChallenge(QWebSocket* socket, QString salt, QString challenge)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                  data,BuilderMessage::MessageChallege(salt, challenge));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onMessageChallengePassed(QWebSocket * socket, QString d)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageChallegePassed(d));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onAccountCreationError(QWebSocket * socket, QString errorMessage){
+
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountError(errorMessage));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onAccountConfirmed(QWebSocket* socket, QString message)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountConfirmed(message));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onOpenDirOfClient(QWebSocket *socket, QJsonArray files)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageOpenDirOfClient(files));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onAccountUpdateSuccess(QWebSocket *socket, QString message)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountUpdateSuccess(message));
+
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onPersonalDataOfClient(QWebSocket* socket, QString username, QString nickname, QImage image)
+{
+    QByteArray data;
+
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountInfo(username, nickname,image));
+
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onFileCreationError(QWebSocket *socket, QString errorMessage)
+{
+    QByteArray data;
+    BuilderMessage::MessageSendToClient(
+                        data,BuilderMessage::MessageFileCreationError(errorMessage));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onFileDeletionError(QWebSocket *socket, QString errorMessage)
+{
+    QByteArray data;
+
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageFileDeletionError(errorMessage));
+    socket->sendBinaryMessage(data);
+}
+
+void ProcessOperation::onOpenFile(QWebSocket *socket, QString fileName, QByteArray contentFile)
+{
+    QByteArray data;
+
+    BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName));
+
+    if(contentFile != nullptr)
+        BuilderMessage::MessageSendToClient(data,contentFile);
+
+    socket->sendBinaryMessage(data);
 }
 
 /*
@@ -164,34 +174,5 @@ QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
 }
 
 */
-ProcessOperation::~ProcessOperation() {
-    qDebug()<<"distructor process operation called";
-}
-
-void ProcessOperation::onMessageError(QWebSocket* socket, QString errorMessage)
-{
-    QByteArray data;
-    BuilderMessage::MessageSendToClient(
-                data,
-                BuilderMessage::MessageLoginError(errorMessage));
-
-    socket->sendBinaryMessage(data);
-}
-
-void ProcessOperation::onMessageChallenge(QWebSocket* socket, QString salt, QString challenge)
-{
-    QByteArray data;
-    BuilderMessage::MessageSendToClient(
-                  data,BuilderMessage::MessageChallege(salt, challenge));
-    socket->sendBinaryMessage(data);
-}
-
-void ProcessOperation::onMessageChallengePassed(QWebSocket * socket, QString d)
-{
-    QByteArray data;
-    BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageChallegePassed(d));
-    socket->sendBinaryMessage(data);
-}
 
 

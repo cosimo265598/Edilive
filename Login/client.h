@@ -33,7 +33,6 @@
 #include "startupstackeddialog.h"
 #include "connectionwaitingdialog.h"
 #include "mainwindowstacked.h"
-#include "subscriber.h"
 
 enum ClientStatus : quint32
 {

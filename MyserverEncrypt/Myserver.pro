@@ -28,7 +28,6 @@ SOURCES += \
     processoperation.cpp \
     serverdatabase.cpp \
     serverexception.cpp \
-    taskrunnable.cpp \
     tasks.cpp \
     userdata.cpp
 
@@ -41,7 +40,6 @@ HEADERS += \
     processoperation.h \
     serverdatabase.h \
     serverexception.h \
-    taskrunnable.h \
     tasks.h \
     userdata.h
 

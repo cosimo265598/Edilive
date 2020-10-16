@@ -20,12 +20,12 @@
 #include <QtCore/QDebug>
 #include <QCoreApplication>
 #include <QDir>
+#include <QSizePolicy>
 
 #include "ui_homepage.h"
 #include "buildermessageclient.h"
 #include "filehandler.h"
 #include "eventfilterimpl.h"
-#include "subscriber.h"
 
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 

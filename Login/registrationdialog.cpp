@@ -1,5 +1,4 @@
 #include "registrationdialog.h"
-#include "ui_registrationdialog.h"
 
 RegistrationDialog::RegistrationDialog(QWidget *parent) :
     QWidget(parent),

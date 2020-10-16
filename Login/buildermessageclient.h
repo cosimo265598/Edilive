@@ -5,8 +5,7 @@
 #include <QJsonObject>
 #include <QImage>
 #include <QBuffer>
-
-#include "updateuser.h"
+#include <QCryptographicHash>
 
 class BuilderMessageClient
 {

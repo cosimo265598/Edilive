@@ -105,7 +105,7 @@ ServerDatabase::~ServerDatabase()
 
 void ServerDatabase::insertUser(const UserData& user)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query insertUser");
+    //this->ui_of_server->commetdb->appendPlainText("Query insertUser");
 
     QByteArray icon;
     QBuffer buffer(&icon);
@@ -128,7 +128,7 @@ void ServerDatabase::insertUser(const UserData& user)
 
 void ServerDatabase::updateUser(const UserData& user)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query updateUser");
+    //this->ui_of_server->commetdb->appendPlainText("Query updateUser");
 
     QByteArray icon;
     QBuffer buffer(&icon);
@@ -149,7 +149,7 @@ void ServerDatabase::updateUser(const UserData& user)
 
 void ServerDatabase::addDocToUser(QString username, QString uri)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query addDocToUser");
+    //this->ui_of_server->commetdb->appendPlainText("Query addDocToUser");
 
     qInsertDocEditor.bindValue(":username", username);
     qInsertDocEditor.bindValue(":uri", uri);
@@ -162,7 +162,7 @@ void ServerDatabase::addDocToUser(QString username, QString uri)
 
 void ServerDatabase::removeDocFromUser(QString username, QString uri)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query removeDocFromUser");
+    //this->ui_of_server->commetdb->appendPlainText("Query removeDocFromUser");
 
     qRemoveDocEditor.bindValue(":username", username);
     qRemoveDocEditor.bindValue(":uri", uri);
@@ -176,7 +176,7 @@ void ServerDatabase::removeDocFromUser(QString username, QString uri)
 
 void ServerDatabase::removeDoc(QString uri)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query removeDoc");
+    //this->ui_of_server->commetdb->appendPlainText("Query removeDoc");
 
     qRemoveDoc.bindValue(":uri", uri);
 
@@ -330,7 +330,7 @@ QStringList ServerDatabase::readDocumentURIs()
 
 int ServerDatabase::countDocEditors(QString docURI)
 {
-    this->ui_of_server->commetdb->appendPlainText("Query countDocEditor");
+    //this->ui_of_server->commetdb->appendPlainText("Query countDocEditor");
 
     qCountDocEditors.bindValue(":uri", docURI);
 
@@ -348,3 +348,14 @@ int ServerDatabase::countDocEditors(QString docURI)
     return 0;
 
 }
+
+bool ServerDatabase::isOpen() const
+{
+    return this->db.isOpen();
+}
+
+bool ServerDatabase::isValid() const
+{
+    return this->db.isOpen();
+}
+

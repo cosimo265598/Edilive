@@ -75,6 +75,8 @@ public:
     QStringList readUserDocuments(QString username);
     QStringList readDocumentURIs();
     int countDocEditors(QString docURI);
+    bool isOpen() const;
+    bool isValid() const;
 
 };
 

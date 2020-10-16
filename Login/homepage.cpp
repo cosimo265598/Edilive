@@ -1,5 +1,4 @@
 #include "homepage.h"
-#include <QSizePolicy>
 
 QT_USE_NAMESPACE
 

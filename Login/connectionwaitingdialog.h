@@ -4,6 +4,11 @@
 #include <QDialog>
 #include <QAbstractSocket>
 #include <QTimer>
+#include <QRandomGenerator>
+#include <QWebSocket>
+#include <QProgressBar>
+
+#include "ui_connectionwaitingdialog.h"
 
 #define MAX_RETRY 3
 #define MAX_TIMEOUT 6000

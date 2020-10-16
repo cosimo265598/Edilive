@@ -1,5 +1,4 @@
 #include "client.h"
-#include "connectionwaitingdialog.h"
 
 Client::Client(QObject *parent) :
     QObject(parent),

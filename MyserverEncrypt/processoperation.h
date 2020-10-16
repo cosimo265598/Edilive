@@ -33,7 +33,8 @@ private:
     QMap<QString, UserData>& users;
 
     ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users);
-    void serverAccountCreate(QWebSocket *clientSocket, QJsonObject request);
+
+    Tasks *createTask(QObject *parent, QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp);
 
 public:
     static ProcessOperation *getInstance (QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
@@ -49,27 +50,18 @@ public:
 
 signals:
 
-    void  loginRequest(QWebSocket* clientSocket, QString username);
-    void  loginUnlock(QWebSocket* clientSocket, QString token);
-
-    void  accountCreate(QWebSocket* clientSocket, QString username, QString password);
-    //void  accountUpdate(QWebSocket* clientSocket, QString nickname, QImage icon, QString password);
-    void  SimpleMessage(QWebSocket* clientSocket, QString mess);
-
-    /* FILE */
-    void OpenDirOfClient(QWebSocket* clientSocket);
-    void CreateFileForClient(QWebSocket* clientSocket, QString filename);
-    void OpenFileForClient(QWebSocket* clientSocket, QString filename);
-    void DeleteFileForClient(QWebSocket* clientSocket, QString filename);
-
-    /* Profile */
-    void PersonalDataOfClient(QWebSocket* clientSocket);
-    void accountUpdate(QWebSocket*, QString, QString, QString);
-
 public slots:
-    void onMessageError(QWebSocket* socket, QString errorMessage);
+    void onLoginError(QWebSocket* socket, QString errorMessage);
     void onMessageChallenge(QWebSocket* socket, QString salt, QString challenge);
     void onMessageChallengePassed(QWebSocket* , QString);
+    void onAccountCreationError(QWebSocket* , QString);
+    void onAccountConfirmed(QWebSocket*, QString);
+    void onOpenDirOfClient(QWebSocket*, QJsonArray);
+    void onAccountUpdateSuccess(QWebSocket*, QString);
+    void onPersonalDataOfClient(QWebSocket* , QString, QString, QImage);
+    void onFileCreationError(QWebSocket* , QString);
+    void onFileDeletionError(QWebSocket* , QString);
+    void onOpenFile(QWebSocket* , QString, QByteArray);
 };
 
 #endif // PROCESSOPERATION_H

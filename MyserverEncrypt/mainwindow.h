@@ -59,20 +59,9 @@ public slots:
     void prepareToStart();
 
     void SimpleTextMessageTest();
-    void serverLoginRequest(QWebSocket* clientSocket, QString username);
-    void serverLoginUnlock(QWebSocket* clientSocket, QString token);
-    void serverAccountCreate(QWebSocket* clientSocket, QString username, QString password);
+
     void serverErrorConnection(QWebSocketProtocol::CloseCode closeCode);
     void socketAbort(QWebSocket* clientSocket);
-    /* FILE */
-    void OpenDirOfClient(QWebSocket* clientSocket);
-    void CreateFileForClient(QWebSocket* clientSocket, QString file);
-    void OpenFileForClient(QWebSocket* clientSocket, QString file);
-    void DeleteFileForClient(QWebSocket *clientSocket, QString fileName);
-
-    /* Profile data */
-    void PersonalDataOfClient (QWebSocket* clientSocket);
-    void updateProfileClient(QWebSocket *clientSocket, QString user, QString password, QString serializedImage );
 
 private:
     QSharedPointer<Ui::MainWindow> ui;
@@ -82,8 +71,6 @@ private:
     QMap<QWebSocket*, QSharedPointer<Client>> clients;
     QMap<QString, UserData> users;
     ProcessOperation *po;
-    int userId;
-    QThreadPool *pool;
     ServerDatabase database;
 };
 #endif // MAINWINDOW_H

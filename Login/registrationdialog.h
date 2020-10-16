@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QRegularExpression>
 
+#include "ui_registrationdialog.h"
+
 namespace Ui {
 class RegistrationDialog;
 }

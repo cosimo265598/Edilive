@@ -2,9 +2,11 @@
 #define LOGINDIALOG_H
 
 #include <QWidget>
-#include "registrationdialog.h"
 #include <QRegularExpression>
 #include <QDebug>
+
+#include "registrationdialog.h"
+#include "ui_logindialog.h"
 
 namespace Ui {
 class LoginDialog;

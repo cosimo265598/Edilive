@@ -1,9 +1,4 @@
 #include "profilepage.h"
-#include "ui_profilepage.h"
-#include <QDialogButtonBox>
-#include <QDebug>
-#include "buildermessageclient.h"
-
 
 ProfilePage::ProfilePage(QWidget *parent) :
     QMainWindow(parent),

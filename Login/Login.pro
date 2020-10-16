@@ -35,9 +35,7 @@ SOURCES += \
     profilepage.cpp \
     registrationdialog.cpp \
     startupstackeddialog.cpp \
-    subscriber.cpp \
-    textedit.cpp \
-    updateuser.cpp
+    textedit.cpp
 
 HEADERS += \
     buildermessageclient.h \
@@ -52,9 +50,7 @@ HEADERS += \
     profilepage.h \
     registrationdialog.h \
     startupstackeddialog.h \
-    subscriber.h \
-    textedit.h \
-    updateuser.h
+    textedit.h
 
 FORMS += \
     connectionwaitingdialog.ui \

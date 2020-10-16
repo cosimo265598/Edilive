@@ -1,11 +1,4 @@
 #include "connectionwaitingdialog.h"
-#include "ui_connectionwaitingdialog.h"
-#include <QRandomGenerator>
-#include <QWebSocket>
-#include <QProgressBar>
-#include <client.h>
-
-
 
 ConnectionWaitingDialog::ConnectionWaitingDialog(QWidget *parent) :
     QDialog(parent),

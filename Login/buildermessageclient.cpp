@@ -1,7 +1,5 @@
 #include "buildermessageclient.h"
 
-#include <QCryptographicHash>
-
 void BuilderMessageClient::MessageSendToServer(QByteArray &byte,QJsonDocument jsonToSend)
 {
     QDataStream out(&byte, QIODevice::WriteOnly);
@@ -81,13 +79,13 @@ QJsonDocument BuilderMessageClient::MessageOpenDir()
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString nomefile)
+QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",12);
     objtosend.insert("auth",true);
-    objtosend.insert("nomefile",nomefile);
+    objtosend.insert("fileName",fileName);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
@@ -157,7 +155,7 @@ QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nicknam
         buffer.open(QIODevice::WriteOnly);
         objtosend.insert("icon",QLatin1String(buffer.data().toBase64()));
     }else
-        objtosend.insert("icon","");
+        objtosend.insert("image","");
 
     jsondoc.setObject(objtosend);
     return jsondoc;
