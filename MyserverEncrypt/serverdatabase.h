@@ -31,8 +31,10 @@
 #define LOG_PRINT_DB  QDateTime::currentDateTime().toString()
 
 
-class ServerDatabase
+class ServerDatabase: public QObject
 {
+  Q_OBJECT
+
 private:
     Ui::MainWindow *ui_of_server;
 
@@ -75,9 +77,8 @@ public:
     QStringList readUserDocuments(QString username);
     QStringList readDocumentURIs();
     int countDocEditors(QString docURI);
-    bool isOpen() const;
-    bool isValid() const;
-
+signals:
+     void printUiServerDatabase(const QString&);
 };
 
 

@@ -12,6 +12,8 @@
 #include "userdata.h"
 #include "client.h"
 #include "buildermessage.h"
+#include "ui_mainwindow.h"
+
 
 enum TypeOperation : quint16
 {
@@ -53,7 +55,9 @@ class Tasks : public QObject, public QRunnable
     Q_OBJECT
 public:
     Tasks(QObject *parent,
-          QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type );
+          QJsonObject request, QWebSocket* socket, QMap<QWebSocket*,
+          QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type,
+          Ui::MainWindow* ui);
 
     void run() override;
     ~Tasks();
@@ -64,8 +68,8 @@ private:
     TypeOperation typeOp;
     QJsonObject request;
     QWebSocket* socket;
-    ServerDatabase database;
     QString threadId;
+    Ui::MainWindow *ui;
 
     void serverAccountCreate(QJsonObject request);
     void serverLoginRequest();
@@ -79,6 +83,8 @@ private:
     void serverOpenFile();
 
 signals:
+    void printUiServer(QString);
+
     void loginError(QWebSocket*,QString);
     void messageChallenge(QWebSocket*, QString, QString);
     void messageChallegePassed(QWebSocket*, QString);
@@ -91,6 +97,7 @@ signals:
     void fileCreationError(QWebSocket*, QString);
     void fileDeletionError(QWebSocket*, QString);
     void openFile(QWebSocket*, QString, QByteArray);
+    void socketAbort(QWebSocket*);
 
 };
 

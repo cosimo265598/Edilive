@@ -63,6 +63,9 @@ public slots:
     void serverErrorConnection(QWebSocketProtocol::CloseCode closeCode);
     void socketAbort(QWebSocket* clientSocket);
 
+    void printUiServer(QString messageToPrint);
+    void printUiServerDatabase(QString messageToPrint);
+
 private:
     QSharedPointer<Ui::MainWindow> ui;
     QSharedPointer<QWebSocketServer> m_pWebSocketServer;

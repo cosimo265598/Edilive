@@ -7,39 +7,46 @@
 ProcessOperation* ProcessOperation::instance;
 std::once_flag    ProcessOperation::inited;
 
-ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users
-):QObject(parent),
+ProcessOperation::ProcessOperation(QObject *parent, QMap<QWebSocket*,
+QSharedPointer<Client>>& clients, QMap<QString, UserData>& users):QObject(parent),
     clients(clients),
     users(users)
 {
 }
 
 Tasks *ProcessOperation::createTask(QObject *parent,
-                                    QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp)
+QJsonObject request, QWebSocket* socket, QMap<QWebSocket*,
+QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp,
+Ui::MainWindow* ui)
 {
-    Tasks *task = new Tasks(nullptr, request, socket, clients, users, typeOp);
+    Tasks *task = new Tasks(nullptr, request, socket, clients, users, typeOp,ui);
 
-    connect(task,&Tasks::loginError, this, &ProcessOperation::onLoginError);
-    connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge);
-    connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed);
-    connect(task,&Tasks::accountCreationError, this, &ProcessOperation::onAccountCreationError);
-    connect(task,&Tasks::accountConfirmed, this, &ProcessOperation::onAccountConfirmed);
-    connect(task,&Tasks::openDirOfClient, this, &ProcessOperation::onOpenDirOfClient);
-    connect(task,&Tasks::personalDataOfClient, this, &ProcessOperation::onPersonalDataOfClient);
-    connect(task,&Tasks::accountUpdateSuccess, this, &ProcessOperation::onAccountUpdateSuccess);
-    connect(task,&Tasks::fileCreationError, this, &ProcessOperation::onFileCreationError);
-    connect(task,&Tasks::fileDeletionError, this, &ProcessOperation::onFileDeletionError);
-    connect(task,&Tasks::openFile, this, &ProcessOperation::onOpenFile);
+    connect(task,&Tasks::loginError, this, &ProcessOperation::onLoginError,Qt::DirectConnection);
+    connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge,Qt::DirectConnection);
+    connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed,Qt::DirectConnection);
+    connect(task,&Tasks::accountCreationError, this, &ProcessOperation::onAccountCreationError,Qt::DirectConnection);
+    connect(task,&Tasks::accountConfirmed, this, &ProcessOperation::onAccountConfirmed,Qt::DirectConnection);
+    connect(task,&Tasks::openDirOfClient, this, &ProcessOperation::onOpenDirOfClient,Qt::DirectConnection);
+    connect(task,&Tasks::personalDataOfClient, this, &ProcessOperation::onPersonalDataOfClient,Qt::DirectConnection);
+    connect(task,&Tasks::accountUpdateSuccess, this, &ProcessOperation::onAccountUpdateSuccess,Qt::DirectConnection);
+    connect(task,&Tasks::fileCreationError, this, &ProcessOperation::onFileCreationError,Qt::DirectConnection);
+    connect(task,&Tasks::fileDeletionError, this, &ProcessOperation::onFileDeletionError,Qt::DirectConnection);
+    connect(task,&Tasks::openFile, this, &ProcessOperation::onOpenFile,Qt::DirectConnection);
+
+    connect(task,&Tasks::socketAbort, this, &ProcessOperation::onSocketAbort,Qt::QueuedConnection);
+    connect(task,&Tasks::printUiServer,dynamic_cast<MainWindow*>(this->parent()),&MainWindow::printUiServer,Qt::QueuedConnection);
+    connect(this,&ProcessOperation::printUiServer,dynamic_cast<MainWindow*>(this->parent()),&MainWindow::printUiServer,Qt::QueuedConnection);
+
 
     return task;
 }
 
 
-void ProcessOperation::process(QWebSocket* socket, QJsonObject request)
+void ProcessOperation::process(QWebSocket* socket, QJsonObject request, Ui::MainWindow* ui)
 {
     TypeOperation typeOp = (TypeOperation)(request["type"].toInt());
 
-    Tasks *task = this->createTask(nullptr, request, socket, clients, users, typeOp);
+    Tasks *task = this->createTask(nullptr, request, socket, clients, users, typeOp,ui);
 
     QThreadPool::globalInstance()->start(task);
 }
@@ -50,16 +57,19 @@ ProcessOperation::~ProcessOperation() {
 
 void ProcessOperation::onLoginError(QWebSocket* socket, QString errorMessage)
 {
-    QByteArray data;
+    qDebug()<<"Funzione onLoginError viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+
+     QByteArray data;
     BuilderMessage::MessageSendToClient(
                 data,
                 BuilderMessage::MessageLoginError(errorMessage));
-
     socket->sendBinaryMessage(data);
 }
 
 void ProcessOperation::onMessageChallenge(QWebSocket* socket, QString salt, QString challenge)
 {
+    qDebug()<<"Funzione onMessageChallange viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+
     QByteArray data;
     BuilderMessage::MessageSendToClient(
                   data,BuilderMessage::MessageChallege(salt, challenge));
@@ -68,6 +78,8 @@ void ProcessOperation::onMessageChallenge(QWebSocket* socket, QString salt, QStr
 
 void ProcessOperation::onMessageChallengePassed(QWebSocket * socket, QString d)
 {
+    qDebug()<<"Funzione onMessageChallangePassed viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+
     QByteArray data;
     BuilderMessage::MessageSendToClient(
                 data,BuilderMessage::MessageChallegePassed(d));
@@ -92,6 +104,8 @@ void ProcessOperation::onAccountConfirmed(QWebSocket* socket, QString message)
 
 void ProcessOperation::onOpenDirOfClient(QWebSocket *socket, QJsonArray files)
 {
+    qDebug()<<"Funzione onOpenDirClient viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+
     QByteArray data;
     BuilderMessage::MessageSendToClient(
                 data,BuilderMessage::MessageOpenDirOfClient(files));
@@ -146,33 +160,27 @@ void ProcessOperation::onOpenFile(QWebSocket *socket, QString fileName, QByteArr
     socket->sendBinaryMessage(data);
 }
 
-/*
-QString ProcessOperation::checkTypeOperationGranted(TypeOperation type){
-    switch (type)
-        {
-            case TypeOperation::LoginRequest:			return "LoginRequest";
-            case TypeOperation::LoginChallenge:         return "LoginChallenge";
-            case TypeOperation::LoginUnlock:			return "LoginUnlock";
-            case TypeOperation::LoginGranted:			return "LoginGranted";
-            case TypeOperation::LoginError:             return "LoginError";
-            case TypeOperation::AccountCreate:          return "AccountCreate";
-            case TypeOperation::AccountUpdate:          return "AccountUpdate";
-            case TypeOperation::AccountConfirmed:		return "AccountConfirmed";
-            case TypeOperation::AccountError:			return "AccountError";
-            case TypeOperation::Simplemessage:          return "Simplemessage";
-            case TypeOperation::OpenDirectory:          return "OpenDirecory";
-            case TypeOperation::OpenFile:               return "OpenFile";
-            case TypeOperation::CreateFile:             return "CreateFile";
-            case TypeOperation::ErrorFile:              return "ErrorFile";
-            case TypeOperation::Logout:                 return "Logout";
-            case TypeOperation::Failure:                return "Failure";
-            case TypeOperation::ProfileData:            return "ProfileData";
-            case TypeOperation::DeleteFile:             return "DeleteFile";
-            // add other case below
-            default:                                    return QString();
-        }
+void ProcessOperation::onSocketAbort(QWebSocket *clientSocket)
+{
+    qDebug()<<clientSocket<<" invocazione metodo socket abort   "<<QThread::currentThread();
+
+    QSharedPointer<Client> client = clients[clientSocket];
+    QString ip;
+
+    if(clientSocket->isValid()){
+        ip=clientSocket->peerAddress().toString();
+        qDebug()<<"socket abort thread "<<clientSocket->thread()->currentThread();
+        clientSocket->close(
+                    QWebSocketProtocol::CloseCodeBadOperation);
+        clientSocket->deleteLater();
+    }
+    clients.remove(clientSocket);
+    if (client->isLogged())
+    {
+        client->logout();
+        emit printUiServer("Eject "+client->getUsername()+" ip: "+ip);
+    }
+    else
+        emit printUiServer("Shutdown connection client: "+ip);
+
 }
-
-*/
-
-

@@ -19,6 +19,7 @@
 #include "serverexception.h"
 #include "userdata.h"
 #include "client.h"
+#include "ui_mainwindow.h"
 
 
 class ProcessOperation: public QObject
@@ -34,7 +35,9 @@ private:
 
     ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users);
 
-    Tasks *createTask(QObject *parent, QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp);
+    Tasks *createTask(QObject *parent, QJsonObject request,
+                      QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients,
+                      QMap<QString, UserData>& users, TypeOperation typeOp,Ui::MainWindow* ui);
 
 public:
     static ProcessOperation *getInstance (QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
@@ -45,11 +48,11 @@ public:
     }
 
     //QString checkTypeOperationGranted(TypeOperation type);
-    void process(QWebSocket* socket, QJsonObject data);
+    void process(QWebSocket* socket, QJsonObject data,Ui::MainWindow* ui);
     ~ProcessOperation();
 
 signals:
-
+    void printUiServer(QString message);
 public slots:
     void onLoginError(QWebSocket* socket, QString errorMessage);
     void onMessageChallenge(QWebSocket* socket, QString salt, QString challenge);
@@ -62,6 +65,7 @@ public slots:
     void onFileCreationError(QWebSocket* , QString);
     void onFileDeletionError(QWebSocket* , QString);
     void onOpenFile(QWebSocket* , QString, QByteArray);
+    void onSocketAbort(QWebSocket*);
 };
 
 #endif // PROCESSOPERATION_H

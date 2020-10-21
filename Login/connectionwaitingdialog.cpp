@@ -34,6 +34,11 @@ int ConnectionWaitingDialog::resultOfRetry()
     return number_retry;
 }
 
+void ConnectionWaitingDialog::stopTimerForced()
+{
+    timer.stop();
+}
+
 void ConnectionWaitingDialog::changeState(QAbstractSocket::SocketState state)
 {
     qDebug()<<"Stato socket changed: "<<state;
@@ -42,7 +47,7 @@ void ConnectionWaitingDialog::changeState(QAbstractSocket::SocketState state)
             setText("Lost Connection or server not responding");
             setNumberRetry();
             timer.start(MAX_TIMEOUT);
-            this->show();
+            //this->show();
             break;
         }
         case QAbstractSocket::ConnectedState :{
@@ -62,6 +67,7 @@ void ConnectionWaitingDialog::changeState(QAbstractSocket::SocketState state)
 void ConnectionWaitingDialog::timeout()
 {
     number_retry++;
+
     if(number_retry>MAX_RETRY)
     {
         // no way to to enstablish a new connection
@@ -73,6 +79,8 @@ void ConnectionWaitingDialog::timeout()
         qDebug()<<"Stop timer";
     }
     else{
+
+            this->show();
             ui->progressBar->setValue((100/MAX_RETRY)*number_retry +1);
             setNumberRetry();
             emit tryToConnectAgain();

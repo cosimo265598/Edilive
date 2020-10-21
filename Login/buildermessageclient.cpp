@@ -85,7 +85,7 @@ QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString fileName)
     QJsonObject objtosend;
     objtosend.insert("type",12);
     objtosend.insert("auth",true);
-    objtosend.insert("fileName",fileName);
+    objtosend.insert("nomefile",fileName);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

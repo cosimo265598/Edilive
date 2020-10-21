@@ -53,11 +53,6 @@ void MainWindow::prepareToStart()
 {
     ui->commet->appendPlainText("(INIT STARTED)" );
 
-/*    UserData d(database.readUser("ntipon"));
-    if(d.isEmpty())
-        qDebug()<<"true";
-    qDebug()<<d.getSalt()<<d.getNickname();*/
-
     // Check existence of the required SSL certificate files
     if (!QFile("localhost.key").exists()) {
         ui->commet->appendPlainText("Not find localhost.key - Server can not start!");
@@ -82,7 +77,7 @@ void MainWindow::prepareToStart()
     // Read The database file , avoid to interview each time the db
     QList<UserData> listUser=database.readUsersList();
     // Possible implementation , load at the begining in map
-
+    /*
     for (UserData user : database.readUsersList() )
     {
         for (QString docUri : database.readUserDocuments(user.getUsername()))
@@ -91,11 +86,10 @@ void MainWindow::prepareToStart()
         }
         users.insert(user.getUsername(), user);
     }
-
+    */
     // Initialize the counter
 
     ui->commet->appendPlainText("Users in database: "+ QString::number(listUser.count()) );
-
     ui->commet->appendPlainText("(INIT COMPLETE )" );
 }
 
@@ -243,10 +237,19 @@ void MainWindow::socketAbort(QWebSocket* clientSocket)
         ui->commet->appendPlainText("Shutdown connection client: "+ip);
 }
 
+void MainWindow::printUiServer(QString messageToPrint)
+{
+    ui->commet->appendPlainText(messageToPrint);
+}
+
+void MainWindow::printUiServerDatabase(QString messageToPrint)
+{
+    ui->commetdb->appendPlainText(messageToPrint);
+}
+
 void MainWindow::serverErrorConnection(QWebSocketProtocol::CloseCode closeCode)
 {
     ui->commet->appendPlainText("Errors occurred during ssetup socket\n"+QString(closeCode));
-    // alert message should be built
 }
 
 
@@ -284,7 +287,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
     int mType = jsonObj["type"].toInt();
 
     try {
-        ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
+        //ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
 
         /*
         if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
@@ -296,7 +299,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
         */
 
         // QUi dispatch nel pool
-        po->process(socket, jsonObj );
+        po->process(socket, jsonObj, ui.get() );
     }
     catch (std::exception& me)
     {

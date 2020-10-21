@@ -1,53 +1,42 @@
 #include "tasks.h"
 
 Tasks::Tasks(QObject *parent,
-             QJsonObject request, QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation typeOp) :
+             QJsonObject request, QWebSocket* socket, QMap<QWebSocket*,
+             QSharedPointer<Client>>& clients, QMap<QString, UserData>& users,
+             TypeOperation typeOp,Ui::MainWindow *ui) :
     QObject(parent),
     clients(clients),
     users(users),
     typeOp(typeOp),
     socket(socket),
     request(request),
-    threadId(-1)
+    threadId(-1),
+    ui(ui)
 {
 }
 
 void Tasks::serverLoginRequest()
 {
-    qDebug() << users.size();
+    ServerDatabase database;
+
     QString username = request["username"].toString();
-
-
-    qDebug()<<username<<" Server login request  -  "<<this->thread()->currentThread();
-
-    // TEST
-    //this->thread()->currentThread()->msleep(10000);
-
-
+    this->threadId = QString::number((quintptr)QThread::currentThreadId());
     QSharedPointer<Client> client = clients[socket];
 
-    if(users[username].isEmpty()){            // utente non registrato, non presente nel db.
-        //ui->commet->appendPlainText("Client not Registered "+username);
-        emit loginError(socket, "Client not registered." + username);
-    }
+
+    qDebug()<<username<<" Server login request  -  "<<this->thread()->currentThread()<< threadId;
+    QThread::currentThread()->msleep(10000);
 
     try {
-        this->threadId = QString::number((quintptr)QThread::currentThreadId());
-        this->database.open(defaultnamedb,threadId,nullptr);
-
-        if(!this->database.isOpen() || !this->database.isValid()){}
-            //lanciare una eccezione
-
+        database.open(defaultnamedb,threadId,ui);
         UserData user(database.readUser(username));
 
-        qDebug() << user.getUserId();
-
         if(user.isEmpty()){            // utente non registrato, non presente nel db.
-            //ui->commet->appendPlainText("Client not Registered "+username);
-            emit loginError(socket, "Client not registered.");
+            emit printUiServer("Client not Registered "+username+ " served by Thread: "+threadId);
+            emit loginError(socket, "Client not registered." + username);
+            emit socketAbort(socket);
+            return;
         }else{
-            qDebug() << "leggo file";
-
             for (QString docUri : database.readUserDocuments(user.getUsername()))
                 user.addDocument(docUri);
             users.insert(user.getUsername(), user);
@@ -55,35 +44,25 @@ void Tasks::serverLoginRequest()
 
     }  catch (DatabaseReadException& re) {
         users.remove(username);
-        //ui->commet->appendPlainText("Databaseread problem during the query excution");
+        emit printUiServer("Database problem during the query excution served by Thread: "+threadId);
         emit loginError(socket, "Error database sever");
+        emit socketAbort(socket);
+        return;
+    }
+    if (client.get()->isLogged()){
+        emit printUiServer("Client already logged in as '" + client->getUsername() + "'");
+        emit loginError(socket, "Client: "+client->getUsername()+" is already logged in.");
         return;
     }
 
-    qDebug() << "Ok go on";
-    qDebug() << users.size();
+    // client not logged
+    emit messageChallenge(socket, QString(users[username].getSalt()), QString(client->challenge(&users[username])));
 
-    if (users.contains(username))
-    {
-        if (client.get()->isLogged()){
-            //ui->commet->appendPlainText("Client already logged in as '" + client->getUsername() + "'");
-            emit loginError(socket, "Client: "+client->getUsername()+" is already logged in.");
-            return;
-        }
-        // client not logged
-        emit messageChallenge(socket, QString(users[username].getSalt()), QString(client->challenge(&users[username])));
-    }
-
-    else {
-        // send message utente non registrato
-        //ui->commet->appendPlainText("Client not Registered : ' " + client->getUsername() + "'");
-        emit loginError(socket, "Client not registered.");
-    }
 }
 
 void Tasks::serverLoginUnlock()
 {
-
+    this->threadId = QString::number((quintptr)QThread::currentThreadId());
     QString token = request.value("challange").toString();
     QSharedPointer<Client> client = clients[socket];
 
@@ -94,7 +73,7 @@ void Tasks::serverLoginUnlock()
         return ;
 
     }else if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
-        //ui->commet->appendPlainText( "User " + client->getUsername() + " is logged in");
+        emit printUiServer("User " + client->getUsername() + " is logged in -  served by Thread: "+threadId);
         client->login(client->getUser());
         emit messageChallegePassed(socket, QString());
         return ;
@@ -102,41 +81,41 @@ void Tasks::serverLoginUnlock()
         users.remove(client->getUsername());
         client->logout();
         emit loginError(socket, "Credential inserted are not corrected");
+        emit socketAbort(socket);
+
         return ;
     }
 }
 
 void Tasks::serverAccountCreate()
 {
+    ServerDatabase database;
     QString username = request["username"].toString();
     QString password = request["password"].toString();
+    this->threadId = QString::number((quintptr)QThread::currentThreadId());
 
     QSharedPointer<Client> client = clients[socket];
 
     //check if this username is already used
     try {
-        this->threadId = QString::number((quintptr)QThread::currentThreadId());
-        this->database.open(defaultnamedb,threadId,nullptr);
 
-        if(!this->database.isOpen() || !this->database.isValid()){}
-            //lanciare una eccezione
+        database.open(defaultnamedb,threadId,ui);
 
         UserData user(database.readUser(username));
         if(!user.isEmpty()){
             emit accountCreationError(socket, "Username already exist");
             return;
         }
-    }  catch (DatabaseReadException& re) {
-        //ui->commet->appendPlainText("Databaseread problem during the query execution");
+    }  catch (DatabaseReadException& re ) {
+        emit printUiServer("Databaseread problem during the query execution");
         emit accountCreationError(socket, "Error database sever during registration phase");
-        //socketAbort(clientSocket);
+        emit socketAbort(socket);
 
-        QSqlDatabase::removeDatabase(threadId);
         return;
     }
     // no check on image because are used for the firts time default settings
 
-    //ui->commet->appendPlainText("Creating new user account "+username);
+    emit printUiServer("Creating new user account: "+username);
     int userId = database.getMaxUserID();
 
     UserData user(username, userId++, "nickname", password, QImage(":/images/default.png"));		/* create a new user		*/
@@ -147,7 +126,7 @@ void Tasks::serverAccountCreate()
     {	// Add the new user record to the server database
         database.insertUser(user);
         if (!QDir(QDir().currentPath()+"/Users").mkdir(username)) {
-            //ui->commet->appendPlainText("Cannot create folder for Users: "+ client->getUsername());
+            emit printUiServer("Cannot create folder for Users: "+ client->getUsername());
             throw DatabaseCreateException("Can not create folder for new user",QSqlError());
         }
         // inserimento di un file di prova
@@ -157,12 +136,12 @@ void Tasks::serverAccountCreate()
             throw DatabaseCreateException("Can not copy file example for new user",QSqlError());
 
     }catch (DatabaseException& dbe) {
-        //ui->commet->appendPlainText(dbe.what());
+        emit printUiServer(dbe.what());
         client->logout();
         users.remove(username);
         QDir(QDir().currentPath()+"/Users").rmdir(client->getUsername());
         emit accountCreationError(socket, "Internal Error");
-        //socketAbort(clientSocket);
+        emit socketAbort(socket);
         return;
     }
 
@@ -217,7 +196,7 @@ void Tasks::serverPersonalDataOfClient()
 
     QString username = users[client->getUsername()].getUsername();
     QString nickname = users[client->getUsername()].getNickname();
-    QImage image = users[client->getUsername()].getIcon();
+    QImage image     = users[client->getUsername()].getIcon();
 
     emit personalDataOfClient(socket, username, nickname, image);
 }
@@ -226,7 +205,7 @@ void Tasks::serverCreateFileForClient()
 {
     qDebug()<<"segnale nuovo file ricevuto";
 
-    QString fileName = request["fileName"].toString();
+    QString fileName = request["nomefile"].toString();
     QSharedPointer<Client> client = clients[socket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
@@ -254,7 +233,7 @@ void Tasks::serverDeleteFileForClient()
 {
     qDebug()<<"segnale delete file ricevuto";
 
-    QString fileName = request["fileName"].toString();
+    QString fileName = request["nomefile"].toString();
     QSharedPointer<Client> client = clients[socket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
@@ -273,9 +252,11 @@ void Tasks::serverDeleteFileForClient()
 void Tasks::serverOpenFile()
 {
     qDebug()<<"Segnale apertura file ricevuto";
-    QString fileName = request["fileName"].toString();
+    QString fileName = request.value("nomefile").toString();
     QSharedPointer<Client> client = clients[socket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
+
+    qDebug()<<client->getUsername()<<" "<<path<<" file name "<<fileName;
 
     QByteArray contentFile = nullptr;
     QFile filecreate(path);
@@ -291,18 +272,19 @@ void Tasks::serverOpenFile()
     emit openFile(socket, fileName, contentFile);
 }
 
+
 void Tasks::run(){
     switch (typeOp) {
 
-        case TypeOperation::LoginRequest: this->serverLoginRequest();               break;
-        case TypeOperation::LoginUnlock: this->serverLoginUnlock();                 break;
-        case TypeOperation::AccountCreate: this->serverAccountCreate();             break;
-        case TypeOperation::OpenDirectory: this->serverOpenDirOfClient();           break;
-        case TypeOperation::ProfileData: this->serverPersonalDataOfClient();        break;
-        case TypeOperation::AccountUpdate: this->serverUpdateProfileClient();       break;
-        case TypeOperation::CreateFile: this->serverCreateFileForClient();          break;
-        case TypeOperation::DeleteFile: this->serverDeleteFileForClient();          break;
-        case TypeOperation::OpenFile: this-> serverOpenFile();                      break;
+        case TypeOperation::LoginRequest:   this->serverLoginRequest();               break;
+        case TypeOperation::LoginUnlock:    this->serverLoginUnlock();                 break;
+        case TypeOperation::AccountCreate:  this->serverAccountCreate();             break;
+        case TypeOperation::OpenDirectory:  this->serverOpenDirOfClient();           break;
+        case TypeOperation::ProfileData:    this->serverPersonalDataOfClient();        break;
+        case TypeOperation::AccountUpdate:  this->serverUpdateProfileClient();       break;
+        case TypeOperation::CreateFile:     this->serverCreateFileForClient();          break;
+        case TypeOperation::DeleteFile:     this->serverDeleteFileForClient();          break;
+        case TypeOperation::OpenFile:       this->serverOpenFile();                      break;
 
         default: qDebug() << "No Task";
     }
@@ -310,6 +292,9 @@ void Tasks::run(){
 
 Tasks::~Tasks()
 {
-    database.removeDatabase(this->threadId);
-    qDebug() << "Returning to main thread  " << QCoreApplication::instance()->thread();
+    //Sistema
+    if(QSqlDatabase::database(threadId).isValid())
+        QSqlDatabase::removeDatabase(threadId);
+    qDebug() << "curr thread  " << QThread::currentThread();
+    qDebug() << "Returning to main thread  " << this->thread();
 }
