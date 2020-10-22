@@ -12,5 +12,14 @@
         <file>icons_pack/ok_480px.png</file>
         <file>icons_pack/avatar_default.png</file>
         <file>icons_pack/avatar_old.png</file>
+        <file>icons_pack/sfondo_login.jpg</file>
+        <file>icons_pack/fundo_login.jpg</file>
+        <file>icons_pack/images.jpeg</file>
+        <file>icons_pack/fundo_login2.png</file>
+        <file>icons_pack/background-login-png-5.png</file>
+        <file>icons_pack/abstract-vector-background.jpg</file>
+        <file>icons_pack/0cFvKO.jpg</file>
+        <file>icons_pack/profile_image_prova.png</file>
+        <file>icons_pack/prf.png</file>
     </qresource>
 </RCC>

@@ -19,6 +19,62 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton#pushButton_Logout{
+background: red;
+border-radius: 15px;
+color:white;
+}
+QPushButton#pushButton_aggiorna_vista{
+background: red;
+border-radius: 15px;
+color:white;
+}
+QPushButton#pushButton_delete{
+background: red;
+border-radius: 15px;
+color:white;
+}
+QPushButton#pushButton_new_file{
+background: red;
+border-radius: 15px;
+color:white;
+}
+QPushButton#pushButton_profile_page{
+background: red;
+border-radius: 15px;
+color:white;
+}
+
+QLabel{
+color:white;
+background: transparent;
+}
+
+QPushButton:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+
+
+QLineEdit{
+background: transparent;
+border:none;
+color:#717072;
+border-bottom:1px solid white;
+}
+
+*{
+font-family: century gothic;
+font-size:24 px;
+
+}
+
+QWidget{
+border-radius:15px;
+}</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -303,7 +359,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>748</width>
+            <width>734</width>
             <height>603</height>
            </rect>
           </property>
@@ -340,6 +396,7 @@
                 </property>
                 <property name="font">
                  <font>
+                  <family>century gothic</family>
                   <italic>false</italic>
                   <underline>false</underline>
                   <strikeout>false</strikeout>

@@ -68,5 +68,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resource_editor.qrc \
-    resources_login.qrc
+    resources_login.qrc \
+    stylesheet.qrc
     #resources.qrc

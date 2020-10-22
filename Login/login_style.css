@@ -1,0 +1,50 @@
+*{
+font-family: century gothic;
+font-size:24 px;
+}
+
+QFrame#Form_login{
+background: #333;
+border-radius:15px;
+}
+
+QPushButton#pushButtonLogin{
+background: red;
+border-radius: 15px;
+color:white;
+}
+
+QLabel#label_psw{
+color:white;
+background: transparent;
+}
+QLabel#label_title{
+color:white;
+background: transparent;
+}
+
+QLabel#label_user{
+color:white;
+background: transparent;
+}
+
+QPushButton#pushButtonLogin:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+
+
+QLineEdit{
+background: transparent;
+border:none;
+color:#717072;
+border-bottom:1px solid white;
+}
+
+#MainWindow{
+background: url(:/images/pad2.jpg);
+
+}
+
+
