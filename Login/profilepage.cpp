@@ -51,19 +51,25 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
 
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
+    bool ok = false;
+
     if (serializedImage == nullptr){
-        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        ok = pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
-        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
+        ok = pixmap.loadFromData(serializedImage);
     }
 
-    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    if(ok){
+        ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    }else{
+         ui->accountImage->setText("IMAGE NOT FOUND");
+    }
 }
 
 
 void ProfilePage::on_pushButton_changeImage_clicked()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image (PNG format)"), QDir::homePath(), tr("Image Files (*.png)"));
+    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.jpeg)"));
     if(path!=nullptr){
         QFile file(path);
         QPixmap pixmap;

@@ -182,7 +182,7 @@ void Tasks:: serverUpdateProfileClient(){
     QSharedPointer<Client> client = clients[socket];
     QByteArray data;
     QImage image;
-    image.loadFromData(QByteArray::fromBase64(stringifiedImage.toLatin1()),"PNG");
+    image.loadFromData(QByteArray::fromBase64(stringifiedImage.toLatin1()));
 
     users[client->getUsername()].update(nickname, password, image);
 

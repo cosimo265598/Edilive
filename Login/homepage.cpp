@@ -134,17 +134,20 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
 
 void HomePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
+    bool ok = false;
+
     if (serializedImage == nullptr){
-        //pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
-        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        ok = pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
-        qDebug() << "load";
-        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
+        ok = pixmap.loadFromData(serializedImage);
     }
 
-    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    if(ok){
+        ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    }else{
+         ui->accountImage->setText("IMAGE NOT FOUND");
+    }
 }
-
 
 void HomePage::onNewFileCreationFailure(QString errorMessage){
     QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
