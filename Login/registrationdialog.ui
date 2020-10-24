@@ -24,7 +24,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QPushButton{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }

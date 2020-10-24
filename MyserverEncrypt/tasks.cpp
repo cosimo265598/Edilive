@@ -25,7 +25,7 @@ void Tasks::serverLoginRequest()
 
 
     qDebug()<<username<<" Server login request  -  "<<this->thread()->currentThread()<< threadId;
-    QThread::currentThread()->msleep(10000);
+    //QThread::currentThread()->msleep(10000);
 
     try {
         database.open(defaultnamedb,threadId,ui);
