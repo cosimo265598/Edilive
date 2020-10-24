@@ -52,7 +52,7 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
-        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
     }
