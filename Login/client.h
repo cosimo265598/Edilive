@@ -22,6 +22,7 @@
 #include <QTimer>
 #include <textedit.h>
 #include <QAbstractSocket>
+#include <QChar>
 
 
 #include "mainwindow.h"
@@ -33,6 +34,8 @@
 #include "startupstackeddialog.h"
 #include "connectionwaitingdialog.h"
 #include "mainwindowstacked.h"
+#include "subscriber.h"
+#include "SharedFile.h"
 
 enum ClientStatus : quint32
 {
@@ -78,10 +81,12 @@ private slots:
     void onDeleteFileRequest(QString fileName);
     void onUpdateProfileRequest(updateUser_t);
 
-private slots:
+public slots:
     void ping();
     void errorSocket(QAbstractSocket::SocketError error);
     void closeControll();
+    void localInsertion(QString c, int pos);
+    void onRemoveClientFromWorkspace(QString fileName);
 
 private:
     MainWindowStacked *mainWindowStacked=nullptr;
@@ -98,6 +103,9 @@ private:
     ConnectionWaitingDialog waitingDialog;
     loginUser_t user;
     updateUser_t updateUser;
+    SharedFile *sf;
+    QList<subscriber_t> listUserOnWorkspace;
+
 
     void resetUser();
     void resetUpdateUser();
@@ -106,7 +114,7 @@ private:
     void startTextEditor(QString fileName);
     void subscriberInfoRequest();
     void fileHandlersRequest();
-
+    void standardInsert(QJsonObject);
 
 signals:
     void registrationFailure(QString errorMessage);
@@ -115,5 +123,7 @@ signals:
     void loadSubscriberInfo(QString, QString, QByteArray);
     void newFileCreationFailure(QString errorMessage);
     void updateSuccess();
+    void refreshText(QString);
+    void updateListUsersConnected(int id,QString username,QImage img);
 };
 #endif // CLIENT_H

@@ -1,4 +1,5 @@
 #include "homepage.h"
+#include <QSizePolicy>
 
 QT_USE_NAMESPACE
 
@@ -92,7 +93,6 @@ void HomePage::on_pushButton_profile_page_clicked()
 
 
 void HomePage::onReceivedFileHandlers(QJsonArray paths){
-
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
         QWidget* widget = ui->gridLayout->itemAt(0)->widget();
@@ -134,20 +134,17 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
 
 void HomePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
-    bool ok = false;
-
     if (serializedImage == nullptr){
-        pixmap.load(":/icons_pack/avatar_default.png");
+        //pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
-        ok = pixmap.loadFromData(serializedImage);
+        qDebug() << "load";
+        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
     }
 
-    if(ok){
-        ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
-    }else{
-         ui->accountImage->setText("IMAGE NOT FOUND");
-    }
+    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
+
 
 void HomePage::onNewFileCreationFailure(QString errorMessage){
     QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);

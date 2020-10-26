@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    this->po=ProcessOperation::getInstance(this, clients, users);
+    this->po=ProcessOperation::getInstance(this, clients, users, workspaces);
     
     //opening database;
     try {
@@ -252,8 +252,6 @@ void MainWindow::serverErrorConnection(QWebSocketProtocol::CloseCode closeCode)
     ui->commet->appendPlainText("Errors occurred during ssetup socket\n"+QString(closeCode));
 }
 
-
-
 void MainWindow::on_startserver_2_clicked() {  ui->commet->clear(); }
 
 void MainWindow::SimpleTextMessageTest(){
@@ -299,7 +297,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
         */
 
         // QUi dispatch nel pool
-        po->process(socket, jsonObj, ui.get() );
+        po->process(socket, jsonObj, ui.get());
     }
     catch (std::exception& me)
     {

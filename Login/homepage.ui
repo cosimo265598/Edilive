@@ -19,80 +19,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QPushButton#pushButton_Logout{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-QPushButton#pushButton_aggiorna_vista{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-QPushButton#pushButton_delete{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-QPushButton#pushButton_new_file{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-QPushButton#pushButton_profile_page{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-/*   hover */
-
-QPushButton#pushButton_Logout:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-QPushButton#pushButton_aggiorna_vista:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-QPushButton#pushButton_delete:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-QPushButton#pushButton_new_file:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-QPushButton#pushButton_profile_page:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-/*   other */
-
-QLabel{
-color:white;
-background: transparent;
-}
-
-QLineEdit{
-background: transparent;
-border:none;
-color:#717072;
-border-bottom:1px solid white;
-}
-
-*{
-font-family: century gothic;
-font-size:24 px;
-}
-
-</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -182,12 +108,6 @@ font-size:24 px;
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="accountImage">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
             <property name="text">
              <string>Image</string>
             </property>
@@ -195,23 +115,11 @@ font-size:24 px;
           </item>
           <item>
            <widget class="QLabel" name="username">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>180</width>
-              <height>180</height>
-             </size>
-            </property>
             <property name="text">
              <string/>
             </property>
             <property name="alignment">
-             <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -304,12 +212,6 @@ font-size:24 px;
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Sunken</enum>
-            </property>
-            <property name="lineWidth">
-             <number>1</number>
-            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -389,7 +291,7 @@ font-size:24 px;
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>696</width>
+            <width>748</width>
             <height>603</height>
            </rect>
           </property>
@@ -399,9 +301,6 @@ font-size:24 px;
            </property>
            <item row="0" column="2">
             <widget class="QWidget" name="fileExplorer" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
              <layout class="QGridLayout" name="gridLayout_2">
               <property name="topMargin">
                <number>9</number>
@@ -429,7 +328,6 @@ font-size:24 px;
                 </property>
                 <property name="font">
                  <font>
-                  <family>century gothic</family>
                   <italic>false</italic>
                   <underline>false</underline>
                   <strikeout>false</strikeout>
@@ -439,7 +337,7 @@ font-size:24 px;
                  <bool>false</bool>
                 </property>
                 <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::Raised</enum>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

@@ -1,4 +1,9 @@
 #include "profilepage.h"
+#include "ui_profilepage.h"
+#include <QDialogButtonBox>
+#include <QDebug>
+#include "buildermessageclient.h"
+
 
 ProfilePage::ProfilePage(QWidget *parent) :
     QMainWindow(parent),
@@ -51,25 +56,19 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
 
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
-    bool ok = false;
-
     if (serializedImage == nullptr){
-        pixmap.load(":/icons_pack/avatar_default.png");
+        pixmap.load(QDir().homePath()+ "/GIT_Saverio/myservertest/Login/images/default.png");
     }else{
-        ok = pixmap.loadFromData(serializedImage);
+        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
     }
 
-    if(ok){
-        ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
-    }else{
-         ui->accountImage->setText("IMAGE NOT FOUND");
-    }
+    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
 
 void ProfilePage::on_pushButton_changeImage_clicked()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.jpeg)"));
+    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image (PNG format)"), QDir::homePath(), tr("Image Files (*.png)"));
     if(path!=nullptr){
         QFile file(path);
         QPixmap pixmap;

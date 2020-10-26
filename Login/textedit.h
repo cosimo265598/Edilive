@@ -55,6 +55,8 @@
 #include <QMap>
 #include <QPointer>
 
+#include "presence.h"
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
@@ -70,12 +72,21 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0);
+    TextEdit(QWidget *parent = 0, struct subscriber_t* subscriber=nullptr , QList<struct subscriber_t>* listUsers=nullptr);
 
-    bool load(const QString &f);
+    bool load(const QString &fileName, QString file);
+
 
 public slots:
+    void fromServerInsert(QString c, int pos);
     void fileNew();
+    void textChange();
+    void onUpdateListUsersConnected(int id, QString username, QImage img);
+signals:
+    //void charInsertion(int charPos);
+    void fromServerInsertSignal(QString c, int pos);
+    void localInsertionSignal(QString c, int pos);
+    void removeClientWorkspace(QString);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -107,6 +118,7 @@ private slots:
     void about();
     void printPreview(QPrinter *);
 
+
 private:
     void setupFileActions();
     void setupEditActions();
@@ -120,6 +132,10 @@ private:
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
+    void drawCursor(const Presence& p);
+    void newPresence(qint32 userId, QString username, QImage image);
+    void removePresence(qint32 userId);
+
 
     QAction *actionSave;
     QAction *actionTextBold;
@@ -148,6 +164,14 @@ private:
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
+
+    Presence *presence;
+    QToolBar *onlineUsers;
+    QMap<QString, Presence> onlineUsers_map;
+    subscriber_t* subscriber;
+    QList<subscriber_t>* listUsers;
+    bool ready;
+
 };
 
 #endif // TEXTEDIT_H

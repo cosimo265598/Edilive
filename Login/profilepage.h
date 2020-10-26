@@ -12,11 +12,9 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QDialogButtonBox>
-#include <QDebug>
 
-#include "ui_profilepage.h"
-#include "buildermessageclient.h"
+#include "updateuser.h"
+#include "subscriber.h"
 
 struct updateUser_t{
     QString username;

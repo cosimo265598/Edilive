@@ -1,53 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the demonstration applications of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -67,6 +17,7 @@
 #include <QTextCursor>
 #include <QTextDocumentWriter>
 #include <QTextList>
+#include <QTextDocumentFragment>
 #include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
@@ -77,8 +28,14 @@
 #include <QPrinter>
 #include <QPrintPreviewDialog>
 
+#include <QPainter>
+#include <QLabel>
+#include <QDebug>
 
+
+#include "presence.h"
 #include "textedit.h"
+#include "client.h"
 
 #ifdef Q_OS_MACOS
 const QString rsrcPath = ":/images/mac";
@@ -86,19 +43,25 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent)
-    : QMainWindow(parent)
+TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscriber_t>* listUsers)
+    : QMainWindow(parent),subscriber(subscriber),listUsers(listUsers)
 {
 #ifdef Q_OS_MACOS
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
+    ready=false;
     setWindowTitle(QCoreApplication::applicationName());
 
-    textEdit = new QTextEdit(this);
+    textEdit = new QTextEdit(parent);
+    connect(textEdit, &QTextEdit::textChanged,
+            this, &TextEdit::textChange);
+
+
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
             this, &TextEdit::currentCharFormatChanged);
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
+        connect(this, &TextEdit::fromServerInsertSignal, this, &TextEdit::fromServerInsert);
     setCentralWidget(textEdit);
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
@@ -136,14 +99,26 @@ TextEdit::TextEdit(QWidget *parent)
 
     actionCut->setEnabled(false);
     connect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
-    actionCopy->setEnabled(false);
-    connect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
 
+
+    //Cipboard: temporal storage of data to be copied, pasted...
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &TextEdit::clipboardDataChanged);
 
     textEdit->setFocus();
     setCurrentFileName(QString());
 
+
+    //QImage img(150,150,QImage::Format_ARGB32);
+    //img.fill(presence->color());
+    //QImage::fromData(this->subscriber->serializedImage)
+    QImage img(":/icons_pack/avatar_default.png"); //this->subscriber->serializedImage
+    int j=1;
+    //newPresence(5,this->subscriber->username,img);
+    for(auto i=this->listUsers->begin(); i!=this->listUsers->end(); i++){
+        qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
+        newPresence(j,i->username,img);
+        j++;
+    }
 #ifdef Q_OS_MACOS
     // Use dark text on light background on macOS, also in dark mode.
     QPalette pal = textEdit->palette();
@@ -159,6 +134,11 @@ void TextEdit::closeEvent(QCloseEvent *e)
         e->accept();
     else
         e->ignore();
+
+    qDebug() << QFileInfo(fileName).fileName();
+
+    emit removeClientWorkspace(QFileInfo(fileName).fileName());
+    listUsers->clear();
 }
 
 void TextEdit::setupFileActions()
@@ -189,7 +169,7 @@ void TextEdit::setupFileActions()
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-    const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
+    const QIcon printIcon = QIcon::fromTheme("documfileNameent-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Print);
@@ -401,22 +381,20 @@ void TextEdit::setupTextActions()
 
 void TextEdit::setupClientOnline()
 {
-    QToolBar *tb = addToolBar(tr("Client Online"));
+    onlineUsers = addToolBar(tr("Client Online"));
 
-    tb->setFixedHeight(40);
-    tb->setIconSize(QSize(40,40));
+    onlineUsers->setIconSize(QSize(40,40));
 
-    addToolBar(Qt::BottomToolBarArea,tb);
-    tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::LeftToolBarArea | Qt::RightToolBarArea);
-
-    const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));
-    QAction *a = new QAction(newIcon,"view client online",tb);
-    tb->addAction(a);
+    addToolBar(Qt::BottomToolBarArea,onlineUsers);
+    onlineUsers->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
 }
 
-bool TextEdit::load(const QString &f)
+
+bool TextEdit::load(const QString &fileName, QString file)
 {
+
+    /*
     if (!QFile::exists(f))
         return false;
     QFile file(f);
@@ -437,8 +415,10 @@ bool TextEdit::load(const QString &f)
         else
             textEdit->setPlainText(QString::fromLocal8Bit(data));
     }
-
-    setCurrentFileName(f);
+    */
+    textEdit->setPlainText(file);
+    setCurrentFileName(fileName);
+    ready=true;
     return true;
 }
 
@@ -484,7 +464,7 @@ void TextEdit::fileNew()
 
 void TextEdit::fileOpen()
 {
-    QFileDialog fileDialog(this, tr("Open File..."));
+   /* QFileDialog fileDialog(this, tr("Open File..."));
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
     fileDialog.setMimeTypeFilters(QStringList()
@@ -502,7 +482,7 @@ void TextEdit::fileOpen()
     if (load(fn))
         statusBar()->showMessage(tr("Opened \"%1\"").arg(QDir::toNativeSeparators(fn)));
     else
-        statusBar()->showMessage(tr("Could not open \"%1\"").arg(QDir::toNativeSeparators(fn)));
+        statusBar()->showMessage(tr("Could not open \"%1\"").arg(QDir::toNativeSeparators(fn)));*/
 }
 
 bool TextEdit::fileSave()
@@ -637,6 +617,10 @@ void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
+
+    //For case 4 and 5, is possible to add a box crossed or not in order to rapresent a task that is
+    //already done or todo (like a checklist). Inside the box there is the symbol choosen to
+    //rapresent every entry in the list (upperAlpha, loweAlpha, Roman...)
     QTextBlockFormat::MarkerType marker = QTextBlockFormat::MarkerType::NoMarker;
 
     switch (styleIndex) {
@@ -684,6 +668,7 @@ void TextEdit::textStyle(int styleIndex)
 
     cursor.beginEditBlock();
 
+    //Structure holding all the format changes to apply
     QTextBlockFormat blockFmt = cursor.blockFormat();
 
     if (style == QTextListFormat::ListStyleUndefined) {
@@ -698,6 +683,10 @@ void TextEdit::textStyle(int styleIndex)
         fmt.setProperty(QTextFormat::FontSizeAdjustment, sizeAdjustment);
         cursor.select(QTextCursor::LineUnderCursor);
         cursor.mergeCharFormat(fmt);
+
+        //Merges the properties specified in modifier into the current character format by calling QTextCursor::mergeCharFormat on the editor's cursor.
+        //If the editor has a selection then the properties of modifier are directly applied to the selection
+        //Testato, se ho testo highlighted, se clicco su bolded, esempio, verrà modificato quella porzione di testo soltanto
         textEdit->mergeCurrentCharFormat(fmt);
     } else {
         blockFmt.setMarker(marker);
@@ -789,6 +778,7 @@ void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
     QTextList *list = textEdit->textCursor().currentList();
+
     if (list) {
         switch (list->format().style()) {
         case QTextListFormat::ListDisc:
@@ -836,8 +826,77 @@ void TextEdit::cursorPositionChanged()
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
+
+    /////////////////////////////////
+    //Da questo slot si può ricavare la posizione del cursore corrente
+    //emit charInsertion(textEdit->textCursor().position());
+
+    //qDebug() << "Cursor pos" << textEdit->textCursor().position();
+    QTextCursor cursor = textEdit->textCursor();
+    int pre= cursor.position();
+    cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
+    cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
+
+    //qDebug()<<"the c is:"<<cursor.selectedText()<< " "<<cursor.charFormat();
+
+    cursor.setPosition(pre, QTextCursor::MoveAnchor);
+    Presence p=onlineUsers_map.find(this->subscriber->username).value();
+    p.cursor()->setPosition(cursor.position());
+    drawCursor(p);
+
+
+    ////////////////////////////////
+
+    //QTextCursor cursor = textEdit->textCursor();
+    //qDebug() << "Pos cursore: " << cursor.position();
+
+
+}
+void TextEdit::textChange(){
+    /*QString str = textEdit->toPlainText();
+    QString targetChars = str.mid(textEdit->textCursor().columnNumber()-1,1);
+    qDebug() << "char: " << targetChars << " at position: " << textEdit->textCursor().position()-1;
+    //EMETTI SEGNALE CHE INSERISCE IN SHARED FILE DA CLIENT
+    emit localInsertionSignal(targetChars,textEdit->textCursor().position()-1);*/
+
+    if(ready==false)
+        qDebug()<<"Nell'editor c'è stato un inserimento che proviene dal server";
+    else
+        qDebug()<<"Nell'editor c'è stato un inserimento che verrà mandato al server";
+
+    if(ready==true){
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
+        cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
+        QChar c =cursor.selectedText()[0];
+        qDebug()<<"the c is:"<<c<< " pos:"<<textEdit->textCursor().position()-1;
+        if(!c.isNull())
+            emit localInsertionSignal(cursor.selectedText(),textEdit->textCursor().position()-1);
+    }
+
+}
+void TextEdit::fromServerInsert(QString c, int pos){
+    qDebug()<< "Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos;
+    ready=false;
+    QTextCursor cursor = textEdit->textCursor();
+    int pre= cursor.position();
+    cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
+    cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
+
+    //qDebug()<<"the c is:"<<cursor.selectedText()<< " "<<cursor.charFormat();
+
+    cursor.setPosition(pre, QTextCursor::MoveAnchor);
+    Presence p=onlineUsers_map.find(this->subscriber->username).value();
+    p.cursor()->setPosition(pos);
+    p.cursor()->insertText(c);
+    ready = true;
 }
 
+void TextEdit::onUpdateListUsersConnected(int id, QString username, QImage img)
+{
+    qDebug()<<"TEXT EDIT - signal on update user";
+    newPresence(id,username,img);
+}
 void TextEdit::clipboardDataChanged()
 {
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
@@ -848,7 +907,7 @@ void TextEdit::about()
 {
     QMessageBox::about(this, tr("About"), tr("This project demonstrates Qt's "
         "rich text editing facilities in action, providing an example "
-        "document for you to experiment with. SAVERIO MASSANO ; MANISI COSIMO"));
+        "document for you to experiment with. SAVERIO MASSANO ; MANISI COSIMO ; SILVIA FOIS"));
 }
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
@@ -887,4 +946,80 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
     else if (a & Qt::AlignJustify)
         actionAlignJustify->setChecked(true);
 }
+
+void TextEdit::drawCursor(const Presence &p)
+{
+    //Getting Presence's cursor and QLabel (to draw the graphic cursor)
+    QLabel* userCursorLabel = p.label();
+    userCursorLabel->close();
+    const QRect qRect = textEdit->cursorRect(*p.cursor());
+
+    //Draw the cursor (Pixmap)
+    QPixmap pix(qRect.width() * 2.5, qRect.height());
+    pix.fill(p.color());
+
+    //Set the graphic cursor to the label
+    userCursorLabel->setPixmap(pix);
+    userCursorLabel->setVisible(true);
+    userCursorLabel->move(qRect.left(), qRect.top());
+
+    //Show the moved label
+    userCursorLabel->update();
+}
+
+void TextEdit::newPresence(qint32 userId, QString username, QImage image)
+{
+    int randomNumber = 7 + (userId-1) % 11;
+
+    //Pick a color
+    QColor color = (Qt::GlobalColor) (randomNumber);
+    Presence p(userId, username, color, image, textEdit);
+
+    //Add user icon on user toolbar
+    QAction* onlineAction = new QAction(QIcon(p.profilePicture()), username, onlineUsers);
+    connect(onlineAction, &QAction::triggered, this, [p](){
+
+        QMessageBox msgBox(QMessageBox::NoIcon,
+                "",
+                "I'm ' "+p.name()+ " ' and my ID is "+QString::number(p.id()),
+                QMessageBox::Close);
+        msgBox.setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint);
+        msgBox.setIconPixmap(QPixmap(p.profilePicture()).scaled(60,60,Qt::KeepAspectRatio,Qt::SmoothTransformation));
+        msgBox.exec();
+    });
+
+    onlineAction->setChecked(true);
+    onlineUsers->addAction(onlineAction);
+    onlineUsers_map.insert(p.name(), p);
+
+    qDebug() << "users" << onlineUsers_map.size();
+
+    p.setAction(onlineAction);
+
+    p.cursor()->setPosition(0);
+}
+
+void TextEdit::removePresence(qint32 userId)
+{
+    /*
+    if (onlineUsers.contains(userId))
+    {
+        Presence& p = onlineUsers.find(userId).value();
+
+        //Hide user cursor
+        p.label()->clear();
+
+        //Remove user icon from users toolbar
+        onlineUsersToolbar->removeAction(p.actionHighlightText());
+
+        //Remove from editor
+        onlineUsers.remove(userId);
+
+        //Recompute user text highlighting
+        handleMultipleSelections();
+    }
+    */
+
+}
+
 

@@ -1,5 +1,6 @@
 #include "mainwindowstacked.h"
-
+#include "ui_mainwindowstacked.h"
+#include <QSizePolicy>
 
 MainWindowStacked::MainWindowStacked(QWidget *parent) :
     QWidget(parent),

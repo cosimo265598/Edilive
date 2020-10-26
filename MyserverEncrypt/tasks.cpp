@@ -1,12 +1,17 @@
 #include "tasks.h"
 
 Tasks::Tasks(QObject *parent,
-             QJsonObject request, QWebSocket* socket, QMap<QWebSocket*,
-             QSharedPointer<Client>>& clients, QMap<QString, UserData>& users,
-             TypeOperation typeOp,Ui::MainWindow *ui) :
+             QJsonObject request,
+             QWebSocket* socket,
+             QMap<QWebSocket*, QSharedPointer<Client>>& clients,
+             QMap<QString, UserData>& users,
+             QMap<QString, QSharedPointer<Workspace>>& workspaces,
+             TypeOperation typeOp,
+             Ui::MainWindow *ui) :
     QObject(parent),
     clients(clients),
     users(users),
+    workspaces(workspaces),
     typeOp(typeOp),
     socket(socket),
     request(request),
@@ -253,38 +258,89 @@ void Tasks::serverOpenFile()
 {
     qDebug()<<"Segnale apertura file ricevuto";
     QString fileName = request.value("nomefile").toString();
-    QSharedPointer<Client> client = clients[socket];
-    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
-    qDebug()<<client->getUsername()<<" "<<path<<" file name "<<fileName;
+    emit openFile(socket, fileName);
+}
 
-    QByteArray contentFile = nullptr;
-    QFile filecreate(path);
-    if(filecreate.exists()){
-        if (filecreate.open(QIODevice::ReadWrite)){
-            contentFile = filecreate.readAll();
-            filecreate.close();
+void Tasks::serverInsertionChar(){
+
+    char c = request["car"].toString().toStdString()[0];
+    std::string id=request["id"].toString().toStdString();
+    std::string posfraz=request["posfraz"].toString().toStdString();
+    std::string siteid=request["siteid"].toString().toStdString();
+
+    qDebug()<< "Il server ha ricevuto carattere "<< c << " con posf=" << QString::fromStdString(posfraz) << " e id="<<QString::fromStdString(id);
+    std::vector<int> v;
+    int i=0;
+    while(i<posfraz.length()){
+        if(i!=0 && (int)posfraz[i]-'0'==0)
+            break;
+        if(posfraz[i]!=','){
+            std::string cifra;
+            while(posfraz[i]!='-' && i<posfraz.length()){
+                std::stringstream ss;
+                ss << posfraz[i]-'0';
+                cifra.append(ss.str());
+                i++;
+            }
+            v.push_back(std::stoi(cifra));
+            i++;
         }
     }
-    else
-        return;
+    Symbol s(c,siteid,v,id);
 
-    emit openFile(socket, fileName, contentFile);
+    emit insertionChar(socket, s);
+}
+
+void Tasks::serverDeleteChar(){
+    char c = request["char"].toString().toStdString()[0];
+    std::string id=request["id"].toString().toStdString();
+    std::string posfraz=request["posfraz"].toString().toStdString();
+    std::string siteid=request["siteid"].toString().toStdString();
+
+    std::vector<int> v;
+    int i=0;
+    while(i<posfraz.length()){
+        if(i!=0 && (int)posfraz[i]-'0'==0)
+        break;
+        if(posfraz[i]!=','){
+            std::string cifra;
+            while(posfraz[i]!='-' && i<posfraz.length()){
+                std::stringstream ss;
+                ss << posfraz[i]-'0';
+                cifra.append(ss.str());
+                i++;
+            }
+            v.push_back(std::stoi(cifra));
+            i++;
+        }
+    }
+    Symbol s(c,siteid,v,id);
+    emit deletionChar(socket, s);
+}
+
+void Tasks::serverRemoveClientFromWorkspace(){
+    qDebug() << "Invio al mainwindow";
+    qDebug() << request;
+    emit removeClientFromWorkspace(socket, request["fileName"].toString());
 }
 
 
 void Tasks::run(){
     switch (typeOp) {
 
-        case TypeOperation::LoginRequest:   this->serverLoginRequest();               break;
-        case TypeOperation::LoginUnlock:    this->serverLoginUnlock();                 break;
-        case TypeOperation::AccountCreate:  this->serverAccountCreate();             break;
-        case TypeOperation::OpenDirectory:  this->serverOpenDirOfClient();           break;
-        case TypeOperation::ProfileData:    this->serverPersonalDataOfClient();        break;
-        case TypeOperation::AccountUpdate:  this->serverUpdateProfileClient();       break;
-        case TypeOperation::CreateFile:     this->serverCreateFileForClient();          break;
-        case TypeOperation::DeleteFile:     this->serverDeleteFileForClient();          break;
-        case TypeOperation::OpenFile:       this->serverOpenFile();                      break;
+        case TypeOperation::LoginRequest:               this->serverLoginRequest();                 break;
+        case TypeOperation::LoginUnlock:                this->serverLoginUnlock();                  break;
+        case TypeOperation::AccountCreate:              this->serverAccountCreate();                break;
+        case TypeOperation::OpenDirectory:              this->serverOpenDirOfClient();              break;
+        case TypeOperation::ProfileData:                this->serverPersonalDataOfClient();         break;
+        case TypeOperation::AccountUpdate:              this->serverUpdateProfileClient();          break;
+        case TypeOperation::CreateFile:                 this->serverCreateFileForClient();          break;
+        case TypeOperation::DeleteFile:                 this->serverDeleteFileForClient();          break;
+        case TypeOperation::OpenFile:                   this->serverOpenFile();                     break;
+        case TypeOperation::InsertionChar:              this->serverInsertionChar();                break;
+        case TypeOperation::DeleteChar:                 this->serverDeleteChar();                   break;
+        case TypeOperation::RemoveClientFromWorkspace:  this->serverRemoveClientFromWorkspace();    break;
 
         default: qDebug() << "No Task";
     }

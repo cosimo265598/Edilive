@@ -6,19 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>518</width>
-    <height>615</height>
+    <width>371</width>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">*{
-font-family: century gothic;
-font-size:24 px;
-background: url(:/icons_pack/background-login-png-5.png)
-}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

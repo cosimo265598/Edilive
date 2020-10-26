@@ -4,11 +4,6 @@
 #include <QDialog>
 #include <QAbstractSocket>
 #include <QTimer>
-#include <QRandomGenerator>
-#include <QWebSocket>
-#include <QProgressBar>
-
-#include "ui_connectionwaitingdialog.h"
 
 #define MAX_RETRY 3
 #define MAX_TIMEOUT 6000
@@ -27,7 +22,7 @@ public:
     void setText(QString message);
     void setNumberRetry();
     int resultOfRetry();
-    void stopTimerForced();
+
 public slots:
     void changeState(QAbstractSocket::SocketState state);
     void timeout();

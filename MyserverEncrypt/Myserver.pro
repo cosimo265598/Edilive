@@ -20,28 +20,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     #../Client/user.cpp \
+    SharedFile.cpp \
+    Symbol.cpp \
     buildermessage.cpp \
     client.cpp \
-    createfile.cpp \
     main.cpp \
     mainwindow.cpp \
     processoperation.cpp \
     serverdatabase.cpp \
     serverexception.cpp \
     tasks.cpp \
-    userdata.cpp
+    userdata.cpp \
+    workspace.cpp
 
 HEADERS += \
     #../Client/user.h \
+    SharedFile.h \
+    Symbol.h \
     buildermessage.h \
     client.h \
-    createfile.h \
     mainwindow.h \
     processoperation.h \
     serverdatabase.h \
     serverexception.h \
     tasks.h \
-    userdata.h
+    userdata.h \
+    workspace.h
 
 FORMS += \
     mainwindow.ui

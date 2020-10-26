@@ -73,6 +73,7 @@ private:
     QSslConfiguration sslconfig;
     QMap<QWebSocket*, QSharedPointer<Client>> clients;
     QMap<QString, UserData> users;
+    QMap<QString, QSharedPointer<Workspace>> workspaces;
     ProcessOperation *po;
     ServerDatabase database;
 };

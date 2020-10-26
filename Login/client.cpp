@@ -1,7 +1,10 @@
 #include "client.h"
+#include "connectionwaitingdialog.h"
+#include <QFloat16>
 
 Client::Client(QObject *parent) :
     QObject(parent),
+    sf(nullptr),
     stackedDialog(new StartupStackedDialog()),
     urlForConnection("wss://localhost:1234"),
     reconnectionRetries(3),
@@ -28,6 +31,8 @@ Client::Client(QObject *parent) :
     connect(this, &Client::loginFailure, stackedDialog, &StartupStackedDialog::onLoginFailure);
     connect(this, &Client::registrationFailure, stackedDialog, &StartupStackedDialog::onRegistrationFailure);
     connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
+
+    //connection texteditor e client
 
     resetUser();
     this->waitingTimer->setInterval(6000);
@@ -174,12 +179,50 @@ void Client::fileHandlersRequest(){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageOpenDir());
-     m_webSocket.get()->sendBinaryMessage(out);
+    m_webSocket.get()->sendBinaryMessage(out);
+}
+
+void Client::standardInsert(QJsonObject symbol)
+{
+    //qDebug() << "symbol:  " << symbol;
+    //qDebug()<<"Messaggio inserimento carattere: "+symbol["car"].toString();
+    char c = symbol["car"].toString().toStdString()[0];
+    std::string id=symbol["id"].toString().toStdString();
+    //std::string posfraz=jsonObj["posfraz"].toString().toStdString();
+    std::string siteid=symbol["siteid"].toString().toStdString();
+    std::vector<int> v;
+
+    /*
+    int i=0;
+    while(i<posfraz.length()){
+        if(i!=0 && (int)posfraz[i]-'0'==0)
+            break;
+        if(posfraz[i]!=','){
+            std::string cifra;
+            while(posfraz[i]!='-' && i<posfraz.length()){
+                std::stringstream ss;
+                ss << posfraz[i]-'0';
+                cifra.append(ss.str());
+                i++;
+            }
+            v.push_back(std::stoi(cifra));
+            i++;
+        }
+    }
+    */
+
+    for(auto val :symbol["posfraz"].toArray())
+        v.push_back(val.toInt());
+
+    Symbol s(c,siteid,v,id);
+    sf->localInsert(s, subscriber.username.toStdString()); //INSERIMENTO NELLA STRUTTURA LOGICA
+    //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
 }
 
 void Client::startTextEditor(QString fileName)
 {
-    textEditor= new TextEdit();
+    textEditor= new TextEdit(0,&this->subscriber,&listUserOnWorkspace);
+
     QCoreApplication::setApplicationName("textEditor");
     textEditor->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -188,17 +231,24 @@ void Client::startTextEditor(QString fileName)
     textEditor->move((availableGeometry.width() - textEditor->width()) / 2,
             (availableGeometry.height() - textEditor->height()) / 2);
 
-    if (!textEditor->load(fileName))
-        textEditor->fileNew();
+    connect(textEditor, &TextEdit::localInsertionSignal, this, &Client::localInsertion);
+    connect(textEditor, &TextEdit::removeClientWorkspace, this, &Client::onRemoveClientFromWorkspace);
+    connect(this,&Client::updateListUsersConnected,textEditor,&TextEdit::onUpdateListUsersConnected);
 
     textEditor->show();
+
+
+    qDebug() << "testo: " << QString::fromStdString(sf->to_string());
+
+    if (!textEditor->load(fileName, QString::fromStdString(sf->to_string())))
+        textEditor->fileNew();
 }
 
 
 void Client::MessageReceivedFromServer(const QByteArray &message)
 {
     QDataStream stream(message);
-    stream.setVersion(QDataStream::Qt_5_14);
+    stream.setVersion(QDataStream::Qt_5_13);
     QByteArray out;
     QJsonDocument jsonDoc;
 
@@ -217,6 +267,8 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     }
 
     QJsonObject jsonObj = jsonDoc.object();
+
+    qDebug() << jsonObj;
 
     switch (jsonObj["type"].toInt()) {
         case 2:{   // message challange login
@@ -287,19 +339,39 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         }
         case 11:{    // file in arrivo
             QString fileName = jsonObj["fileName"].toString();
-            qDebug()<<"file in arrivo"<< fileName;
-            QFile file(QDir().tempPath()+"/"+ fileName);
+            QString creatore = jsonObj["creator"].toString();
 
-            if (file.open(QIODevice::WriteOnly)){
-                QByteArray serializedFile;
-                stream >> serializedFile;
-                file.write(serializedFile);
-                file.close();
-                //QProcess::execute("gedit "+QDir().tempPath()+"/"+fileinarrivo);
-                // Aperura editor per l'editing del file
-                this->startTextEditor(QDir().tempPath()+"/"+ fileName);
-            }else
-                return;
+            sf = new SharedFile(fileName.toStdString(), creatore.toStdString());
+            qDebug()<<"file in arrivo"<< fileName;
+
+            int last = 0;
+
+            while (!last){
+                QJsonDocument jsonDoc;
+                stream >> jsonDoc;
+                QJsonObject obj = jsonDoc.object();
+
+                last = obj["last"].toInt();
+
+                qDebug() << "Cosa mi arriva: " << obj["symbols"].toArray();
+                qDebug() << "ora inserisco";
+                for(auto symbol: obj["symbols"].toArray())
+                    this->standardInsert(symbol.toObject());
+                qDebug() << "Ho inserito tutto";
+            }
+
+            qDebug() << "Apro l'editor";
+            qDebug() << " connected client array "<< jsonObj["connected"].toArray();
+
+            for(auto i : jsonObj["connected"].toArray()){
+                subscriber_t s;
+                s.username= i.toObject().value("username").toString();
+                s.nickname = i.toObject().value("nickname").toString();
+                s.serializedImage= i.toObject().value("icon").toString().toLatin1().toBase64();
+                listUserOnWorkspace.append(s);
+            }
+            // Aperura editor per l'editing del file
+            this->startTextEditor(QDir().tempPath()+"/"+ fileName);
 
             break;
         }
@@ -335,8 +407,144 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             resetUpdateUser();
         break;
         }
+    case 50:{//inserimento standard
+        qDebug()<<"INSERIMENTO DA SERVER";
+        char c = jsonObj["car"].toString().toStdString()[0];
+
+        qDebug() << "char: " << c;
+
+        std::string id=jsonObj["id"].toString().toStdString();
+        std::string posfraz=jsonObj["posfraz"].toString().toStdString();
+        std::string siteid=jsonObj["siteid"].toString().toStdString();
+        std::vector<int> v;
+
+        int i=0;
+        while(i<posfraz.length()){
+            if(i!=0 && (int)posfraz[i]-'0'==0)
+                break;
+            if(posfraz[i]!=','){
+                std::string cifra;
+                while(posfraz[i]!='-' && i<posfraz.length()){
+                    std::stringstream ss;
+                    ss << posfraz[i]-'0';
+                    cifra.append(ss.str());
+                    i++;
+                }
+                v.push_back(std::stoi(cifra));
+                i++;
+            }
+        }
+        Symbol s(c,siteid,v,id);
+        sf->localInsert(s, subscriber.username.toStdString()); //INSERIMENTO NELLA STRUTTURA LOGICA
+        //std::string iniziale=jsonObj["iniziale"].toString().toStdString();
+        //test
+        qDebug() << "cosa contengo" << QString::fromStdString(sf->to_string());
+        /*if(iniziale=="si"){
+        QByteArray data;
+        QDataStream out(&data, QIODevice::WriteOnly | QIODevice::Append);
+        out.setVersion(QDataStream::Qt_5_13);
+        out << QString::fromStdString(sf->to_string());
+        }*/
+        int pos=sf->localInsert(s, subscriber.username.toStdString()); //INSERIMENTO NELLA
+        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
+        std::string stringhetta(1,c);
+        emit textEditor->fromServerInsertSignal(QString::fromStdString(stringhetta),pos);
+            //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
 
 
+    break;
+    }
+    case 51:{ //inserimento con conflitto
+        QString stringa("Messaggio inserimento con conflitto carattere: "+jsonObj["car"].toString());
+        qDebug()<<stringa;
+        char c = jsonObj["car"].toString().toStdString()[0];
+        std::string id=jsonObj["id"].toString().toStdString();
+        std::string nposfraz=jsonObj["newposfraz"].toString().toStdString();
+        std::string oposfraz=jsonObj["oldposfraz"].toString().toStdString();
+        std::string siteid=jsonObj["siteid"].toString().toStdString();
+        std::vector<int> vn, vo;
+        int i =0;
+
+        while(i<nposfraz.length()){
+            if(i!=0 && (int)nposfraz[i]-'0'==0)
+                break;
+            if(nposfraz[i]!=','){
+                std::string cifra;
+                while(nposfraz[i]!='-' && i<nposfraz.length()){
+                    std::stringstream ss;
+                    ss << nposfraz[i]-'0';
+                    cifra.append(ss.str());
+                    i++;
+                }
+                vn.push_back(std::stoi(cifra));
+                i++;
+            }
+        }
+
+        i=0;
+        while(i<oposfraz.length()){
+            if(i!=0 && (int)oposfraz[i]-'0'==0)
+                break;
+            if(oposfraz[i]!=','){
+                std::string cifra;
+                while(oposfraz[i]!='-' && i<oposfraz.length()){
+                    std::stringstream ss;
+                    ss << oposfraz[i]-'0';
+                    cifra.append(ss.str());
+                    i++;
+                }
+                vo.push_back(std::stoi(cifra));
+                i++;
+            }
+        }
+
+        Symbol sn(c,siteid,vn,id);
+        Symbol so(c,siteid,vo,id);
+        sf->localErase(so,subscriber.username.toStdString());
+        sf->localInsert(sn, subscriber.username.toStdString());
+        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE LA CANCELLAZIONE DALL'EDITOR DI SYMBOL SO
+        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL SN
+    break;
+    }
+    case 52:{ //cancellazione
+        QString stringa("Messaggio cancellazione carattere: "+jsonObj["car"].toString());
+        qDebug()<<stringa;
+        char c = jsonObj["car"].toString().toStdString()[0];
+        std::string id=jsonObj["id"].toString().toStdString();
+        std::string posfraz=jsonObj["posfraz"].toString().toStdString();
+        std::string siteid=jsonObj["siteid"].toString().toStdString();
+        std::vector<int> v;
+        int i=0;
+        while(i<posfraz.length()){
+            if(i!=0 && (int)posfraz[i]-'0'==0)
+                break;
+            if(posfraz[i]!=','){
+                std::string cifra;
+                while(posfraz[i]!='-' && i<posfraz.length()){
+                    std::stringstream ss;
+                    ss << posfraz[i]-'0';
+                    cifra.append(ss.str());
+                    i++;
+                }
+                v.push_back(std::stoi(cifra));
+                i++;
+            }
+        }
+        Symbol s(c,siteid,v,id);
+        sf->localErase(s,subscriber.username.toStdString());
+        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE LA CANCELLAZIONE DALL'EDITOR DI SYMBOL S
+    break;
+    }
+    case 100:{
+        qDebug()<< "CASE 100 - update inset wokrspace";
+        subscriber_t s;
+        s.username = jsonObj["username"].toString();
+        s.nickname = jsonObj["nickname"].toString();
+        s.serializedImage = jsonObj["icon"].toString().toLatin1().toBase64();
+        listUserOnWorkspace.append(s);
+        emit updateListUsersConnected(listUserOnWorkspace.size(),s.username,QImage::fromData(s.serializedImage));
+        break;
+    }
         default:         return;
     }
 }
@@ -353,7 +561,9 @@ void Client::onConnectionFailure(){
 }
 
 void Client::onFileHandlerDbClicked(QString fileName){
-
+    sf = new SharedFile(fileName.toStdString(), "notMe");
+    QString stringa("Ho aggiornato il file attuale a "+fileName);
+    qDebug()<<stringa;
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -363,7 +573,9 @@ void Client::onFileHandlerDbClicked(QString fileName){
 
 
 void Client::onCreateNewFileRequest(QString fileName){
-
+    sf = new SharedFile(fileName.toStdString(), subscriber.username.toStdString());
+    QString stringa("Ho aggiornato il file attuale a "+fileName);
+    qDebug()<<stringa;
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -398,14 +610,7 @@ void Client::resetUpdateUser(){
 
 void Client::ping()
 {
-    qDebug()<<m_webSocket.get()->closeCode();
     qDebug()<<"ping called - "<< old_clientstatus << " new "<< clientStatus;
-    if(m_webSocket.get()->closeCode()==QWebSocketProtocol::CloseCodeBadOperation){
-        waitingDialog.stopTimerForced();
-        waitingDialog.reject();
-        waitingDialog.close();
-        return;
-    }
     this->clientStatus=ReConnect;
     m_webSocket.get()->open(this->urlForConnection);
 }
@@ -419,16 +624,13 @@ void Client::closeControll()
 {
     if(waitingDialog.result()==QDialog::DialogCode::Rejected){
         qDebug()<<"No way to recover the connectio - app should be close";
-        if(mainWindowStacked!=nullptr){
-             stackedDialog = new StartupStackedDialog();
-             stackedDialog->show();
-             mainWindowStacked->close();
-        }
-
+        if(mainWindowStacked!=nullptr)
+            mainWindowStacked->close();
     }else{
         qDebug()<<"Connection recovered";
     }
 }
+
 
 
 /*
@@ -468,3 +670,60 @@ QByteArray Client::saveAccountImage(QString serializedImage){
 }
 
 */
+
+void Client::localInsertion(QString c, int pos){ //INSERIMENTO DA EDITOR
+
+    //AREA DEBUG
+    qDebug() << "INSERIMENTO LOCALE";
+    qDebug() << "FIle pre inserimento: " << QString::fromStdString(sf->to_string());
+    for(Symbol s : sf->getSymbols()){
+        std::string posfstringa="";
+        for(int i=0; i<s.getPosFraz().size(); i++){
+            std::stringstream ss;
+            ss << s.getPosFraz()[i];
+            std::string str = ss.str();
+            if(i==s.getPosFraz().size()-1)
+                posfstringa.append(str);
+            else
+                posfstringa.append(str).append("-");
+        }
+
+        qDebug() << s.getCar() << " con posfraz=" << QString::fromStdString(posfstringa) ;
+    }
+    //fine AREA DEBUG
+    char carattere = c.toStdString().at(0);
+    sf->localInsert(pos-1, pos, carattere, subscriber.username.toStdString());
+    QByteArray out;
+    Symbol s = sf->getSymbols()[pos];
+    //AREA DEBUG
+    qDebug() << "File post inserimento: " << QString::fromStdString(sf->to_string());
+    for(Symbol s1 : sf->getSymbols()){
+        std::string posfstringa="";
+        for(int i=0; i<s1.getPosFraz().size(); i++){
+            std::stringstream ss;
+            ss << s1.getPosFraz()[i];
+            std::string str = ss.str();
+            if(i==s1.getPosFraz().size()-1)
+                posfstringa.append(str);
+            else
+                posfstringa.append(str).append("-");
+        }
+
+        qDebug() << s1.getCar() << " con posfraz=" << QString::fromStdString(posfstringa) ;
+    }
+    //FINE AREA DEBUG
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageInsert(s.getCar(),s.getPosFraz(),QString::fromStdString(s.getId()),QString::fromStdString(s.getSite())));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onRemoveClientFromWorkspace(QString fileName)
+{
+    qDebug() << "Mi rimuovo";
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageRemoveClientFromWorkspace(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}

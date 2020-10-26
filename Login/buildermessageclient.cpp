@@ -1,19 +1,79 @@
 #include "buildermessageclient.h"
 
+#include <QCryptographicHash>
+#include <sstream>
+#include <QDebug>
+
 void BuilderMessageClient::MessageSendToServer(QByteArray &byte,QJsonDocument jsonToSend)
 {
     QDataStream out(&byte, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_14);
+    out.setVersion(QDataStream::Qt_5_13);
     out << jsonToSend;
 }
 
 void BuilderMessageClient::MessageSendToServer(QByteArray &byte, QByteArray &appendByte)
 {
     QDataStream out(&byte, QIODevice::WriteOnly | QIODevice::Append);
-    out.setVersion(QDataStream::Qt_5_14);
+    out.setVersion(QDataStream::Qt_5_13);
     out << appendByte;
 }
 
+//fileName mi serve per trovare il workspace, da sostituire con fileURI. Metto già il nome del campo aggiornato
+QJsonDocument BuilderMessageClient::MessageInsert(char car, std::vector<int> posf, QString id, QString siteid)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",18);
+    std::string s(1,car);
+    objtosend.insert("car",QString::fromStdString(s));
+    std::string posfstringa="";
+    for(int i=0; i<posf.size(); i++){
+        std::stringstream ss;
+        ss << posf[i];
+        std::string str = ss.str();
+        if(i==posf.size()-1)
+            posfstringa.append(str);
+        else
+            posfstringa.append(str).append("-");
+    }
+
+    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    objtosend.insert("id",id);
+    objtosend.insert("siteid",siteid);
+    jsondoc.setObject(objtosend);
+    qDebug() << "Sto mandando al server carattere " << QString::fromStdString(s)<< " con posf=" <<QString::fromStdString(posfstringa)<<" con id="<<id;
+
+    return jsondoc;
+
+
+}
+
+//fileName mi serve per trovare il workspace, da sostituire con fileURI. Metto già il nome del campo aggiornato
+QJsonDocument BuilderMessageClient::MessageDelete(QString fileName, char car, std::vector<int> posf, QString id, QString siteid)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",19);
+    std::string s(1,car);
+    objtosend.insert("car",QString::fromStdString(s));
+    std::string posfstringa="";
+    for(int i=0; i<posf.size(); i++){
+        std::stringstream ss;
+        ss << posf[i];
+        std::string str = ss.str();
+        if(i==posf.size()-1)
+            posfstringa.append(str);
+        else
+            posfstringa.append(str).append("-");
+    }
+
+    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    objtosend.insert("id",id);
+    objtosend.insert("siteid",siteid);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+
+}
 
 QJsonDocument BuilderMessageClient::MessageTest(QString data)
 {
@@ -79,13 +139,13 @@ QJsonDocument BuilderMessageClient::MessageOpenDir()
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString fileName)
+QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString nomefile)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",12);
     objtosend.insert("auth",true);
-    objtosend.insert("nomefile",fileName);
+    objtosend.insert("nomefile",nomefile);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
@@ -155,8 +215,19 @@ QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nicknam
         buffer.open(QIODevice::WriteOnly);
         objtosend.insert("icon",QLatin1String(buffer.data().toBase64()));
     }else
-        objtosend.insert("image","");
+        objtosend.insert("icon","");
 
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessageClient::MessageRemoveClientFromWorkspace(QString fileName)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("auth",true);
+    objtosend.insert("fileName", fileName);
+    objtosend.insert("type",20);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

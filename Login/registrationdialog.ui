@@ -22,70 +22,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QPushButton{
-background: #550A21;
-border-radius: 15px;
-color:white;
-}
-
-QLabel#passwordLabel{
-color:white;
-background: transparent;
-}
-
-QLabel#password{
-color:white;
-background: transparent;
-}
-
-QLabel#username{
-color:white;
-background: transparent;
-}
-
-QLabel#usernameLabel{
-color:white;
-background: transparent;
-}
-
-QLabel#confirmPasswordLabel{
-color:white;
-background: transparent;
-}
-
-QLabel#errorMessage{
-background: transparent;
-}
-
-QLabel#label{
-background: white;
-}
-
-QPushButton:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-
-
-QLineEdit{
-background: transparent;
-border:none;
-color:#717072;
-border-bottom:1px solid white;
-}
-
-*{
-font-family: century gothic;
-font-size:24 px;
-
-}
-
-QWidget{
-border-radius:15px;
-}</string>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <spacer name="horizontalSpacer">
@@ -109,7 +45,6 @@ border-radius:15px;
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <family>century gothic</family>
          <pointsize>13</pointsize>
          <weight>75</weight>
          <bold>true</bold>
@@ -147,6 +82,22 @@ border-radius:15px;
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Maximum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QLabel" name="usernameLabel">
@@ -214,7 +165,7 @@ border-radius:15px;
         <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+        <enum>QSizePolicy::Minimum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -236,7 +187,7 @@ border-radius:15px;
         <string/>
        </property>
        <property name="autoFillBackground">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>Register</string>
@@ -246,7 +197,7 @@ border-radius:15px;
      <item>
       <widget class="QPushButton" name="pushButton_alreadyAnAccount">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -255,22 +206,6 @@ border-radius:15px;
         <string>I Have already an Account</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>

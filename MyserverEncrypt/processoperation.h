@@ -14,6 +14,7 @@
 #include <QRunnable>
 #include <QThreadPool>
 
+#include "workspace.h"
 #include "tasks.h"
 #include "serverdatabase.h"
 #include "serverexception.h"
@@ -32,22 +33,27 @@ private:
     //Tasks *tasks;
     QMap<QWebSocket*, QSharedPointer<Client>>& clients;
     QMap<QString, UserData>& users;
+    QMap<QString, QSharedPointer<Workspace>>& workspaces;
 
-    ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users);
+    ProcessOperation(QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, QMap<QString, QSharedPointer<Workspace>>& workspaces);
 
-    Tasks *createTask(QObject *parent, QJsonObject request,
-                      QWebSocket* socket, QMap<QWebSocket*, QSharedPointer<Client>>& clients,
-                      QMap<QString, UserData>& users, TypeOperation typeOp,Ui::MainWindow* ui);
+    Tasks *createTask(QObject *parent,
+                      QJsonObject request,
+                      QWebSocket* socket,
+                      QMap<QWebSocket*, QSharedPointer<Client>>& clients,
+                      QMap<QString, UserData>& users,
+                      QMap<QString, QSharedPointer<Workspace>>& workspaces,
+                      TypeOperation typeOp,
+                      Ui::MainWindow* ui);
 
 public:
-    static ProcessOperation *getInstance (QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users) {
+    static ProcessOperation *getInstance (QObject *parent, QMap<QWebSocket*, QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, QMap<QString, QSharedPointer<Workspace>>& workspaces) {
       std::call_once(inited, [&] () {
-          instance = new ProcessOperation(parent, clients, users);
+          instance = new ProcessOperation(parent, clients, users, workspaces);
         });
       return instance;
     }
 
-    //QString checkTypeOperationGranted(TypeOperation type);
     void process(QWebSocket* socket, QJsonObject data,Ui::MainWindow* ui);
     ~ProcessOperation();
 
@@ -64,8 +70,11 @@ public slots:
     void onPersonalDataOfClient(QWebSocket* , QString, QString, QImage);
     void onFileCreationError(QWebSocket* , QString);
     void onFileDeletionError(QWebSocket* , QString);
-    void onOpenFile(QWebSocket* , QString, QByteArray);
+    void onOpenFile(QWebSocket* , QString);
     void onSocketAbort(QWebSocket*);
+    void onInsertionChar(QWebSocket *, Symbol);
+    void onDeletionChar(QWebSocket *, Symbol);
+    void onRemoveClientFromWorkspace(QWebSocket *, QString);
 };
 
 #endif // PROCESSOPERATION_H

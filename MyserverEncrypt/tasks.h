@@ -10,6 +10,7 @@
 #include "serverdatabase.h"
 #include "serverexception.h"
 #include "userdata.h"
+#include "workspace.h"
 #include "client.h"
 #include "buildermessage.h"
 #include "ui_mainwindow.h"
@@ -46,7 +47,10 @@ enum TypeOperation : quint16
     ProfileData,
     DeleteFile,
     // add other enum below, and do not change the order of list
-    UnknowMessage
+    InsertionChar,
+    DeleteChar,
+    RemoveClientFromWorkspace
+
 };
 
 
@@ -54,10 +58,16 @@ class Tasks : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
+
     Tasks(QObject *parent,
-          QJsonObject request, QWebSocket* socket, QMap<QWebSocket*,
-          QSharedPointer<Client>>& clients, QMap<QString, UserData>& users, TypeOperation type,
-          Ui::MainWindow* ui);
+          QJsonObject request,
+          QWebSocket* socket,
+          QMap<QWebSocket*, QSharedPointer<Client>>& clients,
+          QMap<QString, UserData>& users,
+          QMap<QString, QSharedPointer<Workspace>>& workspaces,
+          TypeOperation type,
+          Ui::MainWindow* ui
+    );
 
     void run() override;
     ~Tasks();
@@ -65,6 +75,7 @@ public:
 private:
     QMap<QWebSocket*, QSharedPointer<Client>>& clients;
     QMap<QString, UserData>& users;
+    QMap<QString, QSharedPointer<Workspace>>& workspaces;
     TypeOperation typeOp;
     QJsonObject request;
     QWebSocket* socket;
@@ -81,10 +92,12 @@ private:
     void serverCreateFileForClient();
     void serverDeleteFileForClient();
     void serverOpenFile();
+    void serverInsertionChar();
+    void serverDeleteChar();
+    void serverRemoveClientFromWorkspace();
 
 signals:
     void printUiServer(QString);
-
     void loginError(QWebSocket*,QString);
     void messageChallenge(QWebSocket*, QString, QString);
     void messageChallegePassed(QWebSocket*, QString);
@@ -96,8 +109,11 @@ signals:
     void personalDataOfClient(QWebSocket*, QString, QString, QImage);
     void fileCreationError(QWebSocket*, QString);
     void fileDeletionError(QWebSocket*, QString);
-    void openFile(QWebSocket*, QString, QByteArray);
+    void openFile(QWebSocket*, QString);
     void socketAbort(QWebSocket*);
+    void insertionChar(QWebSocket *, Symbol);
+    void deletionChar (QWebSocket *, Symbol);
+    void removeClientFromWorkspace(QWebSocket*, QString);
 
 };
 

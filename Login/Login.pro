@@ -22,6 +22,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    SharedFile.cpp \
+    Symbol.cpp \
     buildermessageclient.cpp \
     client.cpp \
     connectionwaitingdialog.cpp \
@@ -31,13 +33,18 @@ SOURCES += \
     logindialog.cpp \
     main.cpp \
     mainwindowstacked.cpp \
+    presence.cpp \
     profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
     startupstackeddialog.cpp \
-    textedit.cpp
+    subscriber.cpp \
+    textedit.cpp \
+    updateuser.cpp
 
 HEADERS += \
+    SharedFile.h \
+    Symbol.h \
     buildermessageclient.h \
     client.h \
     connectionwaitingdialog.h \
@@ -46,11 +53,14 @@ HEADERS += \
     homepage.h \
     logindialog.h \
     mainwindowstacked.h \
+    presence.h \
     profileimage.h \
     profilepage.h \
     registrationdialog.h \
     startupstackeddialog.h \
-    textedit.h
+    subscriber.h \
+    textedit.h \
+    updateuser.h
 
 FORMS += \
     connectionwaitingdialog.ui \
@@ -68,6 +78,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resource_editor.qrc \
-    resources_login.qrc \
-    stylesheet.qrc
+    resources_login.qrc
     #resources.qrc

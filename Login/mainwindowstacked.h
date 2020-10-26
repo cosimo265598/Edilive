@@ -5,9 +5,8 @@
 #include <QMainWindow>
 #include <homepage.h>
 #include <profilepage.h>
-#include <QSizePolicy>
 
-#include "ui_mainwindowstacked.h"
+#include "subscriber.h"
 
 namespace Ui {
 class MainWindowStacked;

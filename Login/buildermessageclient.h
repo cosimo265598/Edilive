@@ -5,7 +5,8 @@
 #include <QJsonObject>
 #include <QImage>
 #include <QBuffer>
-#include <QCryptographicHash>
+
+#include "updateuser.h"
 
 class BuilderMessageClient
 {
@@ -13,6 +14,9 @@ public:
     static void MessageSendToServer(QByteArray& byte,QJsonDocument jsonToSend);
     static void MessageSendToServer(QByteArray& byte,QByteArray& appendByte);
 
+
+    static QJsonDocument MessageInsert(char car, std::vector<int> posf, QString id, QString siteid);
+    static QJsonDocument MessageDelete(QString docURI, char car, std::vector<int> pos, QString id, QString siteid);
 
     static QJsonDocument MessageTest(QString data);
     static QJsonDocument MessageLogin(QString username);
@@ -26,9 +30,12 @@ public:
     static QJsonDocument MessageOpenFile(QString nomefile);
     static QJsonDocument MessagedDeleteFile(QString nomefile);
 
-    // profile managemet
+    // profile management
     static QJsonDocument MessageSubscriberInfoRequest();
     static QJsonDocument MessagedUpdateProfileRequest(QString nickname, QString password, QByteArray serializedImage);
+
+    //TextEditor
+    static QJsonDocument MessageRemoveClientFromWorkspace(QString fileName);
 };
 
 #endif // BUILDERMESSAGECLIENT_H
