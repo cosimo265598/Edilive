@@ -26,10 +26,10 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">*{
+   <string notr="true">QStackedWidget{
 font-family: century gothic;
 font-size:24 px;
-background: url(:/icons_pack/fundo_login2.png)
+background: url(:/icons_pack/sfondo_sfumato.png)
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">

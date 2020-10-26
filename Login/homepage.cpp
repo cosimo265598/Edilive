@@ -137,13 +137,13 @@ void HomePage::loadImage(QByteArray serializedImage){
     bool ok = false;
 
     if (serializedImage == nullptr){
-        ok = pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         ok = pixmap.loadFromData(serializedImage);
     }
 
     if(ok){
-        ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+        ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
     }else{
          ui->accountImage->setText("IMAGE NOT FOUND");
     }

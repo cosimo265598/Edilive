@@ -21,42 +21,63 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QPushButton#pushButton_Logout{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }
 QPushButton#pushButton_aggiorna_vista{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }
 QPushButton#pushButton_delete{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }
 QPushButton#pushButton_new_file{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }
 QPushButton#pushButton_profile_page{
-background: red;
+background: #550A21;
 border-radius: 15px;
 color:white;
 }
+/*   hover */
+
+QPushButton#pushButton_Logout:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+QPushButton#pushButton_aggiorna_vista:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+QPushButton#pushButton_delete:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+QPushButton#pushButton_new_file:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+QPushButton#pushButton_profile_page:hover{
+color:#333;
+border-radius:15px;
+background: #49abff;
+}
+/*   other */
 
 QLabel{
 color:white;
 background: transparent;
 }
-
-QPushButton:hover{
-color:#333;
-border-radius:15px;
-background: #49abff;
-}
-
 
 QLineEdit{
 background: transparent;
@@ -68,12 +89,9 @@ border-bottom:1px solid white;
 *{
 font-family: century gothic;
 font-size:24 px;
-
 }
 
-QWidget{
-border-radius:15px;
-}</string>
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -286,6 +304,12 @@ border-radius:15px;
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="frameShadow">
+             <enum>QFrame::Sunken</enum>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -375,6 +399,9 @@ border-radius:15px;
            </property>
            <item row="0" column="2">
             <widget class="QWidget" name="fileExplorer" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
              <layout class="QGridLayout" name="gridLayout_2">
               <property name="topMargin">
                <number>9</number>
@@ -412,7 +439,7 @@ border-radius:15px;
                  <bool>false</bool>
                 </property>
                 <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                 <enum>QFrame::Sunken</enum>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

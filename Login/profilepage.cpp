@@ -54,7 +54,7 @@ void ProfilePage::loadImage(QByteArray serializedImage){
     bool ok = false;
 
     if (serializedImage == nullptr){
-        ok = pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         ok = pixmap.loadFromData(serializedImage);
     }
