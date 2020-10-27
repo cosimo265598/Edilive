@@ -221,12 +221,22 @@ QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nicknam
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageRemoveClientFromWorkspace(QString fileName)
+QJsonDocument BuilderMessageClient::MessagedCloseEditor(QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
+    objtosend.insert("type",20);
     objtosend.insert("auth",true);
-    objtosend.insert("fileName", fileName);
+     objtosend.insert("nomefile",fileName);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessageClient::MessageRemoveClientWorkspace(QString docURI)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("docURI", docURI);
     objtosend.insert("type",20);
     jsondoc.setObject(objtosend);
     return jsondoc;

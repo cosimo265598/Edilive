@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QLabel>
 #include <QDebug>
+#include <QRandomGenerator>
 
 
 #include "presence.h"
@@ -143,7 +144,6 @@ void TextEdit::closeEvent(QCloseEvent *e)
 
 void TextEdit::setupFileActions()
 {
-
     QToolBar *tb = addToolBar(tr("File Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
@@ -189,7 +189,6 @@ void TextEdit::setupFileActions()
 
     a = menu->addAction(tr("&Quit"), this, &QWidget::close);
     a->setShortcut(Qt::CTRL + Qt::Key_Q);
-
 }
 
 void TextEdit::setupEditActions()
@@ -832,8 +831,8 @@ void TextEdit::cursorPositionChanged()
     /////////////////////////////////
     //Da questo slot si può ricavare la posizione del cursore corrente
     //emit charInsertion(textEdit->textCursor().position());
-
     //qDebug() << "Cursor pos" << textEdit->textCursor().position();
+
     QTextCursor cursor = textEdit->textCursor();
     int pre= cursor.position();
     cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
@@ -868,29 +867,27 @@ void TextEdit::textChange(){
 
     if(ready==true){
         QTextCursor cursor = textEdit->textCursor();
+        int pre= cursor.position();
         cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
         cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
         QChar c =cursor.selectedText()[0];
-        qDebug()<<"the c is:"<<c<< " pos:"<<textEdit->textCursor().position()-1;
+        qDebug()<<"the c is:"<<c<< " pos:"<<textEdit->textCursor().position()-1<<" pre: "<<pre;
         if(!c.isNull())
-            emit localInsertionSignal(cursor.selectedText(),textEdit->textCursor().position()-1);
+            emit localInsertionSignal(cursor.selectedText(),pre-1);
     }
 
 }
-void TextEdit::fromServerInsert(QString c, int pos){
-    qDebug()<< "Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos;
+void TextEdit::fromServerInsert(QString c, int pos,QString user){
+    qDebug()<< "Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos
+            <<"  e' di "<<user;
     ready=false;
-    QTextCursor cursor = textEdit->textCursor();
-    int pre= cursor.position();
-    cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
-    cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
-
-    //qDebug()<<"the c is:"<<cursor.selectedText()<< " "<<cursor.charFormat();
-
-    cursor.setPosition(pre, QTextCursor::MoveAnchor);
-    Presence p=onlineUsers_map.find(this->subscriber->username).value();
-    p.cursor()->setPosition(pos);
+    Presence p=onlineUsers_map.find(user).value();
+    p.cursor()->clearSelection();
+    p.cursor()->setPosition(pos-1,QTextCursor::MoveAnchor); // va inserito pos
     p.cursor()->insertText(c);
+    //p.cursor()->setPosition(pos-1,QTextCursor::MoveAnchor); // va inserito pos
+
+    drawCursor(p);
     ready = true;
 }
 
@@ -997,31 +994,23 @@ void TextEdit::newPresence(qint32 userId, QString username, QImage image)
     qDebug() << "users" << onlineUsers_map.size();
 
     p.setAction(onlineAction);
-
     p.cursor()->setPosition(0);
+    drawCursor(p);
 }
 
-void TextEdit::removePresence(qint32 userId)
+void TextEdit::removePresence(QString username)
 {
-    /*
-    if (onlineUsers.contains(userId))
-    {
-        Presence& p = onlineUsers.find(userId).value();
+    if (onlineUsers_map.contains(username)){
+        Presence& p = onlineUsers_map.find(username).value();
 
         //Hide user cursor
         p.label()->clear();
 
         //Remove user icon from users toolbar
-        onlineUsersToolbar->removeAction(p.actionHighlightText());
+        onlineUsers->removeAction(p.actionHighlightText());
 
         //Remove from editor
-        onlineUsers.remove(userId);
+        onlineUsers_map.remove(username);
 
-        //Recompute user text highlighting
-        handleMultipleSelections();
     }
-    */
-
 }
-
-

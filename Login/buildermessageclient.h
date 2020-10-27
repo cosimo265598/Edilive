@@ -35,7 +35,8 @@ public:
     static QJsonDocument MessagedUpdateProfileRequest(QString nickname, QString password, QByteArray serializedImage);
 
     //TextEditor
-    static QJsonDocument MessageRemoveClientFromWorkspace(QString fileName);
+    static QJsonDocument MessagedCloseEditor(QString fileName);
+    static QJsonDocument MessageRemoveClientWorkspace(QString docURI);
 };
 
 #endif // BUILDERMESSAGECLIENT_H

@@ -56,53 +56,53 @@ void Client::onLoginRequest(QString username, QString password){
 }
 
 void Client::onRegistrationRequest(QString username, QString password){
-     user.username = username;
-     user.password = password;
+    user.username = username;
+    user.password = password;
 
     qDebug()<<"onRegistation request";
-     old_clientstatus=clientStatus;
-     this->clientStatus = RegistrationRequest;
-     m_webSocket.get()->open(this->urlForConnection);
+    old_clientstatus=clientStatus;
+    this->clientStatus = RegistrationRequest;
+    m_webSocket.get()->open(this->urlForConnection);
 }
 
 void Client::onConnected(){
     QByteArray out;
 
     switch(this->clientStatus){
-        case LoginRequest: {
-            old_clientstatus=clientStatus;
+    case LoginRequest: {
+        old_clientstatus=clientStatus;
+        BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
+        m_webSocket.get()->sendBinaryMessage(out);
+        break;
+    }
+    case RegistrationRequest: {
+        old_clientstatus=clientStatus;
+        BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(user.username,user.password));
+        m_webSocket.get()->sendBinaryMessage(out);
+        break;
+    }
+    case Disconnected: {
+        break;
+    }
+    case ReConnect:{
+        // make login again
+        qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
+        if(old_clientstatus==LoginRequest){
             BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
             m_webSocket.get()->sendBinaryMessage(out);
-            break;
+            old_clientstatus=LoginRequest;
         }
-        case RegistrationRequest: {
-            old_clientstatus=clientStatus;
+        else if(old_clientstatus==RegistrationRequest){
             BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(user.username,user.password));
             m_webSocket.get()->sendBinaryMessage(out);
-            break;
+            old_clientstatus=RegistrationRequest;
+        }else{
+            BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
+            m_webSocket.get()->sendBinaryMessage(out);
+            old_clientstatus=ReConnect;
         }
-        case Disconnected: {
-            break;
-        }
-        case ReConnect:{
-            // make login again
-            qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
-            if(old_clientstatus==LoginRequest){
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
-                m_webSocket.get()->sendBinaryMessage(out);
-                old_clientstatus=LoginRequest;
-            }
-            else if(old_clientstatus==RegistrationRequest){
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageRegisterAccount(user.username,user.password));
-                m_webSocket.get()->sendBinaryMessage(out);
-                old_clientstatus=RegistrationRequest;
-            }else{
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
-                m_webSocket.get()->sendBinaryMessage(out);
-                old_clientstatus=ReConnect;
-            }
         break;
-        }
+    }
     }
 }
 
@@ -114,22 +114,22 @@ void Client::resetUser(){
 void Client::onDisconnection(){
     qDebug() << "DISCONNECTED";
     switch(this->clientStatus){
-        case LoginRequest: {
-            emit loginFailure("Login failure, impossible to contact the server (DISCONNECTED)");
-            break;
-        }
-        case RegistrationRequest: {
-            emit registrationFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
-            break;
-        }
-        case Connected: {
-            break;
-        }
-        case ReConnect:{
-            break;
-        }
-        default:
-            return;
+    case LoginRequest: {
+        emit loginFailure("Login failure, impossible to contact the server (DISCONNECTED)");
+        break;
+    }
+    case RegistrationRequest: {
+        emit registrationFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
+        break;
+    }
+    case Connected: {
+        break;
+    }
+    case ReConnect:{
+        break;
+    }
+    default:
+        return;
     }
 }
 
@@ -170,7 +170,7 @@ void Client::subscriberInfoRequest(){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageSubscriberInfoRequest());
-     m_webSocket.get()->sendBinaryMessage(out);
+    m_webSocket.get()->sendBinaryMessage(out);
 }
 
 
@@ -223,16 +223,18 @@ void Client::startTextEditor(QString fileName)
 {
     textEditor= new TextEdit(0,&this->subscriber,&listUserOnWorkspace);
 
+    connect(textEditor, &TextEdit::close, this, &Client::onCloseTextEditor);
+
     QCoreApplication::setApplicationName("textEditor");
     textEditor->setAttribute(Qt::WA_DeleteOnClose);
 
     const QRect availableGeometry = textEditor->screen()->availableGeometry();
     textEditor->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     textEditor->move((availableGeometry.width() - textEditor->width()) / 2,
-            (availableGeometry.height() - textEditor->height()) / 2);
+                     (availableGeometry.height() - textEditor->height()) / 2);
 
     connect(textEditor, &TextEdit::localInsertionSignal, this, &Client::localInsertion);
-    connect(textEditor, &TextEdit::removeClientWorkspace, this, &Client::onRemoveClientFromWorkspace);
+    connect(textEditor, &TextEdit::removeClientWorkspace, this, &Client::onRemoveClientWorkspace);
     connect(this,&Client::updateListUsersConnected,textEditor,&TextEdit::onUpdateListUsersConnected);
 
     textEditor->show();
@@ -271,147 +273,148 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     qDebug() << jsonObj;
 
     switch (jsonObj["type"].toInt()) {
-        case 2:{   // message challange login
-            QString salt =jsonObj["salt"].toString();
-            QString nonce =jsonObj["nonce"].toString();
-            QByteArray out;
-            BuilderMessageClient::MessageSendToServer(
-                        out,
-                        BuilderMessageClient::MessageLoginUnlock(salt,nonce,user.password));
-            m_webSocket.get()->sendBinaryMessage(out);
-            break;
-        }
-        case 4:{    // message unlock login
-                old_clientstatus=clientStatus;
-                clientStatus=Connected;
-                qDebug()<<"Successfull login : old "<<old_clientstatus<<" new "<<clientStatus;
-
-                if(old_clientstatus==LoginRequest || old_clientstatus==RegistrationRequest){
-                    qDebug()<<"QUESTO IF ";
-                    this->stackedDialog->close();
-                    this->stackedDialog=nullptr;
-                    createMainWindowStacked();
-                    return;
-                }
-                if(old_clientstatus==ReConnect ){
-                    qDebug()<<"SECODNO IF ";
-
-                    if(stackedDialog!=nullptr){
-                        this->stackedDialog->close();
-                        this->stackedDialog=nullptr;
-                        createMainWindowStacked();
-                    }
-                }
-                resetUser();
-                qDebug()<<"created";
-                break;
-        }
-        case 5:{    // message  login error
-                waitingTimer->stop();
-                waitingDialog.hide();
-
-                resetUser();
-                emit loginFailure(jsonObj["error"].toString());
-                break;
-        }
-        case 8:{    // message account confimed
-                qDebug() << "Account created";
-                //this->clientStatus = Connected;
-                // Automatic login after correct registration
-                BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
-                m_webSocket.get()->sendBinaryMessage(out);
-                break;
-        }
-        case 9:{    // message account create error
-            qDebug() << "Account creation failure";
-            resetUser();
-            emit registrationFailure(jsonObj["error"].toString());
-            break;
-        }
-        case 10:{    // show dir/document for client
-            emit receivedFileHandlers(jsonObj["files"].toArray());
-            break;
-        }
-        case 13:{    // file gia presente
-            qDebug() << "Errore nella creazione del file";
-            emit newFileCreationFailure(jsonObj["error"].toString());
-            break;
-        }
-        case 11:{    // file in arrivo
-            QString fileName = jsonObj["fileName"].toString();
-            QString creatore = jsonObj["creator"].toString();
-
-            sf = new SharedFile(fileName.toStdString(), creatore.toStdString());
-            qDebug()<<"file in arrivo"<< fileName;
-
-            int last = 0;
-
-            while (!last){
-                QJsonDocument jsonDoc;
-                stream >> jsonDoc;
-                QJsonObject obj = jsonDoc.object();
-
-                last = obj["last"].toInt();
-
-                qDebug() << "Cosa mi arriva: " << obj["symbols"].toArray();
-                qDebug() << "ora inserisco";
-                for(auto symbol: obj["symbols"].toArray())
-                    this->standardInsert(symbol.toObject());
-                qDebug() << "Ho inserito tutto";
-            }
-
-            qDebug() << "Apro l'editor";
-            qDebug() << " connected client array "<< jsonObj["connected"].toArray();
-
-            for(auto i : jsonObj["connected"].toArray()){
-                subscriber_t s;
-                s.username= i.toObject().value("username").toString();
-                s.nickname = i.toObject().value("nickname").toString();
-                s.serializedImage= i.toObject().value("icon").toString().toLatin1().toBase64();
-                listUserOnWorkspace.append(s);
-            }
-            // Aperura editor per l'editing del file
-            this->startTextEditor(QDir().tempPath()+"/"+ fileName);
-
-            break;
-        }
-        case 17:{
-            qDebug()<<"load Info";
-            QByteArray serializedImage;
-            if(jsonObj["icon_present"].toBool()){
-                auto const encoded = jsonObj["icon"].toString().toLatin1();
-                serializedImage = QByteArray::fromBase64(encoded);
-            }else
-                serializedImage = nullptr;
-
-            subscriber.username = jsonObj["username"].toString();
-            subscriber.nickname = jsonObj["nickname"].toString();
-            subscriber.serializedImage = serializedImage;
-
-            emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
-            break;
-        }
-
-        case 19:{    // file not found
-            qDebug() << "Errore nella eliminazione del file";
-            //emit newFileCreationFailure(jsonObj["error"].toString());
-            break;
-        }
-        case 20:{
-            if(updateUser.nickname!=nullptr)
-                subscriber.nickname = updateUser.nickname;
-            if(updateUser.serializedImage!=nullptr)
-                subscriber.serializedImage = updateUser.serializedImage;
-
-            emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
-            resetUpdateUser();
+    case 2:{   // message challange login
+        QString salt =jsonObj["salt"].toString();
+        QString nonce =jsonObj["nonce"].toString();
+        QByteArray out;
+        BuilderMessageClient::MessageSendToServer(
+                    out,
+                    BuilderMessageClient::MessageLoginUnlock(salt,nonce,user.password));
+        m_webSocket.get()->sendBinaryMessage(out);
         break;
+    }
+    case 4:{    // message unlock login
+        old_clientstatus=clientStatus;
+        clientStatus=Connected;
+        qDebug()<<"Successfull login : old "<<old_clientstatus<<" new "<<clientStatus;
+
+        if(old_clientstatus==LoginRequest || old_clientstatus==RegistrationRequest){
+            qDebug()<<"QUESTO IF ";
+            this->stackedDialog->close();
+            this->stackedDialog=nullptr;
+            createMainWindowStacked();
+            return;
         }
+        if(old_clientstatus==ReConnect ){
+            qDebug()<<"SECODNO IF ";
+
+            if(stackedDialog!=nullptr){
+                this->stackedDialog->close();
+                this->stackedDialog=nullptr;
+                createMainWindowStacked();
+            }
+        }
+        resetUser();
+        qDebug()<<"created";
+        break;
+    }
+    case 5:{    // message  login error
+        waitingTimer->stop();
+        waitingDialog.hide();
+
+        resetUser();
+        emit loginFailure(jsonObj["error"].toString());
+        break;
+    }
+    case 8:{    // message account confimed
+        qDebug() << "Account created";
+        //this->clientStatus = Connected;
+        // Automatic login after correct registration
+        BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
+        m_webSocket.get()->sendBinaryMessage(out);
+        break;
+    }
+    case 9:{    // message account create error
+        qDebug() << "Account creation failure";
+        resetUser();
+        emit registrationFailure(jsonObj["error"].toString());
+        break;
+    }
+    case 10:{    // show dir/document for client
+        emit receivedFileHandlers(jsonObj["files"].toArray());
+        break;
+    }
+    case 13:{    // file gia presente
+        qDebug() << "Errore nella creazione del file";
+        emit newFileCreationFailure(jsonObj["error"].toString());
+        break;
+    }
+    case 11:{    // file in arrivo
+        QString fileName = jsonObj["fileName"].toString();
+        QString creatore = jsonObj["creator"].toString();
+
+        sf = new SharedFile(fileName.toStdString(), creatore.toStdString());
+        qDebug()<<"file in arrivo"<< fileName;
+
+        int last = 0;
+
+        while (!last){
+            QJsonDocument jsonDoc;
+            stream >> jsonDoc;
+            QJsonObject obj = jsonDoc.object();
+
+            last = obj["last"].toInt();
+
+            qDebug() << "Cosa mi arriva: " << obj["symbols"].toArray();
+            qDebug() << "ora inserisco";
+            for(auto symbol: obj["symbols"].toArray())
+                this->standardInsert(symbol.toObject());
+            qDebug() << "Ho inserito tutto";
+        }
+
+        qDebug() << "Apro l'editor";
+        qDebug() << " connected client array "<< jsonObj["connected"].toArray();
+
+        for(auto i : jsonObj["connected"].toArray()){
+            subscriber_t s;
+            s.username= i.toObject().value("username").toString();
+            s.nickname = i.toObject().value("nickname").toString();
+            s.serializedImage= i.toObject().value("icon").toString().toLatin1().toBase64();
+            listUserOnWorkspace.append(s);
+        }
+        // Aperura editor per l'editing del file
+        this->startTextEditor(QDir().tempPath()+"/"+ fileName);
+
+        break;
+    }
+    case 17:{
+        qDebug()<<"load Info";
+        QByteArray serializedImage;
+        if(jsonObj["icon_present"].toBool()){
+            auto const encoded = jsonObj["icon"].toString().toLatin1();
+            serializedImage = QByteArray::fromBase64(encoded);
+        }else
+            serializedImage = nullptr;
+
+        subscriber.username = jsonObj["username"].toString();
+        subscriber.nickname = jsonObj["nickname"].toString();
+        subscriber.serializedImage = serializedImage;
+
+        emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
+        break;
+    }
+
+    case 19:{    // file not found
+        qDebug() << "Errore nella eliminazione del file";
+        //emit newFileCreationFailure(jsonObj["error"].toString());
+        break;
+    }
+    case 20:{
+        if(updateUser.nickname!=nullptr)
+            subscriber.nickname = updateUser.nickname;
+        if(updateUser.serializedImage!=nullptr)
+            subscriber.serializedImage = updateUser.serializedImage;
+
+        emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
+        resetUpdateUser();
+        break;
+    }
     case 50:{//inserimento standard
         qDebug()<<"INSERIMENTO DA SERVER";
         char c = jsonObj["car"].toString().toStdString()[0];
 
         qDebug() << "char: " << c;
+        qDebug() << jsonObj;
 
         std::string id=jsonObj["id"].toString().toStdString();
         std::string posfraz=jsonObj["posfraz"].toString().toStdString();
@@ -439,20 +442,19 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         //std::string iniziale=jsonObj["iniziale"].toString().toStdString();
         //test
         qDebug() << "cosa contengo" << QString::fromStdString(sf->to_string());
-        /*if(iniziale=="si"){
-        QByteArray data;
-        QDataStream out(&data, QIODevice::WriteOnly | QIODevice::Append);
-        out.setVersion(QDataStream::Qt_5_13);
-        out << QString::fromStdString(sf->to_string());
-        }*/
+
         int pos=sf->localInsert(s, subscriber.username.toStdString()); //INSERIMENTO NELLA
         //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
         std::string stringhetta(1,c);
-        emit textEditor->fromServerInsertSignal(QString::fromStdString(stringhetta),pos);
-            //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
+        ////
+        QString st(jsonObj["id"].toString());
+        QString u=st.split(jsonObj["siteid"].toString()).at(1).split("_").at(1);
+        qDebug()<<"QUESTO CARATTERE E' DI "<< u;
+        ///
+        emit textEditor->fromServerInsertSignal(QString::fromStdString(stringhetta),pos,u);
+        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL S
 
-
-    break;
+        break;
     }
     case 51:{ //inserimento con conflitto
         QString stringa("Messaggio inserimento con conflitto carattere: "+jsonObj["car"].toString());
@@ -504,7 +506,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         sf->localInsert(sn, subscriber.username.toStdString());
         //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE LA CANCELLAZIONE DALL'EDITOR DI SYMBOL SO
         //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL SN
-    break;
+        break;
     }
     case 52:{ //cancellazione
         QString stringa("Messaggio cancellazione carattere: "+jsonObj["car"].toString());
@@ -533,10 +535,10 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         Symbol s(c,siteid,v,id);
         sf->localErase(s,subscriber.username.toStdString());
         //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE LA CANCELLAZIONE DALL'EDITOR DI SYMBOL S
-    break;
+        break;
     }
     case 100:{
-        qDebug()<< "CASE 100 - update inset wokrspace";
+        qDebug()<< "CASE 100 - update inset workspace";
         subscriber_t s;
         s.username = jsonObj["username"].toString();
         s.nickname = jsonObj["nickname"].toString();
@@ -545,7 +547,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         emit updateListUsersConnected(listUserOnWorkspace.size(),s.username,QImage::fromData(s.serializedImage));
         break;
     }
-        default:         return;
+    default:         return;
     }
 }
 
@@ -601,6 +603,20 @@ void Client::onUpdateProfileRequest(updateUser_t updateUser){
     this->m_webSocket->sendBinaryMessage(out);
 }
 
+void Client::onCloseTextEditor()
+{
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessagedCloseEditor(QString::fromStdString(sf->getSite())));
+
+    //Penso vada meglio un sf puntatore, in modo da cancellarlo in questo momento.
+
+    qDebug() << "Segnalo che non sono più nell'editor";
+
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
 void Client::resetUpdateUser(){
     updateUser.username.clear();
     updateUser.nickname.clear();
@@ -630,46 +646,6 @@ void Client::closeControll()
         qDebug()<<"Connection recovered";
     }
 }
-
-
-
-/*
-//Serve in effettivo salvare l'immagine in locale?
-QByteArray Client::saveAccountImage(QString serializedImage){
-
-     auto const encoded = serializedImage.toLatin1();
-     QImage image;
-     image.loadFromData(QByteArray::fromBase64(encoded), "PNG");
-
-     // DA SISTEMARE IL PATH in modo che sia indipendente (con currentPath, ritorna il path con la cartella temporanea di debug)
-     QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png";
-
-     if(QFile::exists(path)){
-         qDebug() << "esiste";
-         QFile file(path);
-         file.setPermissions(file.permissions() |
-                             QFileDevice::WriteOwner |
-                             QFileDevice::WriteUser |
-                             QFileDevice::WriteGroup |
-                             QFileDevice::WriteOther);
-         qDebug() << "Rimosso" << file.remove();
-     }
-
-     QFile file(path);
-
-     if(file.open(QIODevice::ReadWrite)) {
-        image.save(&file, "PNG");
-     }else {
-        qDebug() << "Can't open file";
-     }
-
-     file.seek(0);
-     QByteArray out = file.readAll();
-     file.close();
-     return out;
-}
-
-*/
 
 void Client::localInsertion(QString c, int pos){ //INSERIMENTO DA EDITOR
 
@@ -718,12 +694,12 @@ void Client::localInsertion(QString c, int pos){ //INSERIMENTO DA EDITOR
     this->m_webSocket->sendBinaryMessage(out);
 }
 
-void Client::onRemoveClientFromWorkspace(QString fileName)
+void Client::onRemoveClientWorkspace(QString docURI)
 {
     qDebug() << "Mi rimuovo";
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessageRemoveClientFromWorkspace(fileName));
+                BuilderMessageClient::MessageRemoveClientWorkspace(docURI));
     this->m_webSocket->sendBinaryMessage(out);
 }

@@ -78,13 +78,13 @@ public:
 
 
 public slots:
-    void fromServerInsert(QString c, int pos);
+    void fromServerInsert(QString c, int pos,QString user);
     void fileNew();
     void textChange();
     void onUpdateListUsersConnected(int id, QString username, QImage img);
 signals:
     //void charInsertion(int charPos);
-    void fromServerInsertSignal(QString c, int pos);
+    void fromServerInsertSignal(QString c, int pos,QString username);
     void localInsertionSignal(QString c, int pos);
     void removeClientWorkspace(QString);
 
@@ -134,7 +134,7 @@ private:
     void alignmentChanged(Qt::Alignment a);
     void drawCursor(const Presence& p);
     void newPresence(qint32 userId, QString username, QImage image);
-    void removePresence(qint32 userId);
+    void removePresence(QString username);
 
 
     QAction *actionSave;

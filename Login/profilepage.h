@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QDialogButtonBox>
 #include <QPainter>
-#include <profileimage.h>
 #include <QWebSocket>
 #include <QPixmap>
 #include <QBitmap>

@@ -80,8 +80,8 @@ void ConnectionWaitingDialog::timeout()
         qDebug()<<"Stop timer";
     }
     else{
-            ui->progressBar->setValue((100/MAX_RETRY)*number_retry +1);
-            setNumberRetry();
-            emit tryToConnectAgain();
+        ui->progressBar->setValue((100/MAX_RETRY)*number_retry +1);
+        setNumberRetry();
+        emit tryToConnectAgain();
     }
 }

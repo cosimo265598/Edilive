@@ -34,7 +34,6 @@ SOURCES += \
     main.cpp \
     mainwindowstacked.cpp \
     presence.cpp \
-    profileimage.cpp \
     profilepage.cpp \
     registrationdialog.cpp \
     startupstackeddialog.cpp \
@@ -54,7 +53,6 @@ HEADERS += \
     logindialog.h \
     mainwindowstacked.h \
     presence.h \
-    profileimage.h \
     profilepage.h \
     registrationdialog.h \
     startupstackeddialog.h \

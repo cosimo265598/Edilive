@@ -80,13 +80,14 @@ private slots:
     void onCreateNewFileRequest(QString fileName);
     void onDeleteFileRequest(QString fileName);
     void onUpdateProfileRequest(updateUser_t);
+    void onCloseTextEditor();
 
 public slots:
     void ping();
     void errorSocket(QAbstractSocket::SocketError error);
     void closeControll();
     void localInsertion(QString c, int pos);
-    void onRemoveClientFromWorkspace(QString fileName);
+    void onRemoveClientWorkspace(QString docURI);
 
 private:
     MainWindowStacked *mainWindowStacked=nullptr;
