@@ -75,6 +75,8 @@ public slots:
     void onInsertionChar(QWebSocket *, Symbol);
     void onDeletionChar(QWebSocket *, Symbol);
     void onRemoveClientFromWorkspace(QWebSocket *, QString);
+    void onAccountUpdateError(QWebSocket *, QString);
+
 };
 
 #endif // PROCESSOPERATION_H

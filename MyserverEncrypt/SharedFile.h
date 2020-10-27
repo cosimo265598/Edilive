@@ -73,7 +73,6 @@ public:
     std::string getSite();
 
     std::vector<Symbol> getSymbols();
-
 };
 
 

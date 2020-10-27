@@ -47,9 +47,6 @@ const QString rsrcPath = ":/images/win";
 TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscriber_t>* listUsers)
     : QMainWindow(parent),subscriber(subscriber),listUsers(listUsers)
 {
-#ifdef Q_OS_MACOS
-    setUnifiedTitleAndToolBarOnMac(true);
-#endif
     ready=false;
     setWindowTitle(QCoreApplication::applicationName());
 
@@ -102,7 +99,7 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
     connect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
 
 
-    //Cipboard: temporal storage of data to be copied, pasted...
+    //Clipboard: temporal storage of data to be copied, pasted...
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &TextEdit::clipboardDataChanged);
 
     textEdit->setFocus();
@@ -120,13 +117,6 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
         newPresence(j,i->username,img);
         j++;
     }
-#ifdef Q_OS_MACOS
-    // Use dark text on light background on macOS, also in dark mode.
-    QPalette pal = textEdit->palette();
-    pal.setColor(QPalette::Base, QColor(Qt::white));
-    pal.setColor(QPalette::Text, QColor(Qt::black));
-    textEdit->setPalette(pal);
-#endif
 }
 
 void TextEdit::closeEvent(QCloseEvent *e)
@@ -891,11 +881,12 @@ void TextEdit::fromServerInsert(QString c, int pos,QString user){
     ready = true;
 }
 
-void TextEdit::onUpdateListUsersConnected(int id, QString username, QImage img)
+void TextEdit::onAddConnectedUser(int id, QString username, QImage img)
 {
     qDebug()<<"TEXT EDIT - signal on update user";
     newPresence(id,username,img);
 }
+
 void TextEdit::clipboardDataChanged()
 {
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
@@ -998,9 +989,16 @@ void TextEdit::newPresence(qint32 userId, QString username, QImage image)
     drawCursor(p);
 }
 
+void TextEdit::onRemoveConnectedUser(QString username){
+    this->removePresence(username);
+}
+
 void TextEdit::removePresence(QString username)
 {
+
     if (onlineUsers_map.contains(username)){
+        qDebug() << "Sono: " << username << " mi rimuovo";
+
         Presence& p = onlineUsers_map.find(username).value();
 
         //Hide user cursor

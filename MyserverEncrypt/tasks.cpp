@@ -180,6 +180,8 @@ void Tasks::serverOpenDirOfClient()
 void Tasks:: serverUpdateProfileClient(){
     qDebug()<<"segnale di modifica dati profilo ricevuto";
 
+    ServerDatabase database;
+
     QString nickname = request["nickname"].toString();
     QString password = request["password"].toString();
     QString stringifiedImage = request["image"].toString();
@@ -189,8 +191,41 @@ void Tasks:: serverUpdateProfileClient(){
     QImage image;
     image.loadFromData(QByteArray::fromBase64(stringifiedImage.toLatin1()));
 
-    users[client->getUsername()].update(nickname, password, image);
+    UserData user = users[client->getUsername()];
+    user.update(nickname, password, image);
 
+    try {
+
+        database.open(defaultnamedb,threadId,ui);
+
+        //UserData user(database.readUser(client->getUsername()));
+        /*
+        if(user.isEmpty()){
+            emit accountCreationError(socket, "Username already exist");
+            return;
+        }
+        */
+
+    }  catch (DatabaseReadException& re ) {
+        emit printUiServer("Databaseread problem during the query execution");
+        emit accountCreationError(socket, "Error database sever during registration phase");
+        emit socketAbort(socket);
+
+        return;
+    }
+
+
+    try
+    {	// Add the new user record to the server database
+        database.updateUser(user);
+
+    }catch (DatabaseException& dbe) {
+        emit printUiServer(dbe.what());
+        emit accountUpdateError(socket, "Update Error");
+        return;
+    }
+
+    users[client->getUsername()] = user;
     emit accountUpdateSuccess(socket, "Update success");
 }
 
@@ -284,8 +319,6 @@ void Tasks::serverOpenFile()
     qDebug() << "Numero Workspace: " << workspaces.size();
 
     emit openFile(socket, fileName);
-
-    ////////
 }
 
 void Tasks::serverInsertionChar(){
@@ -347,8 +380,16 @@ void Tasks::serverDeleteChar(){
 
 void Tasks::serverRemoveClientFromWorkspace(){
     qDebug() << "Invio al mainwindow";
-    qDebug() << request;
-    emit removeClientFromWorkspace(socket, request["fileName"].toString());
+    QString fileName = request["fileName"].toString();
+
+    workspaces[fileName]->removeClient(socket);
+    qDebug() << "OK rimosso client,  n client: " << workspaces[fileName]->getClients().size() << "In workspace: " << fileName;
+    if(workspaces[fileName]->getClients().size()<=0){
+         this->workspaces.remove(fileName);
+         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
+    }
+    else
+        emit removeClientFromWorkspace(socket, fileName); // Remove the current client from the other client still sharing the <fileName> file
 }
 
 

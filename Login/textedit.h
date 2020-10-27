@@ -81,7 +81,9 @@ public slots:
     void fromServerInsert(QString c, int pos,QString user);
     void fileNew();
     void textChange();
-    void onUpdateListUsersConnected(int id, QString username, QImage img);
+    void onAddConnectedUser(int id, QString username, QImage img);
+    void onRemoveConnectedUser(QString username);
+
 signals:
     //void charInsertion(int charPos);
     void fromServerInsertSignal(QString c, int pos,QString username);

@@ -113,7 +113,7 @@ void ServerDatabase::insertUser(const UserData& user)
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
-    user.getIcon().save(&buffer, "PNG");	// writes image into the bytearray in PNG format
+    user.getIcon().save(&buffer);	// writes image into the bytearray in PNG format
 
     qInsertNewUser.bindValue(":username", user.getUsername());
     qInsertNewUser.bindValue(":id", user.getUserId());
@@ -136,7 +136,7 @@ void ServerDatabase::updateUser(const UserData& user)
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
-    user.getIcon().save(&buffer, "PNG");	// writes image into the bytearray in PNG format
+    user.getIcon().save(&buffer);
 
     qUpdateUser.bindValue(":username", user.getUsername());
     qUpdateUser.bindValue(":nickname", user.getNickname());

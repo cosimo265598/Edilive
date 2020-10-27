@@ -102,7 +102,7 @@ void ProcessOperation::onAccountCreationError(QWebSocket * socket, QString error
 
     QByteArray data;
     BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageAccountError(errorMessage));
+                data,BuilderMessage::MessageAccountCreationError(errorMessage));
     socket->sendBinaryMessage(data);
 }
 
@@ -168,8 +168,6 @@ void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
     BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName, client->getUsername(),  workspaces[fileName].get()->getClients())); //DA SISTEMARE CON VERO CREATORE
     BuilderMessage::MessageSendToClient(data, workspaces[fileName].get()->getSharedFile());
     socket->sendBinaryMessage(data);
-
-
 
     qDebug()<< "<MAIN WINDOWS> voglio updatare tutti ";
     for(QSharedPointer<Client> cl : workspaces[fileName]->getClients()){
@@ -290,13 +288,25 @@ void ProcessOperation::onDeletionChar(QWebSocket *clientSocket, Symbol s){
 void ProcessOperation::onRemoveClientFromWorkspace(QWebSocket *clientSocket, QString fileName)
 {
     workspaces[fileName]->removeClient(clientSocket);
-
-    qDebug() << "OK rimosso client,  n client: " << workspaces[fileName]->getClients().size() << "In workspace: " << fileName;
-
-    if(workspaces[fileName]->getClients().size()<=0){
-         this->workspaces.remove(fileName);
-         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
+    QString caller =clients[clientSocket]->getUsername();
+    for(auto cl : workspaces[fileName]->getClients()){
+        qDebug() << "Mi devo rimuovere dagli altri";
+        if(cl->getUsername()!=caller){
+            QByteArray data;
+            BuilderMessage::MessageSendToClient(
+                        data,BuilderMessage::MessageRemoveClientFromWorkspace(caller));
+            cl->getSocket()->sendBinaryMessage(data);
+        }
     }
+}
+
+void ProcessOperation::onAccountUpdateError(QWebSocket *clientSocket, QString error)
+{
+    QByteArray data;
+
+    BuilderMessage::MessageSendToClient(
+                data,BuilderMessage::MessageAccountUpdateError(error));
+    clientSocket->sendBinaryMessage(data);
 }
 
 void ProcessOperation::onSocketAbort(QWebSocket *clientSocket)

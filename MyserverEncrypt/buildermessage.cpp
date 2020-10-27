@@ -212,7 +212,7 @@ QJsonDocument BuilderMessage::MessageLoginError(QString data)
 
 }
 
-QJsonDocument BuilderMessage::MessageAccountError(QString data)
+QJsonDocument BuilderMessage::MessageAccountCreationError(QString data)
 {
     QJsonDocument jsondoc;
     QJsonObject json;
@@ -311,6 +311,16 @@ QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickn
     return jsondoc;
 }
 
+QJsonDocument BuilderMessage::MessageAccountUpdateError(QString error)
+{
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",21);
+    json.insert("error",error);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+
 QJsonDocument BuilderMessage::MessageFileDeletionError(QString error)
 {
     QJsonDocument jsondoc;
@@ -358,3 +368,13 @@ QJsonDocument BuilderMessage::MessageInsertClientWorkspace(QString username, QSt
     return jsondoc;
 
 }
+
+QJsonDocument BuilderMessage::MessageRemoveClientFromWorkspace(QString username){
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",101);
+    json.insert("username", username);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+

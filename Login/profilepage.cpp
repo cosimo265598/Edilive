@@ -44,7 +44,16 @@ void ProfilePage::on_buttonBox_ok_cancel_rejected()
 
 void ProfilePage::on_pushButton_returnToHome_clicked()
 {
-    emit returnToHomeClicked();
+    if(updateUser.nickname != nullptr || updateUser.password != nullptr || updateUser.serializedImage != nullptr){
+        if(QMessageBox::critical(this, tr("WARNING"),"Delete changes? The operation will not reversible",QMessageBox::Ok, QMessageBox::Cancel ) == 0x00000400){
+            resetUpdateUser();
+            emit resetSubscriberInfo();
+            emit returnToHomeClicked();
+        }
+    }
+    else{
+        emit returnToHomeClicked();
+    }
 }
 
 void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
@@ -53,22 +62,29 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
     loadImage(serializedImage);
 }
 
+void ProfilePage:: onAccountUpdateError(QString message)
+{
+    resetUpdateUser();
+    QMessageBox::critical(this, tr("WARNING"),message,QMessageBox::Ok);
+    return;
+}
+
 
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
-        pixmap.load(QDir().homePath()+ "/GIT_Saverio/myservertest/Login/images/default.png");
+        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
-        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
+        pixmap.loadFromData(serializedImage);
     }
 
-    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    ui->accountImage->setPixmap( pixmap.scaled(150 ,150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
 
 void ProfilePage::on_pushButton_changeImage_clicked()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image (PNG format)"), QDir::homePath(), tr("Image Files (*.png)"));
+    QString path = QFileDialog::getOpenFileName(this, tr("Choose an Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.jpeg)"));
     if(path!=nullptr){
         QFile file(path);
         QPixmap pixmap;

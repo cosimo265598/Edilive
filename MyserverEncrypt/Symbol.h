@@ -19,7 +19,6 @@ public:
     std::string getId();
     std::string getFloatStringPosFraz();
 
-
 };
 
 #endif // SYMBOL_H

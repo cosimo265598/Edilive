@@ -106,6 +106,7 @@ signals:
     void openDirOfClient(QWebSocket*, QJsonArray);
     void updateProfileClient(QWebSocket*, QJsonArray);
     void accountUpdateSuccess(QWebSocket*, QString);
+    void accountUpdateError(QWebSocket*, QString);
     void personalDataOfClient(QWebSocket*, QString, QString, QImage);
     void fileCreationError(QWebSocket*, QString);
     void fileDeletionError(QWebSocket*, QString);

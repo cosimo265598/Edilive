@@ -46,6 +46,7 @@ private slots:
 
 public slots:
     void onLoadSubscriberInfo(QString, QString, QByteArray);
+    void onAccountUpdateError(QString);
 
 private:
     Ui::ProfilePage *ui;

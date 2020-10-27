@@ -157,6 +157,7 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
     connect(this, &Client::updateSuccess, mainWindowStacked, &MainWindowStacked::updateSuccess);
     connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
+    connect(this, &Client::accountUpdateError, mainWindowStacked, &MainWindowStacked::accountUpdateError);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -223,8 +224,6 @@ void Client::startTextEditor(QString fileName)
 {
     textEditor= new TextEdit(0,&this->subscriber,&listUserOnWorkspace);
 
-    connect(textEditor, &TextEdit::close, this, &Client::onCloseTextEditor);
-
     QCoreApplication::setApplicationName("textEditor");
     textEditor->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -235,7 +234,8 @@ void Client::startTextEditor(QString fileName)
 
     connect(textEditor, &TextEdit::localInsertionSignal, this, &Client::localInsertion);
     connect(textEditor, &TextEdit::removeClientWorkspace, this, &Client::onRemoveClientWorkspace);
-    connect(this,&Client::updateListUsersConnected,textEditor,&TextEdit::onUpdateListUsersConnected);
+    connect(this,&Client::addConnectedUser,textEditor,&TextEdit::onAddConnectedUser);
+    connect(this, &Client::removeConnectedUser, textEditor, &TextEdit::onRemoveConnectedUser);
 
     textEditor->show();
 
@@ -409,6 +409,14 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         resetUpdateUser();
         break;
     }
+    case 21:{ // Update account error
+
+        qDebug() << "Update Account error";
+        resetUpdateUser();
+        emit accountUpdateError(jsonObj["error"].toString());
+    }
+
+
     case 50:{//inserimento standard
         qDebug()<<"INSERIMENTO DA SERVER";
         char c = jsonObj["car"].toString().toStdString()[0];
@@ -544,9 +552,16 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         s.nickname = jsonObj["nickname"].toString();
         s.serializedImage = jsonObj["icon"].toString().toLatin1().toBase64();
         listUserOnWorkspace.append(s);
-        emit updateListUsersConnected(listUserOnWorkspace.size(),s.username,QImage::fromData(s.serializedImage));
+        emit addConnectedUser(listUserOnWorkspace.size(),s.username,QImage::fromData(s.serializedImage));
         break;
     }
+
+    case 101:{
+        qDebug()<< "CASE 101 - update inset workspace";
+        emit removeConnectedUser(jsonObj["username"].toString());
+        break;
+    }
+
     default:         return;
     }
 }
@@ -600,20 +615,6 @@ void Client::onUpdateProfileRequest(updateUser_t updateUser){
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessagedUpdateProfileRequest(updateUser.nickname, updateUser.password, updateUser.serializedImage));
-    this->m_webSocket->sendBinaryMessage(out);
-}
-
-void Client::onCloseTextEditor()
-{
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessagedCloseEditor(QString::fromStdString(sf->getSite())));
-
-    //Penso vada meglio un sf puntatore, in modo da cancellarlo in questo momento.
-
-    qDebug() << "Segnalo che non sono più nell'editor";
-
     this->m_webSocket->sendBinaryMessage(out);
 }
 
@@ -694,12 +695,12 @@ void Client::localInsertion(QString c, int pos){ //INSERIMENTO DA EDITOR
     this->m_webSocket->sendBinaryMessage(out);
 }
 
-void Client::onRemoveClientWorkspace(QString docURI)
+void Client::onRemoveClientWorkspace(QString fileName)
 {
     qDebug() << "Mi rimuovo";
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessageRemoveClientWorkspace(docURI));
+                BuilderMessageClient::MessageRemoveClientWorkspace(fileName));
     this->m_webSocket->sendBinaryMessage(out);
 }

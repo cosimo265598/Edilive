@@ -80,7 +80,6 @@ private slots:
     void onCreateNewFileRequest(QString fileName);
     void onDeleteFileRequest(QString fileName);
     void onUpdateProfileRequest(updateUser_t);
-    void onCloseTextEditor();
 
 public slots:
     void ping();
@@ -125,6 +124,8 @@ signals:
     void newFileCreationFailure(QString errorMessage);
     void updateSuccess();
     void refreshText(QString);
-    void updateListUsersConnected(int id,QString username,QImage img);
+    void addConnectedUser(int id,QString username,QImage img);
+    void removeConnectedUser(QString);
+    void accountUpdateError(QString);
 };
 #endif // CLIENT_H

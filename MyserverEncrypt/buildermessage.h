@@ -30,7 +30,7 @@ public:
     static QJsonDocument MessageChallege(QString salt, QString nonce);
     static QJsonDocument MessageChallegePassed(QString data);
     static QJsonDocument MessageLoginError(QString data);
-    static QJsonDocument MessageAccountError(QString data);
+    static QJsonDocument MessageAccountCreationError(QString data);
     static QJsonDocument MessageAccountConfirmed(QString data);
 
     static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles);
@@ -40,8 +40,10 @@ public:
     static QJsonDocument MessageFileCreationSuccess(QString username,QString nickname,QImage icon);//
 
     static QJsonDocument MessageAccountInfo(QString username,QString nickname,QImage icon);
+    static QJsonDocument MessageAccountUpdateError(QString);
     static QJsonDocument MessageAccountUpdateSuccess(QString);
     static QJsonDocument MessageInsertClientWorkspace(QString username, QString nickname, QImage ico);
+    static QJsonDocument MessageRemoveClientFromWorkspace(QString username);
 };
 
 

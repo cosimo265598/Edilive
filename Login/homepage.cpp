@@ -139,10 +139,10 @@ void HomePage::loadImage(QByteArray serializedImage){
         pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
         qDebug() << "load";
-        pixmap.loadFromData(serializedImage,"PNG"); //Check if PNG, what happens if not?
+        pixmap.loadFromData(serializedImage);
     }
 
-    ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
 

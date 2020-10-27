@@ -37,6 +37,7 @@ signals:
     void updateProfileRequest(updateUser_t);
     void updateSuccess();
     void resetSubscriberInfo();
+    void accountUpdateError(QString);
 };
 
 #endif // MAINWINDOWSTACKED_H
