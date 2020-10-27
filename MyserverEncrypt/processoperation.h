@@ -70,7 +70,7 @@ public slots:
     void onPersonalDataOfClient(QWebSocket* , QString, QString, QImage);
     void onFileCreationError(QWebSocket* , QString);
     void onFileDeletionError(QWebSocket* , QString);
-    void onOpenFile(QWebSocket* , QString);
+    void onOpenFile(QWebSocket*, QString);
     void onSocketAbort(QWebSocket*);
     void onInsertionChar(QWebSocket *, Symbol);
     void onDeletionChar(QWebSocket *, Symbol);

@@ -22,9 +22,9 @@
 
 #define documentable "CREATE TABLE \"DocEditors\" (\
                      \"Username\"	TEXT NOT NULL,\
-                     \"DocURI\"	TEXT NOT NULL,\
+                     \"FileName\"	TEXT NOT NULL,\
                      FOREIGN KEY(\"Username\") REFERENCES \"Users\"(\"Username\") ON UPDATE CASCADE ON DELETE CASCADE,\
-                     PRIMARY KEY(\"Username\", \"DocURI\"));"
+                     PRIMARY KEY(\"Username\", \"FileName\"));"
 
 #define defaultnamedb "sql_for_server"
 
@@ -67,16 +67,16 @@ public:
 
     void insertUser(const UserData& user);
     void updateUser(const UserData& user);
-    void addDocToUser(QString username, QString uri);
-    void removeDocFromUser(QString username, QString uri);
-    void removeDoc(QString uri);
+    void addDocToUser(QString username, QString fileName);
+    void removeDocFromUser(QString username, QString fileName);
+    void removeDoc(QString fileName);
     void removeDatabase(QString connectionName);
     int getMaxUserID();
     QList<UserData> readUsersList();
     UserData readUser(QString username);
     QStringList readUserDocuments(QString username);
-    QStringList readDocumentURIs();
-    int countDocEditors(QString docURI);
+    QStringList readDocuments();
+    int countDocEditors(QString fileName);
 signals:
      void printUiServerDatabase(const QString&);
 };

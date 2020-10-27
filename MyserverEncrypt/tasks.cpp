@@ -257,9 +257,35 @@ void Tasks::serverDeleteFileForClient()
 void Tasks::serverOpenFile()
 {
     qDebug()<<"Segnale apertura file ricevuto";
-    QString fileName = request.value("nomefile").toString();
+    QString fileName = request["nomefile"].toString();
+
+    QSharedPointer<Client> client = clients[socket];
+    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
+
+    QFile filecreate(path);
+    if(!QFile(path).exists()){
+       return; // Messaggio errore file not found o qualcosa del genere
+    }
+
+    // OPERAZIONI SUL WORKSPACE, MI UNISCO AD UN WORKSPACE OPPURE LO CREO E MI UNISCO COME PRIMO CLIENT
+    //Al posto del fileName mettere docURI
+
+    if(!workspaces.contains(fileName)){
+        //QSharedPointer<Workspace> workspace(new Workspace(nullptr, fileName));
+        workspaces.insert(fileName, QSharedPointer<Workspace>(new Workspace(nullptr, path)));
+        workspaces[fileName].get()->addClient(socket, client);
+
+    }
+    else{
+        qDebug() << "Adding current client to existing workspace";
+        workspaces[fileName].get()->addClient(socket, client);
+    }
+
+    qDebug() << "Numero Workspace: " << workspaces.size();
 
     emit openFile(socket, fileName);
+
+    ////////
 }
 
 void Tasks::serverInsertionChar(){

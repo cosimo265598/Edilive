@@ -160,36 +160,16 @@ void ProcessOperation::onFileDeletionError(QWebSocket *socket, QString errorMess
     socket->sendBinaryMessage(data);
 }
 
-void ProcessOperation::onOpenFile(QWebSocket *socket, QString fileName)
+void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
 {
-    QSharedPointer<Client> client = clients[socket];
-    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
-    QFile filecreate(path);
-    if(!QFile(path).exists()){
-       return; // Messaggio errore file not found o qualcosa del genere
-    }
-
-    // OPERAZIONI SUL WORKSPACE, MI UNISCO AD UN WORKSPACE OPPURE LO CREO E MI UNISCO COME PRIMO CLIENT
-    //Al posto del fileName mettere docURI
-
-    if(!workspaces.contains(fileName)){
-        //QSharedPointer<Workspace> workspace(new Workspace(nullptr, fileName));
-        workspaces.insert(fileName, QSharedPointer<Workspace>(new Workspace(nullptr, path)));
-        workspaces[fileName].get()->addClient(socket, client);
-
-    }
-    else{
-        qDebug() << "Adding current client to existing workspace";
-        workspaces[fileName].get()->addClient(socket, client);
-    }
-
-    qDebug() << "Numero Workspace: " << workspaces.size();
-
+    Client *client = clients[socket].get();
     QByteArray data;
     BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName, client->getUsername(),  workspaces[fileName].get()->getClients())); //DA SISTEMARE CON VERO CREATORE
     BuilderMessage::MessageSendToClient(data, workspaces[fileName].get()->getSharedFile());
     socket->sendBinaryMessage(data);
+
+
 
     qDebug()<< "<MAIN WINDOWS> voglio updatare tutti ";
     for(QSharedPointer<Client> cl : workspaces[fileName]->getClients()){
@@ -197,7 +177,6 @@ void ProcessOperation::onOpenFile(QWebSocket *socket, QString fileName)
             QByteArray data;
             BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageInsertClientWorkspace(client->getUser()->getUsername(),client->getUser()->getNickname(),client->getUser()->getIcon())); //DA SISTEMARE CON VERO CREATORE
             cl->getSocket()->sendBinaryMessage(data);
-
         }
         qDebug()<<data;
     }

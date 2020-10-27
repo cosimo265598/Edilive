@@ -143,6 +143,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
 
 void TextEdit::setupFileActions()
 {
+
     QToolBar *tb = addToolBar(tr("File Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
@@ -188,6 +189,7 @@ void TextEdit::setupFileActions()
 
     a = menu->addAction(tr("&Quit"), this, &QWidget::close);
     a->setShortcut(Qt::CTRL + Qt::Key_Q);
+
 }
 
 void TextEdit::setupEditActions()

@@ -45,7 +45,7 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
         QSqlQuery docTable(QSqlDatabase::database(connectionName));								  // Query to create the DocEditors table
         if (!docTable.exec(documentable))
         {
-            emit printUiServerDatabase("----- ERORRE creazione tabella DOCURI "+db.lastError().text());
+            emit printUiServerDatabase("----- ERORRE creazione tabella FileName "+db.lastError().text());
             throw DatabaseCreateException(docTable.lastQuery().toStdString(), docTable.lastError());
 
         }
@@ -75,20 +75,20 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
     qUpdateUser.prepare("UPDATE Users SET Nickname = :nickname, PassHash = :passhash, Salt = :salt, Icon = :icon "
         "WHERE Username = :username");
 
-    // Insertion query of a new User-URI pair in the DocEditors table
-    qInsertDocEditor.prepare("INSERT INTO DocEditors (Username, DocURI) VALUES (:username, :uri)");
+    // Insertion query of a new User-filename pair in the DocEditors table
+    qInsertDocEditor.prepare("INSERT INTO DocEditors (Username, FileName) VALUES (:username, :filename)");
 
-    // Deletion query of a User-URI pair from the DocEditors table
-    qRemoveDocEditor.prepare("DELETE FROM DocEditors WHERE Username = :username AND DocURI = :uri");
+    // Deletion query of a User-filename pair from the DocEditors table
+    qRemoveDocEditor.prepare("DELETE FROM DocEditors WHERE Username = :username AND FileName = :filename");
 
-    // Deletion query of all records referring to a document URI in the DocEditors table
-    qRemoveDoc.prepare("DELETE FROM DocEditors WHERE DocURI = :uri");
+    // Deletion query of all records referring to a document filename in the DocEditors table
+    qRemoveDoc.prepare("DELETE FROM DocEditors WHERE FileName = :filename");
 
     // Query to count the editors of a document (DocEditors table)
-    qCountDocEditors.prepare("SELECT COUNT(*) FROM DocEditors WHERE DocURI = :uri");
+    qCountDocEditors.prepare("SELECT COUNT(*) FROM DocEditors WHERE FileName = :filename");
 
-    // Selection query of all the URIs owned by a user (DocEditors table)
-    qSelectUserDocs.prepare("SELECT DocURI FROM DocEditors WHERE Username = :username");
+    // Selection query of all the filenames owned by a user (DocEditors table)
+    qSelectUserDocs.prepare("SELECT FileName FROM DocEditors WHERE Username = :username");
 
     // Selection query for one user whit a particular username
     qExistUser.prepare("SELECT * FROM Users WHERE Username = :username");
@@ -150,12 +150,12 @@ void ServerDatabase::updateUser(const UserData& user)
     }
 }
 
-void ServerDatabase::addDocToUser(QString username, QString uri)
+void ServerDatabase::addDocToUser(QString username, QString filename)
 {
     emit printUiServerDatabase("Query addDocToUser");
 
     qInsertDocEditor.bindValue(":username", username);
-    qInsertDocEditor.bindValue(":uri", uri);
+    qInsertDocEditor.bindValue(":filename", filename);
 
     if (!qInsertDocEditor.exec()){
         qDebug()<<LOG_PRINT_DB+"Error add doc to user";
@@ -163,12 +163,12 @@ void ServerDatabase::addDocToUser(QString username, QString uri)
     }
 }
 
-void ServerDatabase::removeDocFromUser(QString username, QString uri)
+void ServerDatabase::removeDocFromUser(QString username, QString filename)
 {
     emit printUiServerDatabase("Query removeDocFromUser");
 
     qRemoveDocEditor.bindValue(":username", username);
-    qRemoveDocEditor.bindValue(":uri", uri);
+    qRemoveDocEditor.bindValue(":filename", filename);
 
     if (!qRemoveDocEditor.exec()){
         qDebug()<<LOG_PRINT_DB+"Error remove doc from  user";
@@ -177,11 +177,11 @@ void ServerDatabase::removeDocFromUser(QString username, QString uri)
     }
 }
 
-void ServerDatabase::removeDoc(QString uri)
+void ServerDatabase::removeDoc(QString filename)
 {
     emit printUiServerDatabase("Query removeDoc");
 
-    qRemoveDoc.bindValue(":uri", uri);
+    qRemoveDoc.bindValue(":filename", filename);
 
     if (!qRemoveDoc.exec()){
         qDebug()<<LOG_PRINT_DB+"Error remove doc ";
@@ -302,15 +302,15 @@ QStringList ServerDatabase::readUserDocuments(QString username)
     return docs;
 }
 
-QStringList ServerDatabase::readDocumentURIs()
+QStringList ServerDatabase::readDocuments()
 {
-    emit printUiServerDatabase("Query readDocumentURI");
+    emit printUiServerDatabase("Query readDocumentfilename");
 
     QList<QString> documents;
     QSqlQuery query(db);
-    if (query.exec("SELECT DISTINCT DocURI FROM DocEditors") && query.isActive())
+    if (query.exec("SELECT DISTINCT FileName FROM DocEditors") && query.isActive())
     {
-        // Load all the document URIs in a QString list
+        // Load all the document filenames in a QString list
         query.next();
         while (query.isValid())
         {
@@ -320,7 +320,7 @@ QStringList ServerDatabase::readDocumentURIs()
     }
     else
     {
-        qDebug()<<LOG_PRINT_DB+"Error read coument uri";
+        qDebug()<<LOG_PRINT_DB+"Error read coument filename";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
 
     }
@@ -328,11 +328,11 @@ QStringList ServerDatabase::readDocumentURIs()
     return documents;
 }
 
-int ServerDatabase::countDocEditors(QString docURI)
+int ServerDatabase::countDocEditors(QString FileName)
 {
     emit printUiServerDatabase("Query countDocEditor");
 
-    qCountDocEditors.bindValue(":uri", docURI);
+    qCountDocEditors.bindValue(":filename", FileName);
 
     if (qCountDocEditors.exec() && qCountDocEditors.isActive())
     {
