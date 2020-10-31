@@ -25,7 +25,7 @@ HomePage::~HomePage()
 
 void HomePage::onFileHandlerDbClicked(){
 
-    emit fileHandlerDbClicked(dynamic_cast<FileHandler *>(QObject::sender())->getFilename());
+    emit fileHandlerDbClicked(dynamic_cast<FileHandler *>(QObject::sender())->getURI());
 }
 
 void HomePage::onFileHandlerClicked(){
@@ -47,6 +47,8 @@ void HomePage::onFocusChange(QWidget *old, QWidget *now){
     }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){
         qDebug() << "delete";
         deleteFile();
+    }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_share"){
+        shareFile();
     }
 }
 
@@ -55,10 +57,10 @@ void HomePage::on_pushButton_new_file_clicked()
 
     QInputDialog diag;
     diag.setParent(this);
-    diag.setTextValue("senzanome");
+    diag.setTextValue("file name here");
     diag.setWindowFlags(Qt::Dialog);
-    diag.setWindowTitle(tr("Creazione nuovo file"));
-    diag.setLabelText(tr("Nome file: "));
+    diag.setWindowTitle(tr("New file creation"));
+    diag.setLabelText(tr("file name: "));
     diag.resize(400,0);
     int ret = diag.exec();
 
@@ -66,24 +68,14 @@ void HomePage::on_pushButton_new_file_clicked()
          QString fileName=diag.textValue();
          if(fileName.isEmpty() || fileName.isNull()){
              QMessageBox::warning(this,tr("WARNING"),
-                        tr("Il nome del file non è valido.\n"));
+                        tr("Invalid file name.\n"), QMessageBox::Ok);
              return;
+         }else if(listfile.contains(fileName)){
+             QMessageBox::critical(this, tr("WARNING"),"Duplicated File name", QMessageBox::Ok);
+         }else{
+             emit createNewFileRequest(fileName);
          }
-
-         emit createNewFileRequest(fileName);
     }
-}
-
-//NON credo serva
-void HomePage::on_pushButton_aggiorna_vista_clicked()
-{
-    /*
-    QByteArray out;
-    BuilderMessageClient::MessageSendToServer(
-                out,
-                BuilderMessageClient::MessageOpenDir());
-    client_socket->sendBinaryMessage(out);
-    */
 }
 
 void HomePage::on_pushButton_profile_page_clicked()
@@ -92,7 +84,7 @@ void HomePage::on_pushButton_profile_page_clicked()
 }
 
 
-void HomePage::onReceivedFileHandlers(QJsonArray paths){
+void HomePage::onReceivedFileHandlers(QJsonArray paths, QString onReload){
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
         QWidget* widget = ui->gridLayout->itemAt(0)->widget();
@@ -108,22 +100,29 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
     for(auto entry: paths){
         QJsonObject dir = entry.toObject();
         QString filename = dir["filename"].toString();
-        listfile.append(filename);
 
+        sharedFileNameConflictManage(filename);
 
-        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, "./"+dir["filename"].toString(), dir["owner"].toString(), dir["lastModified"].toString(),dir["lastRead"].toString());
+        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, dir["URI"].toString(), dir["creator"].toString(), dir["created"].toString(),dir["size"].toInt());
+        listfile[filename]=item;
         item->installEventFilter(eventFilter);
-        connect(item, &FileHandler::clicked,[filename,dir,this]()
-                    {ui->infoLabel->setText("File Selected:\t"+filename+"\tOwner: "+
-                                                 dir["owner"].toString()+"\tLast Modified: "+
-                                                 dir["lastModified"].toString()+ "\tSize: "+
-                                                 dir["size"].toString() );   });
+        connect(item, &FileHandler::clicked,[item, this]()
+                    {ui->infoLabel->setText("File Selected:\t"+item->getFileName()+"\tCreator: "+
+                                                 item->getCreated() + "\tSize: "+
+                                                 item->getSize() +"\tCreated: "+
+                                                 item->getCreated());});
+
         connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerDbClicked);
         connect(item, &FileHandler::clicked,this, &HomePage::onFileHandlerClicked);
 
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
         column = (++column)%6;
         if(column==0) row++;
+    }
+    if(!onReload.isEmpty() && !onReload.isNull()){
+        QMessageBox msgBox(QMessageBox::NoIcon,"",onReload,QMessageBox::Ok);
+        msgBox.setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint);
+        msgBox.exec();
     }
 }
 
@@ -145,9 +144,19 @@ void HomePage::loadImage(QByteArray serializedImage){
     ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
+void HomePage::sharedFileNameConflictManage(QString &fileName)
+{
+    int i = 1;
+    if(listfile.contains(fileName)){
+        while(listfile.contains(fileName + '(' + i + ')'))
+            i++;
+        fileName = fileName + '(' + i + ')';
+    }
+}
+
 
 void HomePage::onNewFileCreationFailure(QString errorMessage){
-    QMessageBox::critical(this, tr("WARNING"),errorMessage,QMessageBox::Ok);
+    QMessageBox::critical(this, tr("WARNING"),errorMessage);
 }
 
 void HomePage::on_pushButton_Logout_clicked()
@@ -160,8 +169,20 @@ void HomePage::deleteFile(){
      delMsgBox.addButton(QMessageBox::Cancel);
      if(delMsgBox.exec()==QMessageBox::Ok){
         qDebug() << "OK";
-        QString fileName = selected -> getFilename();
+        QString URI = selected -> getURI();
         selected = nullptr;
-        emit deleteFileRequest(fileName);
+        emit deleteFileRequest(URI);
      }
+}
+
+void HomePage::shareFile()
+{
+    qDebug() << "Homepage Share";
+
+    DialogShare *diag = new DialogShare(this, selected->getURI());
+    connect(diag, SIGNAL(shareFile(QString, QString)), this, SIGNAL(shareFile(QString, QString)));
+    diag->exec();
+
+    selected = nullptr;
+
 }

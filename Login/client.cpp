@@ -158,6 +158,7 @@ void Client::createMainWindowStacked()
     connect(this, &Client::updateSuccess, mainWindowStacked, &MainWindowStacked::updateSuccess);
     connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
     connect(this, &Client::accountUpdateError, mainWindowStacked, &MainWindowStacked::accountUpdateError);
+    connect(mainWindowStacked, SIGNAL(shareFile(QString, QString)), this, SLOT(onShareFile(QString, QString)));
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -331,7 +332,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 10:{    // show dir/document for client
-        emit receivedFileHandlers(jsonObj["files"].toArray());
+        emit receivedFileHandlers(jsonObj["files"].toArray(), jsonObj["onReload"].toString());
         break;
     }
     case 13:{    // file gia presente
@@ -561,7 +562,11 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         emit removeConnectedUser(jsonObj["username"].toString());
         break;
     }
+    case 102:{
+        qDebug() << "CASE 102 - new shareFile Request";
 
+        break;
+    }
     default:         return;
     }
 }
@@ -578,7 +583,7 @@ void Client::onConnectionFailure(){
 }
 
 void Client::onFileHandlerDbClicked(QString fileName){
-    sf = new SharedFile(fileName.toStdString(), "notMe");
+    //sf = new SharedFile(fileName.toStdString(), "notMe");
     QString stringa("Ho aggiornato il file attuale a "+fileName);
     qDebug()<<stringa;
     QByteArray out;
@@ -702,5 +707,15 @@ void Client::onRemoveClientWorkspace(QString fileName)
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessageRemoveClientWorkspace(fileName));
+    this->m_webSocket->sendBinaryMessage(out);
+}
+
+void Client::onShareFile(QString username, QString URI)
+{
+    qDebug() << "Client Share";
+    QByteArray out;
+    BuilderMessageClient::MessageSendToServer(
+                out,
+                BuilderMessageClient::MessageShareFile(username, URI));
     this->m_webSocket->sendBinaryMessage(out);
 }

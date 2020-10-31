@@ -42,3 +42,13 @@ DatabaseWriteException::DatabaseWriteException(std::string query, QSqlError err)
     : DatabaseException("Unable to exec this query: " + query, err)
 {
 }
+
+DatabaseDeleteException::DatabaseDeleteException(std::string query, QSqlError err)
+    : DatabaseException("Unable to exec this query: " + query, err)
+{
+}
+
+DatabaseTransactionException::DatabaseTransactionException(std::string  err)
+    : DatabaseException(err, QSqlError{})
+{
+}

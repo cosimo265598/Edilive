@@ -232,11 +232,12 @@ QJsonDocument BuilderMessage::MessageAccountConfirmed(QString data)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles)
+QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles, QString onReload)
 {
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",10);
+    json.insert("onReload", onReload);
     json.insert("files",listfiles);
     // possibilita di aggiungere la visita delle directory
     jsondoc.setObject(json);
@@ -374,6 +375,17 @@ QJsonDocument BuilderMessage::MessageRemoveClientFromWorkspace(QString username)
     QJsonObject json;
     json.insert("type",101);
     json.insert("username", username);
+    jsondoc.setObject(json);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessage::MessageRequestShareFile(QString URI, QString userSending)
+{
+    QJsonDocument jsondoc;
+    QJsonObject json;
+    json.insert("type",102);
+    json.insert("userSending", userSending);
+    json.insert("URI", URI);
     jsondoc.setObject(json);
     return jsondoc;
 }

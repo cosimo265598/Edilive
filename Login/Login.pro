@@ -27,6 +27,7 @@ SOURCES += \
     buildermessageclient.cpp \
     client.cpp \
     connectionwaitingdialog.cpp \
+    dialogshare.cpp \
     eventfilterimpl.cpp \
     filehandler.cpp \
     homepage.cpp \
@@ -47,6 +48,7 @@ HEADERS += \
     buildermessageclient.h \
     client.h \
     connectionwaitingdialog.h \
+    dialogshare.h \
     eventfilterimpl.h \
     filehandler.h \
     homepage.h \
@@ -62,6 +64,7 @@ HEADERS += \
 
 FORMS += \
     connectionwaitingdialog.ui \
+    dialogshare.ui \
     homepage.ui \
     logindialog.ui \
     mainwindowstacked.ui \

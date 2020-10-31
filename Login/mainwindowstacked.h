@@ -28,7 +28,7 @@ private:
 public slots:
 
 signals:
-    void receivedFileHandlers(QJsonArray);
+    void receivedFileHandlers(QJsonArray, QString);
     void fileHandlerDbClicked(QString fileName);
     void loadSubscriberInfo(QString, QString, QByteArray);
     void createNewFileRequest(QString fileName);
@@ -38,6 +38,7 @@ signals:
     void updateSuccess();
     void resetSubscriberInfo();
     void accountUpdateError(QString);
+    void shareFile(QString username, QString URI);
 };
 
 #endif // MAINWINDOWSTACKED_H

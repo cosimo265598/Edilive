@@ -168,6 +168,7 @@ QJsonDocument BuilderMessageClient::MessageOpenFile(QString nomefile)
     objtosend.insert("type",11);
     objtosend.insert("auth",true);
     objtosend.insert("nomefile",nomefile);
+    objtosend.insert("URI",nomefile);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
@@ -228,6 +229,18 @@ QJsonDocument BuilderMessageClient::MessageRemoveClientWorkspace(QString fileNam
     objtosend.insert("fileName", fileName);
     objtosend.insert("auth",true);
     objtosend.insert("type",20);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessageClient::MessageShareFile(QString username, QString URI)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("URI", URI);
+    objtosend.insert("username", username);
+    objtosend.insert("auth",true);
+    objtosend.insert("type",21);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

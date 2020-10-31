@@ -15,7 +15,6 @@
 #include "buildermessage.h"
 #include "ui_mainwindow.h"
 
-
 enum TypeOperation : quint16
 {
     // Tests
@@ -49,7 +48,8 @@ enum TypeOperation : quint16
     // add other enum below, and do not change the order of list
     InsertionChar,
     DeleteChar,
-    RemoveClientFromWorkspace
+    RemoveClientFromWorkspace,
+    ShareFile
 
 };
 
@@ -81,12 +81,13 @@ private:
     QWebSocket* socket;
     QString threadId;
     Ui::MainWindow *ui;
+    QString rootPath = QDir().currentPath()+"/files/";
 
     void serverAccountCreate(QJsonObject request);
     void serverLoginRequest();
     void serverLoginUnlock();
     void serverAccountCreate();
-    void serverOpenDirOfClient();
+    void serverOpenDirOfClient(QString, QWebSocket *);
     void serverUpdateProfileClient();
     void serverPersonalDataOfClient();
     void serverCreateFileForClient();
@@ -95,6 +96,9 @@ private:
     void serverInsertionChar();
     void serverDeleteChar();
     void serverRemoveClientFromWorkspace();
+    void serverShareFile();
+
+    //QString generateURI(QString creator, QString fileName) const;
 
 signals:
     void printUiServer(QString);
@@ -103,7 +107,7 @@ signals:
     void messageChallegePassed(QWebSocket*, QString);
     void accountCreationError(QWebSocket*, QString);
     void accountConfirmed(QWebSocket*, QString);
-    void openDirOfClient(QWebSocket*, QJsonArray);
+    void openDirOfClient(QWebSocket*, QJsonArray, QString);
     void updateProfileClient(QWebSocket*, QJsonArray);
     void accountUpdateSuccess(QWebSocket*, QString);
     void accountUpdateError(QWebSocket*, QString);
@@ -115,6 +119,7 @@ signals:
     void insertionChar(QWebSocket *, Symbol);
     void deletionChar (QWebSocket *, Symbol);
     void removeClientFromWorkspace(QWebSocket*, QString);
+    void requestShareFile(QWebSocket*, QString, QString);
 
 };
 

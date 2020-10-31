@@ -87,6 +87,7 @@ public slots:
     void closeControll();
     void localInsertion(QString c, int pos);
     void onRemoveClientWorkspace(QString docURI);
+    void onShareFile(QString username, QString URI);
 
 private:
     MainWindowStacked *mainWindowStacked=nullptr;
@@ -119,7 +120,7 @@ private:
 signals:
     void registrationFailure(QString errorMessage);
     void loginFailure(QString errorMessage);
-    void receivedFileHandlers(QJsonArray);
+    void receivedFileHandlers(QJsonArray, QString);
     void loadSubscriberInfo(QString, QString, QByteArray);
     void newFileCreationFailure(QString errorMessage);
     void updateSuccess();

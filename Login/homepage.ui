@@ -158,12 +158,12 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>  Nuovo File  </string>
+             <string>New File</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_aggiorna_vista">
+           <widget class="QPushButton" name="pushButton_share">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -171,7 +171,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Aggiorna Vista</string>
+             <string>Share</string>
             </property>
            </widget>
           </item>
@@ -184,7 +184,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Elimina File</string>
+             <string>Delete File</string>
             </property>
            </widget>
           </item>

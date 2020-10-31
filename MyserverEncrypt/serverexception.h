@@ -64,6 +64,20 @@ public:
     DatabaseWriteException(std::string query, QSqlError err);
 };
 
+class DatabaseDeleteException : public DatabaseException
+{
+public:
+
+    DatabaseDeleteException(std::string query, QSqlError err);
+};
+
+class DatabaseTransactionException : public DatabaseException
+{
+public:
+
+    DatabaseTransactionException(std::string err);
+};
+
 
 
 

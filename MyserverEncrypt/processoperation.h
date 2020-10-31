@@ -65,7 +65,7 @@ public slots:
     void onMessageChallengePassed(QWebSocket* , QString);
     void onAccountCreationError(QWebSocket* , QString);
     void onAccountConfirmed(QWebSocket*, QString);
-    void onOpenDirOfClient(QWebSocket*, QJsonArray);
+    void onOpenDirOfClient(QWebSocket*, QJsonArray, QString);
     void onAccountUpdateSuccess(QWebSocket*, QString);
     void onPersonalDataOfClient(QWebSocket* , QString, QString, QImage);
     void onFileCreationError(QWebSocket* , QString);
@@ -76,6 +76,7 @@ public slots:
     void onDeletionChar(QWebSocket *, Symbol);
     void onRemoveClientFromWorkspace(QWebSocket *, QString);
     void onAccountUpdateError(QWebSocket *, QString);
+    void onRequestShareFile(QWebSocket *, QString, QString);
 
 };
 

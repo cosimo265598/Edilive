@@ -1,8 +1,8 @@
 #include "filehandler.h"
 
 FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &fileName,
-                         const QString &path, const QString &owner,
-                         const QString &lastModified, const QString &lastRead)
+                         const QString &URI, const QString &creator,
+                         const QString &created, const int &size)
     : QToolButton()
 {
     QToolButton::setIcon(icon);
@@ -14,35 +14,39 @@ FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &file
 
     QToolButton::setStyleSheet(buttonStyle);
 
-    this->path = path;
-    this->owner = owner;
-    this->lastModified = lastModified;
-    this->lastRead = lastRead;
-    this->filename= fileName;
+    this->URI = URI;
+    this->creator = creator;
+    this->created = created;
+    this->fileName = fileName;
+    this->size= size;
 }
 
 FileHandler::~FileHandler()
 {
-    qDebug()<<"Rimosso"<<this->getPath();
+    //qDebug()<<"Rimosso"<<this->getPath();
 }
 
-QString FileHandler::getFilename()
+QString FileHandler::getURI() const
 {
-    return this->filename;
+    return URI;
 }
 
-QString FileHandler::getPath(){
-    return this->path;
+int FileHandler::getSize() const
+{
+    return size;
 }
 
-QString FileHandler::getLastModified(){
-    return this->lastModified;
+QString FileHandler::getCreated() const
+{
+    return created;
 }
 
-QString FileHandler::getOwner(){
-    return this->owner;
+QString FileHandler::getCreator() const
+{
+    return creator;
 }
 
-QString FileHandler::getLastRead(){
-    return this->lastRead;
+QString FileHandler::getFileName() const
+{
+    return fileName;
 }

@@ -155,8 +155,9 @@ void Tasks::serverAccountCreate()
 
 }
 
-void Tasks::serverOpenDirOfClient()
+void Tasks::serverOpenDirOfClient(QString onReload, QWebSocket* notMySelfSocket)
 {
+    /*
     QSharedPointer<Client> client = clients[socket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername());
     QDirIterator it(path, QDir::Files, QDirIterator::NoIteratorFlags);
@@ -175,6 +176,54 @@ void Tasks::serverOpenDirOfClient()
     }
 
     emit openDirOfClient(socket, files);
+    */
+
+    QSharedPointer<Client> client = clients[socket];
+    QJsonArray files;
+    QList<file_t> fileList;
+
+    ServerDatabase db;
+
+    try {
+        db.open(defaultnamedb,threadId,ui);
+    }catch (DatabaseConnectionException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error creation file");
+        return;
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error creation file");
+        return;
+    }
+
+    try{
+    fileList = db.getUserDocs(client->getUsername());
+
+    }catch (DatabaseReadException& re ) {
+        emit printUiServer(re.what());
+        return;
+
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        return;
+    }
+
+    // visita della directory
+    for (auto f: fileList) {
+
+        files.append(QJsonObject{
+                         {"filename", f.fileName}, // meglio file name
+                         {"creator", f.creator},
+                         {"created",  f.created},
+                         {"URI", f.URI},
+                         {"size", QFileInfo(rootPath+f.URI).size()}
+                     });
+    }
+
+    if(notMySelfSocket != nullptr)
+        emit openDirOfClient(notMySelfSocket, files, onReload);
+    else
+        emit openDirOfClient(socket, files, onReload);
 }
 
 void Tasks:: serverUpdateProfileClient(){
@@ -247,6 +296,72 @@ void Tasks::serverCreateFileForClient()
 
     QString fileName = request["nomefile"].toString();
     QSharedPointer<Client> client = clients[socket];
+
+    QString URI = client->getUsername()+"_"+fileName;
+    QString filePath = rootPath + URI;
+    QFile newFile(filePath);
+
+    qDebug() << newFile;
+
+    if(newFile.exists()){
+        emit printUiServer("File with same name already exists");
+        emit fileCreationError(socket, "File with same name already exists");
+        return;
+    }
+
+    if (newFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&newFile);
+        out << "";
+        newFile.close();
+    }else{
+        emit printUiServer("Error creation file");
+        emit fileCreationError(socket, "Error creation file");
+        return;
+    }
+
+    ServerDatabase db;
+
+    try {
+        db.open(defaultnamedb,threadId,ui);
+    }catch (DatabaseConnectionException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(filePath).remove();
+        return;
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(filePath).remove();
+        return;
+    }
+
+
+    try{
+        db.insertNewDoc(URI,fileName,client->getUsername(), QFileInfo(newFile).created().toString());
+        this->serverOpenDirOfClient("New File Created", nullptr);
+
+    }catch (DatabaseWriteException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(filePath).remove();
+        return;
+
+    }catch (DatabaseTransactionException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error deletion file");
+        QFile(filePath).remove();
+        return;
+
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(filePath).remove();
+        return;
+    }
+
+    /*
+    QString fileName = request["nomefile"].toString();
+    QSharedPointer<Client> client = clients[socket];
     QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
 
     QByteArray data;
@@ -267,10 +382,12 @@ void Tasks::serverCreateFileForClient()
     }else{
         emit fileCreationError(socket, "Error creation the new file.");
     }
+    */
 }
 
 void Tasks::serverDeleteFileForClient()
 {
+    /*
     qDebug()<<"segnale delete file ricevuto";
 
     QString fileName = request["nomefile"].toString();
@@ -287,10 +404,90 @@ void Tasks::serverDeleteFileForClient()
         file.remove();
         this->serverOpenDirOfClient();
     }
+    */
+
+    qDebug()<<"segnale delete file ricevuto";
+
+    QString URI = request["nomefile"].toString();
+    QSharedPointer<Client> client = clients[socket];
+
+    QFile file(rootPath + URI);
+    qDebug() << rootPath+URI;
+    if(!file.exists()){
+        qDebug()<< "File not found";
+        emit fileDeletionError(socket, "File Not Found");
+        return;
+    }
+
+    ServerDatabase db;
+
+    try {
+        db.open(defaultnamedb,threadId,ui);
+    }catch (DatabaseConnectionException& re ) {
+        emit printUiServer(re.what());
+        emit fileDeletionError(socket, "Error deletion file");
+        return;
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        emit fileDeletionError(socket, "Error deletion file");
+        return;
+    }
+
+    try{
+        if(db.removeDocFromUser(client->getUsername(),URI))
+            file.remove();
+
+        this->serverOpenDirOfClient("File deleted", nullptr);
+
+    }catch (DatabaseReadException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseWriteException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseTransactionException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error deletion file");
+        return;
+    }
+
+    /*
+
+
+    db.insertNewDoc(URI,fileName,client->getUsername(), QFileInfo(newFile).created().toString());
+    qDebug() << "ora seconda";
+    db.addDocToUser(client->getUsername(), URI);
+    qDebug() << "ok seconda";
+    this->serverOpenDirOfClient();
+
+    }catch (DatabaseWriteException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(filePath).remove();
+        return;
+
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        emit fileCreationError(socket, "Error creation file");
+        QFile(URI).remove();
+        return;
+    }
+
+     */
 }
 
 void Tasks::serverOpenFile()
 {
+    /*
     qDebug()<<"Segnale apertura file ricevuto";
     QString fileName = request["nomefile"].toString();
 
@@ -308,6 +505,37 @@ void Tasks::serverOpenFile()
     if(!workspaces.contains(fileName)){
         //QSharedPointer<Workspace> workspace(new Workspace(nullptr, fileName));
         workspaces.insert(fileName, QSharedPointer<Workspace>(new Workspace(nullptr, path)));
+        workspaces[fileName].get()->addClient(socket, client);
+
+    }
+    else{
+        qDebug() << "Adding current client to existing workspace";
+        workspaces[fileName].get()->addClient(socket, client);
+    }
+
+    qDebug() << "Numero Workspace: " << workspaces.size();
+
+    emit openFile(socket, fileName);
+    */
+
+    qDebug()<<"Segnale apertura file ricevuto";
+    QString fileName = request["nomefile"].toString();
+
+    QSharedPointer<Client> client = clients[socket];
+    QString filePath = rootPath + fileName;
+    QFile filecreate(filePath);
+    if(!QFile(filePath).exists()){
+       return; // Messaggio errore file not found o qualcosa del genere
+    }
+
+    // OPERAZIONI SUL WORKSPACE, MI UNISCO AD UN WORKSPACE OPPURE LO CREO E MI UNISCO COME PRIMO CLIENT
+    //Al posto del fileName mettere docURI
+
+    qDebug() << fileName;
+
+    if(!workspaces.contains(fileName)){
+        //QSharedPointer<Workspace> workspace(new Workspace(nullptr, fileName));
+        workspaces.insert(fileName, QSharedPointer<Workspace>(new Workspace(nullptr, filePath)));
         workspaces[fileName].get()->addClient(socket, client);
 
     }
@@ -379,19 +607,94 @@ void Tasks::serverDeleteChar(){
 }
 
 void Tasks::serverRemoveClientFromWorkspace(){
-    qDebug() << "Invio al mainwindow";
+    qDebug() << "ricevuto segnale di remove client from workspace";
     QString fileName = request["fileName"].toString();
 
+    qDebug() << fileName;
     workspaces[fileName]->removeClient(socket);
     qDebug() << "OK rimosso client,  n client: " << workspaces[fileName]->getClients().size() << "In workspace: " << fileName;
+
     if(workspaces[fileName]->getClients().size()<=0){
-         this->workspaces.remove(fileName);
-         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
+
+        QString rootPath(QDir().currentPath()+"/files/");
+
+        //Safe way to save a file. All the operation are done on a temporary unique-random named file.
+        //Only if the commit() return true the original file is modified
+        QSaveFile file(rootPath + fileName);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+            file.resize(0);
+            QTextStream out(&file);
+            out << QString::fromStdString(workspaces[fileName]->getSharedFile()->to_string());
+            file.commit();
+        }
+
+        this->workspaces.remove(fileName);
+
+        qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
     }
     else
         emit removeClientFromWorkspace(socket, fileName); // Remove the current client from the other client still sharing the <fileName> file
 }
 
+void Tasks::serverShareFile()
+{
+    qDebug() << "ricevuto segnale shareFile";
+
+    QString URI = request["URI"].toString();
+    QString userToShare = request["username"].toString();
+
+    QSharedPointer<Client> client = clients[socket];
+
+    ServerDatabase db;
+
+    try {
+        db.open(defaultnamedb,threadId,ui);
+    }catch (DatabaseConnectionException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error creation file");
+
+        return;
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error creation file");
+
+        return;
+    }
+
+    try{
+        if(db.addDocToUser(userToShare, URI)){
+            for(auto client : clients.values()){
+                if(client->getUsername() == userToShare)
+                    //emit requestShareFile(client->getSocket(), URI, client->getUsername()); // In future, push request if client connected
+                    this->serverOpenDirOfClient("New shared file !", client->getSocket());
+                    break;
+            }
+        }
+
+    }catch (DatabaseReadException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseWriteException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseTransactionException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error deletion file");
+        return;
+
+    }catch (DatabaseException& re ) {
+        emit printUiServer(re.what());
+        //emit fileCreationError(socket, "Error deletion file");
+        return;
+    }
+
+
+
+}
 
 void Tasks::run(){
     switch (typeOp) {
@@ -399,7 +702,7 @@ void Tasks::run(){
         case TypeOperation::LoginRequest:               this->serverLoginRequest();                 break;
         case TypeOperation::LoginUnlock:                this->serverLoginUnlock();                  break;
         case TypeOperation::AccountCreate:              this->serverAccountCreate();                break;
-        case TypeOperation::OpenDirectory:              this->serverOpenDirOfClient();              break;
+        case TypeOperation::OpenDirectory:              this->serverOpenDirOfClient("",nullptr);            break;
         case TypeOperation::ProfileData:                this->serverPersonalDataOfClient();         break;
         case TypeOperation::AccountUpdate:              this->serverUpdateProfileClient();          break;
         case TypeOperation::CreateFile:                 this->serverCreateFileForClient();          break;
@@ -408,6 +711,7 @@ void Tasks::run(){
         case TypeOperation::InsertionChar:              this->serverInsertionChar();                break;
         case TypeOperation::DeleteChar:                 this->serverDeleteChar();                   break;
         case TypeOperation::RemoveClientFromWorkspace:  this->serverRemoveClientFromWorkspace();    break;
+        case TypeOperation::ShareFile:                  this->serverShareFile();                    break;
 
         default: qDebug() << "No Task";
     }

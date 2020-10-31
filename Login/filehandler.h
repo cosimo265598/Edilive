@@ -12,22 +12,28 @@ class FileHandler : public QToolButton
     Q_OBJECT
 public:
     FileHandler(QWidget* parent, const QIcon &icon, const QString &fileName,
-                const QString &path, const QString &owner,
-                const QString &lastModified, const QString &lastRead);
+                const QString &URI, const QString &creator,
+                const QString &created, const int &size);
     ~FileHandler();
 private:
-    QString path;
-    QString owner;
-    QString lastModified;
-    QString lastRead;
-    QString filename;
+    QString fileName;
+    QString creator;
+    QString created;
+    int size;
+    QString URI;
 
 public:
-    QString getFilename();
-    QString getPath();
-    QString getLastRead();
-    QString getLastModified();
-    QString getOwner();
+
+
+    QString getFileName() const;
+
+    QString getCreator() const;
+
+    QString getCreated() const;
+
+    int getSize() const;
+
+    QString getURI() const;
 
 signals:
     void doubleClicked();

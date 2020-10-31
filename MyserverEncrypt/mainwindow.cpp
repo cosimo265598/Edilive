@@ -281,23 +281,8 @@ void MainWindow::processBinaryMessage(QByteArray message)
         return ;
     }
 
-    QJsonObject jsonObj = jsonDoc.object();
-    int mType = jsonObj["type"].toInt();
-
     try {
-        //ui->commet->appendPlainText("Contenuto json: "+jsonDoc.toJson());
-
-        /*
-        if(po->checkTypeOperationGranted((TypeOperation)mType).isNull() ||
-                po->checkTypeOperationGranted((TypeOperation)mType).isEmpty()){
-            ui->commet->appendPlainText("***(MESSAGE ERROR)*** Received unexpected message: ");
-            // return whitout do anything.
-            return;
-        }
-        */
-
-        // QUi dispatch nel pool
-        po->process(socket, jsonObj, ui.get());
+        po->process(socket, jsonDoc.object(), ui.get());
     }
     catch (std::exception& me)
     {

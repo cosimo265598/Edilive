@@ -20,7 +20,9 @@
 #include <QtCore/QDebug>
 #include <QCoreApplication>
 #include <QDir>
+#include <QDialogButtonBox>
 
+#include "dialogshare.h"
 #include "ui_homepage.h"
 #include "buildermessageclient.h"
 #include "filehandler.h"
@@ -47,13 +49,12 @@ private Q_SLOTS:
     void onFileHandlerDbClicked();
     void onFileHandlerClicked();
     void on_pushButton_new_file_clicked();
-    void on_pushButton_aggiorna_vista_clicked();
     void on_pushButton_profile_page_clicked();
     void on_pushButton_Logout_clicked();
     void onFocusChange(QWidget *old, QWidget *now);
 
 public Q_SLOTS:
-     void onReceivedFileHandlers(QJsonArray);
+     void onReceivedFileHandlers(QJsonArray, QString);
      void onLoadSubscriberInfo(QString, QString, QByteArray);
      void onNewFileCreationFailure(QString errorMessage);
 
@@ -65,17 +66,20 @@ private:
     int column;
 
     EventFilterImpl *eventFilter;
-    QStringList listfile;
+    QMap<QString, FileHandler*> listfile;
     FileHandler *selected;
 
     void deleteFile();
+    void shareFile();
     void loadImage(QByteArray serializedImage);
+    void sharedFileNameConflictManage(QString& fileName);
 
 signals:
     void fileHandlerDbClicked(QString fileName);
     void updateAccountClicked();
     void createNewFileRequest(QString fileName);
     void deleteFileRequest(QString fileName);
+    void shareFile(QString username, QString URI);
 };
 
 #endif // HOMEPAGE_H

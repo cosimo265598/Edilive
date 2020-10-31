@@ -33,7 +33,7 @@ public:
     static QJsonDocument MessageAccountCreationError(QString data);
     static QJsonDocument MessageAccountConfirmed(QString data);
 
-    static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles);
+    static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles, QString reload);
     static QJsonDocument MessageFileCreationError(QString error);
     static QJsonDocument MessageHeaderFile(QString data, QString creator, QList<QSharedPointer<Client>> connected);
     static QJsonDocument MessageFileDeletionError(QString error);
@@ -44,6 +44,7 @@ public:
     static QJsonDocument MessageAccountUpdateSuccess(QString);
     static QJsonDocument MessageInsertClientWorkspace(QString username, QString nickname, QImage ico);
     static QJsonDocument MessageRemoveClientFromWorkspace(QString username);
+    static QJsonDocument MessageRequestShareFile(QString, QString);
 };
 
 

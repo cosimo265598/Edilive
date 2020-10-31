@@ -22,14 +22,29 @@
 
 #define documentable "CREATE TABLE \"DocEditors\" (\
                      \"Username\"	TEXT NOT NULL,\
-                     \"FileName\"	TEXT NOT NULL,\
+                     \"URI\"	TEXT NOT NULL,\
+                     \"Pending\"	TEXT NOT NULL,\
                      FOREIGN KEY(\"Username\") REFERENCES \"Users\"(\"Username\") ON UPDATE CASCADE ON DELETE CASCADE,\
-                     PRIMARY KEY(\"Username\", \"FileName\"));"
+                     FOREIGN KEY(\"URI\") REFERENCES \"Files\"(\"URI\") ON UPDATE CASCADE ON DELETE CASCADE,\
+                     PRIMARY KEY(\"Username\", \"URI\"));"
+
+#define docusertable "CREATE TABLE \"Files\" (\
+   \"URI\"	TEXT NOT NULL,\
+   \"FileName\"	TEXT NOT NULL,\
+   \"Creator\"	TEXT NOT NULL,\
+   \"Created\"	TEXT NOT NULL,\
+   PRIMARY KEY(\"URI\"));"
 
 #define defaultnamedb "sql_for_server"
 
 #define LOG_PRINT_DB  QDateTime::currentDateTime().toString()
 
+struct file_t{
+    QString fileName;
+    QString URI;
+    QString creator;
+    QString created;
+};
 
 class ServerDatabase: public QObject
 {
@@ -65,10 +80,11 @@ public:
 
     // Queries
 
+    void insertNewDoc(QString URI, QString fileName, QString creator, QString created);
     void insertUser(const UserData& user);
     void updateUser(const UserData& user);
-    void addDocToUser(QString username, QString fileName);
-    void removeDocFromUser(QString username, QString fileName);
+    bool addDocToUser(QString username, QString URI);
+    bool removeDocFromUser(QString username, QString fileName);
     void removeDoc(QString fileName);
     void removeDatabase(QString connectionName);
     int getMaxUserID();
@@ -77,6 +93,8 @@ public:
     QStringList readUserDocuments(QString username);
     QStringList readDocuments();
     int countDocEditors(QString fileName);
+    QList<file_t> getUserDocs(QString username);
+
 signals:
      void printUiServerDatabase(const QString&);
 };

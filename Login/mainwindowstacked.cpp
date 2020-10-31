@@ -26,6 +26,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     connect(&homePage, &HomePage::createNewFileRequest, this, &MainWindowStacked::createNewFileRequest);
     connect(this, &MainWindowStacked::newFileCreationFailure, &homePage, &HomePage::onNewFileCreationFailure);
     connect(&homePage, &HomePage::deleteFileRequest, this, &MainWindowStacked::deleteFileRequest);
+    connect(&homePage, SIGNAL(shareFile(QString, QString)), this, SIGNAL(shareFile(QString, QString)));
 
     //connection ProfilePage
     connect(&profilePage, &ProfilePage::returnToHomeClicked,  [this](){MainWindowStacked::setWindowTitle("HomePage"); ui->stackedWidget->setCurrentIndex(0);});

@@ -36,6 +36,8 @@ public:
 
     //TextEditor
     static QJsonDocument MessageRemoveClientWorkspace(QString fileName);
+
+    static QJsonDocument MessageShareFile(QString username, QString URI);
 };
 
 #endif // BUILDERMESSAGECLIENT_H
