@@ -97,6 +97,8 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths, QString onReload){
     int row = 0;
     int column = 0;
 
+    listfile = QMap<QString, FileHandler*>();
+
     for(auto entry: paths){
         QJsonObject dir = entry.toObject();
         QString filename = dir["filename"].toString();
@@ -148,9 +150,12 @@ void HomePage::sharedFileNameConflictManage(QString &fileName)
 {
     int i = 1;
     if(listfile.contains(fileName)){
-        while(listfile.contains(fileName + '(' + i + ')'))
+        while(listfile.contains(QString(fileName + '(' + i + ')')))
             i++;
-        fileName = fileName + '(' + i + ')';
+
+        qDebug()<< QString(fileName + '(' + i + ')');
+        fileName = fileName.append('(').append(QChar(i)).append(')');
+        qDebug()<< fileName;
     }
 }
 

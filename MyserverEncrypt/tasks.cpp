@@ -664,10 +664,11 @@ void Tasks::serverShareFile()
     try{
         if(db.addDocToUser(userToShare, URI)){
             for(auto client : clients.values()){
-                if(client->getUsername() == userToShare)
+                if(client->getUsername() == userToShare){
                     //emit requestShareFile(client->getSocket(), URI, client->getUsername()); // In future, push request if client connected
                     this->serverOpenDirOfClient("New shared file !", client->getSocket());
                     break;
+                }
             }
         }
 
