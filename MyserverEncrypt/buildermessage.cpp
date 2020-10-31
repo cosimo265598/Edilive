@@ -232,12 +232,11 @@ QJsonDocument BuilderMessage::MessageAccountConfirmed(QString data)
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles, QString onReload)
+QJsonDocument BuilderMessage::MessageOpenDirOfClient(QJsonArray listfiles)
 {
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",10);
-    json.insert("onReload", onReload);
     json.insert("files",listfiles);
     // possibilita di aggiungere la visita delle directory
     jsondoc.setObject(json);

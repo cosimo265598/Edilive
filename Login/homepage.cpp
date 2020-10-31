@@ -12,6 +12,7 @@ HomePage::HomePage(QWidget *parent) :
     selected(nullptr)
 {
     ui->setupUi(this);
+
     //Prototype -> QApplication::focusChanged(QWidget *old, QWidget *now)
     connect(qApp, &QApplication::focusChanged, this, &HomePage::onFocusChange);
 
@@ -84,7 +85,7 @@ void HomePage::on_pushButton_profile_page_clicked()
 }
 
 
-void HomePage::onReceivedFileHandlers(QJsonArray paths, QString onReload){
+void HomePage::onReceivedFileHandlers(QJsonArray paths){
     // clean the view for future update // da rivedere
     while(ui->gridLayout->count() ) {
         QWidget* widget = ui->gridLayout->itemAt(0)->widget();
@@ -103,14 +104,14 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths, QString onReload){
         QJsonObject dir = entry.toObject();
         QString filename = dir["filename"].toString();
 
-        sharedFileNameConflictManage(filename);
+        filename = sharedFileNameConflictManage(filename);
 
         FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, dir["URI"].toString(), dir["creator"].toString(), dir["created"].toString(),dir["size"].toInt());
         listfile[filename]=item;
         item->installEventFilter(eventFilter);
         connect(item, &FileHandler::clicked,[item, this]()
                     {ui->infoLabel->setText("File Selected:\t"+item->getFileName()+"\tCreator: "+
-                                                 item->getCreated() + "\tSize: "+
+                                                 item->getCreator() + "\tSize: "+
                                                  item->getSize() +"\tCreated: "+
                                                  item->getCreated());});
 
@@ -120,11 +121,6 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths, QString onReload){
         ui->gridLayout->addWidget(item, row, column,{Qt::AlignTop,Qt::AlignLeft});
         column = (++column)%6;
         if(column==0) row++;
-    }
-    if(!onReload.isEmpty() && !onReload.isNull()){
-        QMessageBox msgBox(QMessageBox::NoIcon,"",onReload,QMessageBox::Ok);
-        msgBox.setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowCloseButtonHint);
-        msgBox.exec();
     }
 }
 
@@ -136,7 +132,6 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
 void HomePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
-        //pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
         pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
         qDebug() << "load";
@@ -146,17 +141,19 @@ void HomePage::loadImage(QByteArray serializedImage){
     ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
-void HomePage::sharedFileNameConflictManage(QString &fileName)
+QString HomePage::sharedFileNameConflictManage(QString fileName)
 {
     int i = 1;
     if(listfile.contains(fileName)){
-        while(listfile.contains(QString(fileName + '(' + i + ')')))
+        while(listfile.contains(QString(fileName + '(' + QChar(i) + ')')))
             i++;
 
-        qDebug()<< QString(fileName + '(' + i + ')');
-        fileName = fileName.append('(').append(QChar(i)).append(')');
+        qDebug()<< "File conflict " << QString(fileName + '(' + QString::number(i) + ')');
+
+        fileName = fileName.append(QString('(' + QString::number(i) + ')'));
         qDebug()<< fileName;
     }
+    return fileName;
 }
 
 

@@ -155,7 +155,7 @@ void Tasks::serverAccountCreate()
 
 }
 
-void Tasks::serverOpenDirOfClient(QString onReload, QWebSocket* notMySelfSocket)
+void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
 {
     /*
     QSharedPointer<Client> client = clients[socket];
@@ -220,10 +220,10 @@ void Tasks::serverOpenDirOfClient(QString onReload, QWebSocket* notMySelfSocket)
                      });
     }
 
-    if(notMySelfSocket != nullptr)
-        emit openDirOfClient(notMySelfSocket, files, onReload);
+    if(pushSocket != nullptr)
+        emit openDirOfClient(pushSocket, files);
     else
-        emit openDirOfClient(socket, files, onReload);
+        emit openDirOfClient(socket, files);
 }
 
 void Tasks:: serverUpdateProfileClient(){
@@ -337,8 +337,8 @@ void Tasks::serverCreateFileForClient()
 
 
     try{
-        db.insertNewDoc(URI,fileName,client->getUsername(), QFileInfo(newFile).created().toString());
-        this->serverOpenDirOfClient("New File Created", nullptr);
+        db.insertNewDoc(URI,fileName,client->getUsername(), QFileInfo(newFile).created().timeZoneAbbreviation());
+        this->serverOpenDirOfClient(nullptr);
 
     }catch (DatabaseWriteException& re ) {
         emit printUiServer(re.what());
@@ -437,7 +437,7 @@ void Tasks::serverDeleteFileForClient()
         if(db.removeDocFromUser(client->getUsername(),URI))
             file.remove();
 
-        this->serverOpenDirOfClient("File deleted", nullptr);
+        this->serverOpenDirOfClient(nullptr);
 
     }catch (DatabaseReadException& re ) {
         emit printUiServer(re.what());
@@ -666,7 +666,7 @@ void Tasks::serverShareFile()
             for(auto client : clients.values()){
                 if(client->getUsername() == userToShare){
                     //emit requestShareFile(client->getSocket(), URI, client->getUsername()); // In future, push request if client connected
-                    this->serverOpenDirOfClient("New shared file !", client->getSocket());
+                    this->serverOpenDirOfClient(client->getSocket());
                     break;
                 }
             }
@@ -703,7 +703,7 @@ void Tasks::run(){
         case TypeOperation::LoginRequest:               this->serverLoginRequest();                 break;
         case TypeOperation::LoginUnlock:                this->serverLoginUnlock();                  break;
         case TypeOperation::AccountCreate:              this->serverAccountCreate();                break;
-        case TypeOperation::OpenDirectory:              this->serverOpenDirOfClient("",nullptr);            break;
+        case TypeOperation::OpenDirectory:              this->serverOpenDirOfClient(nullptr);       break;
         case TypeOperation::ProfileData:                this->serverPersonalDataOfClient();         break;
         case TypeOperation::AccountUpdate:              this->serverUpdateProfileClient();          break;
         case TypeOperation::CreateFile:                 this->serverCreateFileForClient();          break;

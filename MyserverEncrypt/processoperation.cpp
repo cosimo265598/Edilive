@@ -44,7 +44,7 @@ Tasks *ProcessOperation::createTask(
     connect(task,&Tasks::insertionChar, this, &ProcessOperation::onInsertionChar, Qt::DirectConnection);
     connect(task,&Tasks::deletionChar, this, &ProcessOperation::onDeletionChar, Qt::DirectConnection);
     connect(task,&Tasks::removeClientFromWorkspace, this, &ProcessOperation::onRemoveClientFromWorkspace, Qt::DirectConnection);
-    connect(task, &Tasks::requestShareFile, this, &ProcessOperation::onRequestShareFile);
+    //connect(task, &Tasks::requestShareFile, this, &ProcessOperation::onRequestShareFile);
 
     connect(task,&Tasks::socketAbort, this, &ProcessOperation::onSocketAbort,Qt::QueuedConnection);
     connect(task,&Tasks::printUiServer,dynamic_cast<MainWindow*>(this->parent()),&MainWindow::printUiServer,Qt::QueuedConnection);
@@ -115,13 +115,13 @@ void ProcessOperation::onAccountConfirmed(QWebSocket* socket, QString message)
     socket->sendBinaryMessage(data);
 }
 
-void ProcessOperation::onOpenDirOfClient(QWebSocket *socket, QJsonArray files, QString onReload)
+void ProcessOperation::onOpenDirOfClient(QWebSocket *socket, QJsonArray files)
 {
     qDebug()<<"Funzione onOpenDirClient viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
 
     QByteArray data;
     BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageOpenDirOfClient(files, onReload));
+                data,BuilderMessage::MessageOpenDirOfClient(files));
     socket->sendBinaryMessage(data);
 }
 

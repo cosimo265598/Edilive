@@ -54,7 +54,7 @@ private Q_SLOTS:
     void onFocusChange(QWidget *old, QWidget *now);
 
 public Q_SLOTS:
-     void onReceivedFileHandlers(QJsonArray, QString);
+     void onReceivedFileHandlers(QJsonArray);
      void onLoadSubscriberInfo(QString, QString, QByteArray);
      void onNewFileCreationFailure(QString errorMessage);
 
@@ -72,7 +72,7 @@ private:
     void deleteFile();
     void shareFile();
     void loadImage(QByteArray serializedImage);
-    void sharedFileNameConflictManage(QString& fileName);
+    QString sharedFileNameConflictManage(QString fileName);
 
 signals:
     void fileHandlerDbClicked(QString fileName);

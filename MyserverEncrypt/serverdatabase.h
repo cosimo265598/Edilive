@@ -54,17 +54,6 @@ private:
     Ui::MainWindow *ui_of_server;
 
     QSqlDatabase db;
-
-    // Prepared queries
-    QSqlQuery qInsertNewUser;
-    QSqlQuery qUpdateUser;
-    QSqlQuery qInsertDocEditor;
-    QSqlQuery qRemoveDocEditor;
-    QSqlQuery qRemoveDoc;
-    QSqlQuery qCountDocEditors;
-    QSqlQuery qSelectUserDocs;
-    QSqlQuery qExistUser;
-
 public:
 
     // Neutral ctor and dtor; the initialization work is done inside open()

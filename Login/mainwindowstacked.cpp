@@ -34,7 +34,6 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     connect(&profilePage, &ProfilePage::updateProfileRequest, this, &MainWindowStacked::updateProfileRequest);
     connect(&profilePage, &ProfilePage::resetSubscriberInfo, this, &MainWindowStacked::resetSubscriberInfo);
     connect(this, &MainWindowStacked::accountUpdateError, &profilePage, &ProfilePage::onAccountUpdateError);
-
 }
 
 MainWindowStacked::~MainWindowStacked()

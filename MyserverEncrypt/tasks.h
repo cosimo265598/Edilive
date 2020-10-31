@@ -87,7 +87,7 @@ private:
     void serverLoginRequest();
     void serverLoginUnlock();
     void serverAccountCreate();
-    void serverOpenDirOfClient(QString, QWebSocket *);
+    void serverOpenDirOfClient(QWebSocket *);
     void serverUpdateProfileClient();
     void serverPersonalDataOfClient();
     void serverCreateFileForClient();
@@ -107,7 +107,7 @@ signals:
     void messageChallegePassed(QWebSocket*, QString);
     void accountCreationError(QWebSocket*, QString);
     void accountConfirmed(QWebSocket*, QString);
-    void openDirOfClient(QWebSocket*, QJsonArray, QString);
+    void openDirOfClient(QWebSocket*, QJsonArray);
     void updateProfileClient(QWebSocket*, QJsonArray);
     void accountUpdateSuccess(QWebSocket*, QString);
     void accountUpdateError(QWebSocket*, QString);
@@ -119,7 +119,7 @@ signals:
     void insertionChar(QWebSocket *, Symbol);
     void deletionChar (QWebSocket *, Symbol);
     void removeClientFromWorkspace(QWebSocket*, QString);
-    void requestShareFile(QWebSocket*, QString, QString);
+    //void requestShareFile(QWebSocket*, QString, QString);
 
 };
 

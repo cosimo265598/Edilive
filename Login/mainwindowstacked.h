@@ -22,8 +22,8 @@ public:
 
 private:
     Ui::MainWindowStacked *ui;
-    HomePage homePage;
-    ProfilePage profilePage;
+    HomePage homePage{this};
+    ProfilePage profilePage{this};
 
 public slots:
 

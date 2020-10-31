@@ -63,22 +63,6 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
         emit printUiServerDatabase("----- ERORRE apertura db esistente"+db.lastError().text());
         throw DatabaseConnectionException(db.lastError());
     }
-    // Prepare all var-arg queries, leave only parameter binding for later
-
-    qInsertNewUser	 = QSqlQuery(db);
-    qUpdateUser		 = QSqlQuery(db);
-    qInsertDocEditor = QSqlQuery(db);
-
-    // Insertion query of a new record in the Users table
-    qInsertNewUser.prepare("INSERT INTO Users (Username, UserID, Nickname, PassHash, Salt, Icon) "
-        "VALUES (:username, :id, :nickname, :passhash, :salt, :icon)");
-
-    // Update query of an existing record in the Users table
-    qUpdateUser.prepare("UPDATE Users SET Nickname = :nickname, PassHash = :passhash, Salt = :salt, Icon = :icon "
-        "WHERE Username = :username");
-
-    // Selection query of all the filenames owned by a user (DocEditors table)
-    qSelectUserDocs.prepare("SELECT Files.FileName, Files.Creator, Files.Created, Files.URI FROM Files LEFT JOIN DocEditors WHERE Files.URI = DocEditors.URI AND Username = :username");
 
     emit printUiServerDatabase("Ready for new connection - connection name: "+connectionName);
 
@@ -146,21 +130,28 @@ void ServerDatabase::insertUser(const UserData& user)
 {
     emit printUiServerDatabase("Query insertUser");
 
+    QSqlQuery query(db);
+
+
+    // Insertion query of a new record in the Users table
+    query.prepare("INSERT INTO Users (Username, UserID, Nickname, PassHash, Salt, Icon) "
+        "VALUES (:username, :id, :nickname, :passhash, :salt, :icon)");
+
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
     user.getIcon().save(&buffer);	// writes image into the bytearray in PNG format
 
-    qInsertNewUser.bindValue(":username", user.getUsername());
-    qInsertNewUser.bindValue(":id", user.getUserId());
-    qInsertNewUser.bindValue(":nickname", user.getNickname());
-    qInsertNewUser.bindValue(":passhash", user.getPasswordHash());
-    qInsertNewUser.bindValue(":salt", user.getSalt());
-    qInsertNewUser.bindValue(":icon", icon);
+    query.bindValue(":username", user.getUsername());
+    query.bindValue(":id", user.getUserId());
+    query.bindValue(":nickname", user.getNickname());
+    query.bindValue(":passhash", user.getPasswordHash());
+    query.bindValue(":salt", user.getSalt());
+    query.bindValue(":icon", icon);
 
-    if (!qInsertNewUser.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error insert user "+qInsertNewUser.lastError().text();
-        throw DatabaseWriteException(qInsertNewUser.lastQuery().toStdString(), qInsertNewUser.lastError());
+    if (!query.exec()){
+        qDebug()<<LOG_PRINT_DB+"Error insert user "+query.lastError().text();
+        throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
 
     }
 }
@@ -169,20 +160,27 @@ void ServerDatabase::updateUser(const UserData& user)
 {
     emit printUiServerDatabase("Query updateUser");
 
+    QSqlQuery query(db);
+
+    // Update query of an existing record in the Users table
+    query.prepare("UPDATE Users SET Nickname = :nickname, PassHash = :passhash, Salt = :salt, Icon = :icon "
+        "WHERE Username = :username");
+
+
     QByteArray icon;
     QBuffer buffer(&icon);
     buffer.open(QIODevice::WriteOnly);
     user.getIcon().save(&buffer);
 
-    qUpdateUser.bindValue(":username", user.getUsername());
-    qUpdateUser.bindValue(":nickname", user.getNickname());
-    qUpdateUser.bindValue(":passhash", user.getPasswordHash());
-    qUpdateUser.bindValue(":salt",     user.getSalt());
-    qUpdateUser.bindValue(":icon",     icon);
+    query.bindValue(":username", user.getUsername());
+    query.bindValue(":nickname", user.getNickname());
+    query.bindValue(":passhash", user.getPasswordHash());
+    query.bindValue(":salt",     user.getSalt());
+    query.bindValue(":icon",     icon);
 
-    if (!qUpdateUser.exec()){
+    if (!query.exec()){
         qDebug()<<LOG_PRINT_DB+"Error update user";
-        throw DatabaseWriteException(qUpdateUser.lastQuery().toStdString(), qUpdateUser.lastError());
+        throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
     }
 }
 
@@ -311,16 +309,16 @@ void ServerDatabase::removeDoc(QString URI)
 {
     emit printUiServerDatabase("Query removeDoc");
 
-    QSqlQuery qRemoveDoc(db);
+    QSqlQuery query(db);
 
     // Deletion query of all records referring to a document filename in the DocEditors table
-    qRemoveDoc.prepare("DELETE FROM Files WHERE URI = :uri");
-    qRemoveDoc.bindValue(":uri", URI);
+    query.prepare("DELETE FROM Files WHERE URI = :uri");
+    query.bindValue(":uri", URI);
 
 
-    if (!qRemoveDoc.exec()){
+    if (!query.exec()){
         qDebug()<<LOG_PRINT_DB+"Error remove doc ";
-        throw DatabaseWriteException(qRemoveDocEditor.lastQuery().toStdString(), qRemoveDocEditor.lastError());
+        throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
     }
 }
 

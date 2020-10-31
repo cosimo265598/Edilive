@@ -33,7 +33,7 @@ public:
     static QJsonDocument MessageAccountCreationError(QString data);
     static QJsonDocument MessageAccountConfirmed(QString data);
 
-    static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles, QString reload);
+    static QJsonDocument MessageOpenDirOfClient(QJsonArray listfiles);
     static QJsonDocument MessageFileCreationError(QString error);
     static QJsonDocument MessageHeaderFile(QString data, QString creator, QList<QSharedPointer<Client>> connected);
     static QJsonDocument MessageFileDeletionError(QString error);
