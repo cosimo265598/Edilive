@@ -1,22 +1,27 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include <string>
+#include <QString>
 #include <vector>
+#include <QByteArray>
+#include <QChar>
+#include <QTextCharFormat>
 
 class Symbol {
 private:
-    char car;
-    std::string siteId;
+    QTextCharFormat fmtChar;
+    QChar car;
+    QString siteId;
     std::vector<int> posfraz;
-    std::string id;
+    QString id;
 public:
-    Symbol(char c, std::string s, std::vector<int> pos, std::string id);
-    std::string getSite();
-    char getCar();
+    Symbol(QChar c, QString s, std::vector<int> pos, QString id,QTextCharFormat new_fmt);
+    QString getSite();
+    QChar getCar();
     std::vector<int> getPosFraz();
-    float getFloatPosFraz();
-    std::string getId();
+    QString getStringPosFraz();
+    QString getId();
+    QTextCharFormat getFmt();
 
 };
 

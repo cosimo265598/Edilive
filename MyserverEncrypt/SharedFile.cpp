@@ -1,60 +1,74 @@
 #include <iostream>
 #include "SharedFile.h"
 #include <QDebug>
+#include <QFile>
 
 
-SharedFile::SharedFile(std::string id, std::string c) : counter(0){
+SharedFile::SharedFile(QString id, QString c) : counter(0){
     this->siteId=id;
     this->creator = c;
 }
 
-/*SharedFile::SharedFile(const SharedFile& other){
-    this->base=other.base;
-    this->posneg=other.posneg;
-    this->siteId=other.siteId;
-    this->counter=other.counter;
-    this->creator=other.creator;
-    this->symbols=other.symbols;
-    this->boundary=other.boundary;
-}*/
-
-
-void SharedFile::readExistingFile(std::string filePath){
-    int countline=0, countchar=0;
-    std::string line;
-    std::ifstream myfile;
-    myfile.open (filePath, std::ifstream::in);
-    if (myfile.is_open()){
-        while ( getline (myfile,line) ){
-            for(char car:line){
-                if(car!='\0') {
-                    if (countchar == 0 && countline == 0)
-                        localInsert(-1, -2, car, "server");
-                    else
-                        localInsert(countchar-1, -2, car, "server");
-                    countchar++;
-                }
-            }
-            localInsert(countchar-1, -2, '\n', "server");
-            countchar++;
-            countline++;
-        }
-        myfile.close();
-    }
-    else
-
-        //Passiamo valore per inviare messaggio di errore apertura al client con BuildMessage.
-
-        std::cout << "Error opening file."<<std::endl;
+QString SharedFile::to_string() {
+    QString str;
+    for(Symbol s : this->symbols)
+        str.append(s.getCar());
+    return str;
 }
 
-Symbol SharedFile::localInsert(int indexA, int indexB, char value, std::string chiamante, std::string id){
-    /*if(id!="NOID")
-        printf("Sono in insert indicizzata per inserire tra:\n"
-               "-indice=%d con posfraz=%f\n"
-               "-indice=%d con posfraz=%f\n",
-               indexA, symbols[indexA].getFloatPosFraz(),
-               indexB, symbols[indexB].getFloatPosFraz());*/
+
+QString SharedFile::getSite() {
+    return this->siteId;
+}
+
+std::vector<Symbol> SharedFile::getSymbols(){
+    return this->symbols;
+}
+
+
+void SharedFile::readExistingFile(QString filePath){
+    int countline=0, countchar=0;
+    QString line;
+    QFile myfile(filePath);
+    if (!myfile.open(QIODevice::ReadOnly))
+        return;
+
+    ///////
+    QChar c;
+    QTextCharFormat fmt;
+    QDataStream docFileStream(&myfile);
+    while (!docFileStream.atEnd()){
+        docFileStream >> c;
+        docFileStream >> fmt;
+        if (countchar == 0)
+            localInsert(-1, -2, c, "server","NOID",fmt);
+        else
+            localInsert(countchar-1, -2, c, "server","NOID",fmt);
+        countchar++;
+    }
+
+    myfile.close();
+    //////
+    /*
+    QTextStream in(&myfile);
+    while ( !in.atEnd() ){
+        for(QString car: in.readLine()){
+            for(QChar c: car){
+                if (countchar == 0 && countline == 0)
+                    localInsert(-1, -2, c, "server");
+                else
+                    localInsert(countchar-1, -2, c, "server");
+                countchar++;
+            }
+        }
+        localInsert(countchar-1, -2, QChar::ParagraphSeparator, "server");
+        countchar++;
+        countline++;
+    }*/
+
+}
+
+Symbol SharedFile::localInsert(int indexA, int indexB, QChar value, QString chiamante, QString id,QTextCharFormat newfmt){
     std::vector<int> posA;
     std::vector<int> posB;
     if(indexA==-1)
@@ -68,13 +82,13 @@ Symbol SharedFile::localInsert(int indexA, int indexB, char value, std::string c
     auto it = this->symbols.begin();
     std::stringstream ss, ss2, ss3;
     if(id=="NOID") {
-        ss << this->siteId;
+        ss << this->siteId.toUtf8().constData();
         ss2 << counter;
         counter++;
     }
     if(chiamante!="server"){
         //salvo in ss3 l'username del client
-        ss3 << chiamante;
+        ss3 << chiamante.toUtf8().constData();
     }
     std::vector<int> pos;
     int depth=0, interval=0;
@@ -121,120 +135,93 @@ Symbol SharedFile::localInsert(int indexA, int indexB, char value, std::string c
         else
             pos.push_back(base-subVal); //oppure 2*depth*base se decidiamo di raddoppiare la base ad ogni discesa in profondita
     }
-    std::string idsim;
+    QString idsim;
     if(id=="NOID"){
         if(chiamante!="server")
-            idsim=ss.str()+"_"+ss3.str()+"_"+ss2.str();
+            idsim=QString::fromStdString(ss.str())+QString("_")+QString::fromStdString(ss3.str())+QString("_")+QString::fromStdString(ss2.str().data());
         else
-            idsim=ss.str()+"_"+ss2.str();
+            idsim=QString::fromStdString(ss.str())+QString("_")+QString::fromStdString(ss2.str());
     }
     else
         idsim=id;
 
-    Symbol s(value, siteId, pos, idsim);
+    Symbol s(value, siteId, pos, idsim,newfmt);
     if(indexB==-2 || symbols.empty()){
         symbols.push_back(s);
     }
     else
         symbols.insert(it+indexB, s);
 
-    /*if(chiamante=="client"){
-        per client: creo messaggio e lo mando al server notificando 'inserimento
-    }*/
     return s;
-
-    //per server: SOLO SE NON C'È STATO CONFLITTO creo messaggio e lo mando a tutti i client per notificare l'inserimento
-    //so che c'è stato conflitto se id!="NOID"
-}
-
-int SharedFile::localInsert(Symbol ricevuto, std::string chiamante) {
-    auto it = this->symbols.begin();
-    if (symbols.size() == 0) {
-        symbols.push_back(ricevuto);
-    } else {
-        int depth = ricevuto.getPosFraz().size();
-        int fatto = 0;
-        //printf("NUOVO INSERIMENTO: ");
-        //printf("Voglio inserire %c con posfraz %f\n", ricevuto.getCar(), ricevuto.getFloatPosFraz());
-        for (int j = 0; j < symbols.size(); j++) { //migliorabile l'algoritmo di ricerca
-            //printf("Ho trovato car %c con posfraz %f\n", symbols[j].getCar(), symbols[j].getFloatPosFraz());
-            if(symbols[j].getFloatPosFraz()>ricevuto.getFloatPosFraz()) {
-                symbols.insert(it + j, ricevuto);
-                fatto=1;
-                break;
-            }
-            else if(chiamante=="server" && symbols[j].getFloatStringPosFraz()==ricevuto.getFloatStringPosFraz()){
-                //area debug
-                std::stringstream ss,ss1;
-                int count=0;
-                for(int x : symbols[j].getPosFraz()){
-                    if(count==1)
-                        ss<<".";
-                    ss<<x;
-                    count++;
-                }
-                count=0;
-                for(int x : ricevuto.getPosFraz()){
-                    if(count==1)
-                        ss1<<".";
-                    ss1<<x;
-                    count++;
-                }
-                //fine area debug
-                qDebug()<<"Conflitto perchè: "<<QString::fromStdString(ss.str())<<"=="<<QString::fromStdString(ss1.str());
-                qDebug()<<"Con j="<<j;
-                //printf("PosFraz uguale\n");
-                //CONFLITTO
-                //scelgo nuova pos per ricevuto che stia tra attuale j e j+1 e inserisco
-                localInsert(j, j+1, ricevuto.getCar(), "server", ricevuto.getId());
-                fatto=1;
-                return 1;
-            }
-        }
-        if(fatto==0) //caso in cui il nuovo simbolo va in coda al file
-            symbols.push_back(ricevuto);
-
-        if(chiamante=="server") {
-            //SE NON C'È STATO CONFLITTO:
-                 //creo messaggio per avvisare tutti gli i client tranne il mandante che è stato aggiunto un carattere
-            //SE C'È STATO CONFLITTO:
-                 //creo messaggio per avvisare tutti gli i client tranne il mandante che è stato aggiunto un carattere
-                 //creo messaggio per il client mandante per fargli modificare la pos fraz usando l'identificativo del carattere
-        }
-        return 0;
-    }
 }
 
 
-
-void SharedFile::localErase(Symbol s, std::string chiamante) {
+void SharedFile::localErase(Symbol s) {
     if(symbols.empty())
         return;
     auto it = this->symbols.begin();
     int i;
-    for(i=0; i<this->symbols.size(); i++)
-        if(symbols[i].getFloatPosFraz()==s.getFloatPosFraz() && symbols[i].getId()==s.getId()){
+    for(i=0; i<this->symbols.size(); i++){
+        if(symbols[i].getStringPosFraz()==s.getStringPosFraz() && symbols[i].getId()==s.getId()){
             symbols.erase(it+i);
             break;
         }
-    /*
-    if(chiamante=="server"){
-        //informa tutti i clients tranne il mandante che hai cancellato il carattere identificando con id e posfraz
-    }*/
-}
-
-std::string SharedFile::to_string() {
-    std::string str;
-    for(Symbol s : this->symbols)
-        str+=s.getCar();
-    return str;
+    }
 }
 
 
-std::string SharedFile::getSite() {
-    return this->siteId;
+int SharedFile::recursiveInsert(Symbol s, Symbol dainserire, int i, int depth){
+    if(i==depth)
+        return 0;
+    if(s.getPosFraz()[i]>dainserire.getPosFraz()[i])
+        return 1;
+    if(s.getPosFraz()[i]==dainserire.getPosFraz()[i])
+        return recursiveInsert(s, dainserire, i+1, depth);
 }
 
-std::vector<Symbol> SharedFile::getSymbols(){
-    return this->symbols;
+int SharedFile::localInsert(Symbol ricevuto, QString chiamante) {
+    auto it = this->symbols.begin();
+    if (symbols.size() == 0) {
+        symbols.push_back(ricevuto);
+        return 0;
+    } else {
+        bool fatto = false;
+        for (int k = 0; k < symbols.size(); k++) {
+            if (symbols[k].getStringPosFraz() == ricevuto.getStringPosFraz() &&
+                symbols[k].getId() != ricevuto.getId() && chiamante == "server") {
+                //CONFLITTO
+                localInsert(k, k + 1, ricevuto.getCar(), "server", ricevuto.getId(),ricevuto.getFmt());
+                return 1;
+            }
+            int depth=symbols[k].getPosFraz().size();
+            int inserire;
+            if(symbols[k].getPosFraz().size()>ricevuto.getPosFraz().size()){
+                int diff=symbols[k].getPosFraz().size()-ricevuto.getPosFraz().size();
+                std::vector<int> pf= ricevuto.getPosFraz();
+                for(int l=0; l<diff; l++)
+                    pf.push_back(0);
+                inserire = recursiveInsert(symbols[k], Symbol(ricevuto.getCar(), ricevuto.getSite(), pf, ricevuto.getId(),ricevuto.getFmt()), 0, depth);
+            }
+            else if(symbols[k].getPosFraz().size()<ricevuto.getPosFraz().size()){
+                depth=ricevuto.getPosFraz().size();
+                int diff=ricevuto.getPosFraz().size()-symbols[k].getPosFraz().size();
+                std::vector<int> pf= symbols[k].getPosFraz();
+                for(int l=0; l<diff; l++)
+                    pf.push_back(0);
+                inserire = recursiveInsert(Symbol(symbols[k].getCar(), symbols[k].getSite(), pf, symbols[k].getId(),symbols[k].getFmt()), ricevuto, 0, depth);
+
+            }
+            else
+                inserire = recursiveInsert(symbols[k], ricevuto, 0, depth);
+            if (inserire == 1) {
+                symbols.insert(it + k, ricevuto);
+                fatto = true;
+                break;
+            }
+        }
+        if (fatto == false) {
+            symbols.push_back(ricevuto);
+        }
+        return 0;
+    }
 }

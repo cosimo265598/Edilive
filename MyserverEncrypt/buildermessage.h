@@ -22,9 +22,9 @@ public:
     static void MessageSendToClient(QByteArray& byte,QByteArray& appendByte);
     static void MessageSendToClient(QByteArray& byte,SharedFile *newfile);
 
-    static QJsonDocument MessageInsert(char car, std::vector<int> posf, QString id, QString siteid/*, QString iniziale*/);
-    static QJsonDocument MessageConflictInsert(char car, std::vector<int>  newposf, std::vector<int>  oldposf, QString id, QString siteid);
-    static QJsonDocument MessageDelete(char car, std::vector<int> posf, QString id, QString siteid);
+    static QJsonDocument MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid/*, QString iniziale*/);
+    static QJsonDocument MessageConflictInsert(QChar car, std::vector<int>  newposf, std::vector<int>  oldposf, QString id, QString siteid);
+    static QJsonDocument MessageDelete(QChar car, std::vector<int> posf, QString id, QString siteid);
 
     static QJsonDocument MessageLogin();
     static QJsonDocument MessageChallege(QString salt, QString nonce);

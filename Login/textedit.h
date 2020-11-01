@@ -54,8 +54,9 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QPointer>
-
+#include <Symbol.h>
 #include "presence.h"
+#include <SharedFile.h>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -74,25 +75,25 @@ class TextEdit : public QMainWindow
 public:
     TextEdit(QWidget *parent = 0, struct subscriber_t* subscriber=nullptr , QList<struct subscriber_t>* listUsers=nullptr);
 
-    bool load(const QString &fileName, QString file);
-
+    bool load(const QString &fileName, SharedFile* file);
+    void drawAllCursor();
 
 public slots:
     void fromServerInsert(QString c, int pos,QString user);
+    void fromServerDelete(int pos,QString user);
     void fileNew();
     void textChange();
-    void onAddConnectedUser(int id, QString username, QImage img);
-    void onRemoveConnectedUser(QString username);
-
+    void onUpdateListUsersConnected(int id, QString username, QImage img);
+    void onContentsChanged(int position, int charsRemoved, int charsAdded);
 signals:
-    //void charInsertion(int charPos);
-    void fromServerInsertSignal(QString c, int pos,QString username);
-    void localInsertionSignal(QString c, int pos);
+    void localDeletionSignal(int pos);
+    void localInsertionSignal(QChar c, int pos);
     void removeClientWorkspace(QString);
+    void saveFile(QString filename);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
-
+    //bool eventFilter(QObject *object, QEvent *event) override;
 private slots:
     void fileOpen();
     bool fileSave();
@@ -136,7 +137,7 @@ private:
     void alignmentChanged(Qt::Alignment a);
     void drawCursor(const Presence& p);
     void newPresence(qint32 userId, QString username, QImage image);
-    void removePresence(QString username);
+    void removePresence(qint32 userId);
 
 
     QAction *actionSave;
@@ -173,7 +174,7 @@ private:
     subscriber_t* subscriber;
     QList<subscriber_t>* listUsers;
     bool ready;
-
+    bool deletion;
 };
 
 #endif // TEXTEDIT_H

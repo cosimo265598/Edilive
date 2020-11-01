@@ -31,7 +31,7 @@
 #include <QPainter>
 #include <QLabel>
 #include <QDebug>
-#include <QRandomGenerator>
+#include <QSaveFile>
 
 
 #include "presence.h"
@@ -43,23 +43,23 @@ const QString rsrcPath = ":/images/mac";
 #else
 const QString rsrcPath = ":/images/win";
 #endif
+int global_var=0;
 
 TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscriber_t>* listUsers)
-    : QMainWindow(parent),subscriber(subscriber),listUsers(listUsers)
+    : QMainWindow(parent),subscriber(subscriber),listUsers(listUsers),ready(false),deletion(false)
 {
-    ready=false;
+
     setWindowTitle(QCoreApplication::applicationName());
 
     textEdit = new QTextEdit(parent);
-    connect(textEdit, &QTextEdit::textChanged,
-            this, &TextEdit::textChange);
+    const QSignalBlocker blocker(textEdit->document());
+    //connect(textEdit, &QTextEdit::textChanged,this, &TextEdit::textChange);
 
 
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
             this, &TextEdit::currentCharFormatChanged);
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
-        connect(this, &TextEdit::fromServerInsertSignal, this, &TextEdit::fromServerInsert);
     setCentralWidget(textEdit);
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
@@ -99,7 +99,7 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
     connect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
 
 
-    //Clipboard: temporal storage of data to be copied, pasted...
+    //Cipboard: temporal storage of data to be copied, pasted...
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &TextEdit::clipboardDataChanged);
 
     textEdit->setFocus();
@@ -117,6 +117,10 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
         newPresence(j,i->username,img);
         j++;
     }
+    drawAllCursor();
+    textEdit->installEventFilter(this);
+
+    connect(textEdit->document(),&QTextDocument::contentsChange,this,&TextEdit::onContentsChanged);
 }
 
 void TextEdit::closeEvent(QCloseEvent *e)
@@ -131,6 +135,23 @@ void TextEdit::closeEvent(QCloseEvent *e)
     emit removeClientWorkspace(QFileInfo(fileName).fileName());
     listUsers->clear();
 }
+/*
+bool TextEdit::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj== textEdit && event->type() == QEvent::KeyPress &&
+            (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Backspace || static_cast<QKeyEvent*>(event)->key() == Qt::Key_Delete)){
+        qDebug() << "IT's TIME TO DELETE!!!!!";
+        //deletion = !deletion;
+        QTextCursor cur = textEdit->textCursor();
+        cur.deleteChar();
+        Presence p=onlineUsers_map.find(this->subscriber->username).value();
+        p.cursor()->setPosition(cur.position(),QTextCursor::MoveAnchor);
+        drawCursor(p);
+        emit localDeletionSignal(cur.position()+1);
+    }
+    else
+        return QObject::eventFilter(obj, event);
+} */
 
 void TextEdit::setupFileActions()
 {
@@ -382,35 +403,24 @@ void TextEdit::setupClientOnline()
 }
 
 
-bool TextEdit::load(const QString &fileName, QString file)
+bool TextEdit::load(const QString &fileName, SharedFile* file)
 {
+    const QSignalBlocker blocker(textEdit->document());
+    textEdit->textCursor().setPosition(0);
 
-    /*
-    if (!QFile::exists(f))
-        return false;
-    QFile file(f);
-    if (!file.open(QFile::ReadOnly))
-        return false;
-
-    QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
-    QString str = codec->toUnicode(data);
-    QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
-    textEdit->document()->setBaseUrl(baseUrl);
-    if (Qt::mightBeRichText(str)) {
-        textEdit->setHtml(str);
-    } else {
-        QMimeDatabase db;
-        if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown"))
-            textEdit->setMarkdown(str);
-        else
-            textEdit->setPlainText(QString::fromLocal8Bit(data));
-    }
-    */
-    textEdit->setPlainText(file);
+    for(Symbol s: file->getSymbols())
+        textEdit->textCursor().insertText(s.getCar(),s.getFmt());
     setCurrentFileName(fileName);
     ready=true;
     return true;
+}
+
+void TextEdit::drawAllCursor()
+{
+    foreach(const Presence& p, onlineUsers_map.values()) {
+        if (p.name() != this->subscriber->username)
+            drawCursor(p);
+    }
 }
 
 bool TextEdit::maybeSave()
@@ -463,7 +473,6 @@ void TextEdit::fileOpen()
                                   << "text/html"
 #endif
 #if QT_CONFIG(textmarkdownreader)
-
                                   << "text/markdown"
 #endif
                                   << "text/plain");
@@ -478,11 +487,11 @@ void TextEdit::fileOpen()
 
 bool TextEdit::fileSave()
 {
+/*
     if (fileName.isEmpty())
         return fileSaveAs();
     if (fileName.startsWith(QStringLiteral(":/")))
         return fileSaveAs();
-
     QTextDocumentWriter writer(fileName);
     bool success = writer.write(textEdit->document());
     if (success) {
@@ -491,8 +500,9 @@ bool TextEdit::fileSave()
     } else {
         statusBar()->showMessage(tr("Could not write to file \"%1\"")
                                  .arg(QDir::toNativeSeparators(fileName)));
-    }
-    return success;
+    }*/
+    emit saveFile(fileName);
+    return true;
 }
 
 bool TextEdit::fileSaveAs()
@@ -568,6 +578,8 @@ void TextEdit::filePrintPdf()
 
 void TextEdit::textBold()
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCharFormat fmt;
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
     mergeFormatOnWordOrSelection(fmt);
@@ -575,6 +587,8 @@ void TextEdit::textBold()
 
 void TextEdit::textUnderline()
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCharFormat fmt;
     fmt.setFontUnderline(actionTextUnderline->isChecked());
     mergeFormatOnWordOrSelection(fmt);
@@ -582,6 +596,8 @@ void TextEdit::textUnderline()
 
 void TextEdit::textItalic()
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCharFormat fmt;
     fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
@@ -589,6 +605,8 @@ void TextEdit::textItalic()
 
 void TextEdit::textFamily(const QString &f)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCharFormat fmt;
     fmt.setFontFamily(f);
     mergeFormatOnWordOrSelection(fmt);
@@ -596,6 +614,8 @@ void TextEdit::textFamily(const QString &f)
 
 void TextEdit::textSize(const QString &p)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     qreal pointSize = p.toFloat();
     if (p.toFloat() > 0) {
         QTextCharFormat fmt;
@@ -606,6 +626,8 @@ void TextEdit::textSize(const QString &p)
 
 void TextEdit::textStyle(int styleIndex)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
 
@@ -699,6 +721,8 @@ void TextEdit::textStyle(int styleIndex)
 
 void TextEdit::textColor()
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QColor col = QColorDialog::getColor(textEdit->textColor(), this);
     if (!col.isValid())
         return;
@@ -710,6 +734,8 @@ void TextEdit::textColor()
 
 void TextEdit::textAlign(QAction *a)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     if (a == actionAlignLeft)
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     else if (a == actionAlignCenter)
@@ -737,6 +763,8 @@ void TextEdit::unindent()
 
 void TextEdit::modifyIndentation(int amount)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     QTextCursor cursor = textEdit->textCursor();
     cursor.beginEditBlock();
     if (cursor.currentList()) {
@@ -761,12 +789,15 @@ void TextEdit::modifyIndentation(int amount)
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 {
+    const QSignalBlocker blocker(textEdit->document());
+
     fontChanged(format.font());
     colorChanged(format.foreground().color());
 }
 
 void TextEdit::cursorPositionChanged()
 {
+
     alignmentChanged(textEdit->alignment());
     QTextList *list = textEdit->textCursor().currentList();
 
@@ -820,73 +851,162 @@ void TextEdit::cursorPositionChanged()
 
     /////////////////////////////////
     //Da questo slot si può ricavare la posizione del cursore corrente
-    //emit charInsertion(textEdit->textCursor().position());
-    //qDebug() << "Cursor pos" << textEdit->textCursor().position();
 
     QTextCursor cursor = textEdit->textCursor();
     int pre= cursor.position();
-    cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
-    cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
-
-    //qDebug()<<"the c is:"<<cursor.selectedText()<< " "<<cursor.charFormat();
-
-    cursor.setPosition(pre, QTextCursor::MoveAnchor);
     Presence p=onlineUsers_map.find(this->subscriber->username).value();
-    p.cursor()->setPosition(cursor.position());
+    p.cursor()->setPosition(pre,QTextCursor::MoveAnchor);
     drawCursor(p);
-
+    p.cursor()->clearSelection();
+    qDebug()<<"MY CURSORO: "<<p.cursor()->position()<<" pre: "<<pre;
 
     ////////////////////////////////
 
-    //QTextCursor cursor = textEdit->textCursor();
-    //qDebug() << "Pos cursore: " << cursor.position();
-
-
 }
 void TextEdit::textChange(){
-    /*QString str = textEdit->toPlainText();
-    QString targetChars = str.mid(textEdit->textCursor().columnNumber()-1,1);
-    qDebug() << "char: " << targetChars << " at position: " << textEdit->textCursor().position()-1;
-    //EMETTI SEGNALE CHE INSERISCE IN SHARED FILE DA CLIENT
-    emit localInsertionSignal(targetChars,textEdit->textCursor().position()-1);*/
-
-    if(ready==false)
-        qDebug()<<"Nell'editor c'è stato un inserimento che proviene dal server";
-    else
-        qDebug()<<"Nell'editor c'è stato un inserimento che verrà mandato al server";
 
     if(ready==true){
-        QTextCursor cursor = textEdit->textCursor();
-        int pre= cursor.position();
-        cursor.setPosition(cursor.position(), QTextCursor::MoveAnchor);
-        cursor.setPosition((cursor.position()-1<1)?0:cursor.position()-1, QTextCursor::KeepAnchor);
-        QChar c =cursor.selectedText()[0];
-        qDebug()<<"the c is:"<<c<< " pos:"<<textEdit->textCursor().position()-1<<" pre: "<<pre;
-        if(!c.isNull())
-            emit localInsertionSignal(cursor.selectedText(),pre-1);
-    }
 
+        if(deletion){
+            qDebug() << "key_delete";
+
+            QTextCursor cur = textEdit->textCursor();
+            cur.deleteChar();
+            Presence p=onlineUsers_map.find(this->subscriber->username).value();
+            p.cursor()->setPosition(cur.position(),QTextCursor::MoveAnchor);
+            drawCursor(p);
+            emit localDeletionSignal(cur.position()+1);
+            deletion = !deletion;
+        }
+
+        else{
+            QTextCursor cur = textEdit->textCursor();
+
+            cur.clearSelection();
+
+            cur.movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
+            QChar c=cur.selectedText()[0];
+            cur.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor,1);
+
+            Presence p=onlineUsers_map.find(this->subscriber->username).value();
+
+            p.cursor()->setPosition(cur.position(),QTextCursor::MoveAnchor);
+            drawCursor(p);
+
+            //cur.setPosition(pre,QTextCursor::MoveAnchor);
+            //qDebug()<<" pre : "<<pre << " text"<< eventKey->text();
+            qDebug()<<" CURSOR ON INSERT: "<<p.cursor()->position()<< " pre : "<<cur.position();
+            // insertText
+
+            //emit localInsertionSignal(c,p.cursor()->position()-1);
+        }
+    }
 }
 void TextEdit::fromServerInsert(QString c, int pos,QString user){
-    qDebug()<< "Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos
-            <<"  e' di "<<user;
-    ready=false;
+    qDebug()<< "<TESTING **********>Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos<< " e di "<<user;
+    const QSignalBlocker blocker(textEdit->document());
     Presence p=onlineUsers_map.find(user).value();
     p.cursor()->clearSelection();
-    p.cursor()->setPosition(pos-1,QTextCursor::MoveAnchor); // va inserito pos
+    qDebug()<<"<TESTING> pre pos: "<<p.cursor()->position();
+    p.cursor()->setPosition(pos,QTextCursor::MoveAnchor);
+    p.cursor()->clearSelection();
     p.cursor()->insertText(c);
-    //p.cursor()->setPosition(pos-1,QTextCursor::MoveAnchor); // va inserito pos
-
-    drawCursor(p);
-    ready = true;
+    qDebug()<<"<TESTING> post pos: "<<p.cursor()->position();
+    p.cursor()->clearSelection();
+    drawAllCursor();
+    Presence pp=onlineUsers_map.find(this->subscriber->username).value();
+    drawCursor(pp);
 }
 
-void TextEdit::onAddConnectedUser(int id, QString username, QImage img)
+void TextEdit::fromServerDelete(int pos,QString user){
+    const QSignalBlocker blocker(textEdit->document());
+    qDebug()<<" REMOVE POS:"<<pos<<" user: "<<user;
+    Presence p=onlineUsers_map.find(user).value();
+    p.cursor()->setPosition(pos+1,QTextCursor::MoveAnchor);
+    p.cursor()->setPosition(pos,QTextCursor::KeepAnchor);
+    qDebug()<<"SELECTED TEXT TO REMOVE"<<p.cursor()->selectedText();
+    p.cursor()->removeSelectedText();
+    p.cursor()->clearSelection();
+    drawAllCursor();
+    Presence pp=onlineUsers_map.find(this->subscriber->username).value();
+    drawCursor(pp);
+
+    /*
+    QTextCursor cursor = textEdit->textCursor();
+    cursor.setPosition(pos+1);
+    cursor.clearSelection();
+    cursor.movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+    */
+}
+
+void TextEdit::onUpdateListUsersConnected(int id, QString username, QImage img)
 {
     qDebug()<<"TEXT EDIT - signal on update user";
     newPresence(id,username,img);
+    drawAllCursor();
 }
 
+void TextEdit::onContentsChanged(int position, int charsRemoved, int charsAdded)
+{
+
+    if(charsAdded==charsRemoved && position==0)
+       return;
+    for (int i = 0; i < charsRemoved; i++)
+    {
+        emit localDeletionSignal(position+i);
+    }
+
+    /*************** CHARACTER INSERTION ***************/
+
+    global_var++;
+    qDebug()<<"TEXT EDIT CONTENT CHANGED "<<position<<" add:"<<charsAdded<<" rem: "<<charsRemoved;
+    qDebug()<<"THE SENDER "<< sender()->objectName();
+    qDebug()<<"EVOCATO N VOLTE :"<<global_var;
+    for (int i = position, pos = position; i < position + charsAdded ; ++i)
+    {
+        textEdit->textCursor().setPosition(i + 1);
+        QTextCharFormat fmt = textEdit->textCursor().charFormat();
+
+        textEdit->textCursor().setPosition(i);
+
+        QChar ch = textEdit->document()->characterAt(i);
+
+        if (ch != QChar::Null )
+        {
+            qDebug()<<"is non a paragraph: "<< ch;
+            if(ch==QChar::ParagraphSeparator){
+                 qDebug()<<"PARAGRAPH "<< ch;
+                QTextBlock currentBlock = textEdit->textCursor().block();
+                QTextList* textList = textEdit->textCursor().currentList();
+
+                if (textList)
+                {
+                    //Getting first block of the list
+                    QTextBlock firstListBlock = textList->item(0);
+
+                    //If the current block is the beginning of a new list emit the signal to create a new one
+                    if (currentBlock == firstListBlock)
+                    {
+                        // It's not actually a new list in this case, but the re-insertion of a block
+                        if (textList->count() > 1 && i == position + charsAdded - 1)
+                        {
+                            QTextBlock otherListBlock = textList->item(1);
+                            //emit assignBlockToList(currentBlock.position(), otherListBlock.position());
+                        }
+                    }
+                }
+                else
+                    emit localInsertionSignal(QChar::ParagraphSeparator,i);
+            }else
+                emit localInsertionSignal(ch,i);
+        }
+        Presence p=onlineUsers_map.find(this->subscriber->username).value();
+        p.cursor()->setPosition(textEdit->textCursor().position(),QTextCursor::MoveAnchor);
+        drawAllCursor();
+    }
+
+}
 void TextEdit::clipboardDataChanged()
 {
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
@@ -985,30 +1105,27 @@ void TextEdit::newPresence(qint32 userId, QString username, QImage image)
     qDebug() << "users" << onlineUsers_map.size();
 
     p.setAction(onlineAction);
-    p.cursor()->setPosition(0);
-    drawCursor(p);
+
+    p.cursor()->movePosition(QTextCursor::Start,QTextCursor::KeepAnchor);
+    qDebug()<< "NEW PRESENCE pos:"<<p.cursor()->position();
+    p.cursor()->clearSelection();
 }
 
-void TextEdit::onRemoveConnectedUser(QString username){
-    this->removePresence(username);
-}
-
-void TextEdit::removePresence(QString username)
+void TextEdit::removePresence(qint32 userId)
 {
-
-    if (onlineUsers_map.contains(username)){
-        qDebug() << "Sono: " << username << " mi rimuovo";
-
-        Presence& p = onlineUsers_map.find(username).value();
-
+    /*
+    if (onlineUsers.contains(userId))
+    {
+        Presence& p = onlineUsers.find(userId).value();
         //Hide user cursor
         p.label()->clear();
-
         //Remove user icon from users toolbar
-        onlineUsers->removeAction(p.actionHighlightText());
-
+        onlineUsersToolbar->removeAction(p.actionHighlightText());
         //Remove from editor
-        onlineUsers_map.remove(username);
-
+        onlineUsers.remove(userId);
+        //Recompute user text highlighting
+        handleMultipleSelections();
     }
+    */
+
 }

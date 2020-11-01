@@ -1,13 +1,14 @@
 #include <sstream>
 #include "Symbol.h"
 
-Symbol::Symbol(char c, std::string s, std::vector<int> pos, std::string id) : id(id), car(c){
+Symbol::Symbol(QChar c, QString s, std::vector<int> pos, QString id,QTextCharFormat fmt) : id(id), car(c){
     this->siteId=s;
     this->posfraz=pos;
+    this->fmtChar=fmt;
 }
 
 
-std::string Symbol::getSite() {
+QString Symbol::getSite() {
     return this->siteId;
 }
 
@@ -15,35 +16,21 @@ std::vector<int> Symbol::getPosFraz() {
     return this->posfraz;
 }
 
-float Symbol::getFloatPosFraz(){
+QString Symbol::getStringPosFraz(){
     std::stringstream ss;
-    int count=0;
-    for(int x : posfraz){
-        if(count==1)
-            ss<<".";
+    for(int x : posfraz)
         ss<<x;
-        count++;
-    }
-    std::string str = ss.str();
-    float f = std::stof(str);
-    return f;
+    return ss.str().data();
 }
 
-char Symbol::getCar(){
+QChar Symbol::getCar(){
     return this->car;
 }
 
-std::string Symbol::getId() {
+QString Symbol::getId() {
     return this->id;
 }
-std::string Symbol::getFloatStringPosFraz(){
-    std::stringstream ss;
-    int count=0;
-    for(int x : posfraz){
-        if(count==1)
-            ss<<".";
-        ss<<x;
-        count++;
-    }
-    return ss.str();
+
+QTextCharFormat Symbol::getFmt(){
+    return this->fmtChar;
 }

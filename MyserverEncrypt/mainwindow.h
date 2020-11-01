@@ -22,10 +22,8 @@
 #include <QTextCursor>
 #include <QtConcurrent>
 #include <QRunnable>
+
 #include <userdata.h>
-
-
-
 #include "client.h"
 #include "serverdatabase.h"
 #include "processoperation.h"

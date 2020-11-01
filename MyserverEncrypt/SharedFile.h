@@ -14,17 +14,17 @@
 
 class SharedFile{
 private:
-    std::string siteId ; //ci mettiamo il nome del path nel server del file
+    QString siteId ; //ci mettiamo il nome del path nel server del file
     std::vector<Symbol> symbols;
     std::vector<int> posneg;
     int counter;
-    std::string creator;
+    QString creator;
     int base = 16, boundary=10;
 
 public:
 
     //costruttore per definire un nuovo file vuoto
-    SharedFile(std::string id, std::string c);
+    SharedFile(QString id, QString c);
     //SharedFile(const SharedFile& other);
 
     //METODO PER COSTRUIRE LA STRUTTURA DI UN FILE PREESISTENTE NEL FILESYSTEM DEL SERVER
@@ -36,7 +36,7 @@ public:
     //    QString path(QDir().currentPath()+"/Users/"+client->getUsername()+"/"+fileName);
     //    SharedFile newfile(path.tostdString(), nome utente creatore)
     //    newfile.readExistingFile(pathdelfile);
-    void readExistingFile(std::string filePath);
+    void readExistingFile(QString filePath);
 
     //Questa funzione è usata in tre situazioni:
     //     - DAL CLIENT: Per il suo inserimento locale dall'editor.
@@ -51,7 +51,7 @@ public:
     //                   2) Ricalcolo di una posizione frazionaria dovuta al conflitto di due caratteri ricevuti da client.
     //Per l'uso della funzione è necessario specificare il chiamante (client o server) e
     //l'id del carattere solo nel caso in cui la si stia chiamando a seguito di un conflitto di posfraz.
-    Symbol localInsert(int indexA, int indexB, char value, std::string chiamante, std::string id = "NOID");
+    Symbol localInsert(int indexA, int indexB, QChar value, QString chiamante, QString id = "NOID",QTextCharFormat new_fmt=QTextCharFormat());
 
     //Questa funzione è usata in due situazioni:
     //     - DAL CLIENT: Quando gli arriva un carattere da inserire dal server.
@@ -59,20 +59,23 @@ public:
     //In entrambi i casi, è necessario prima convertire i dati riguardanti il carattere ricevuto
     //in un symbol da passare alla funzione.
     //Chiamando la funzione bisogna specificare il lato da cui si sta usando (client o server)
-    int localInsert(Symbol ricevuto, std::string chiamante);
+    int localInsert(Symbol ricevuto, QString chiamante);
+
+    int recursiveInsert(Symbol s, Symbol dainserire, int i, int depth);
 
     //Cancellazione di un carattere a seguito di aver ricevuto un messaggio che diceva di cancellarlo:
     //    - Lato Client : se il server gli ha comunicato di cancellare un carattere;
     //    - Lato Server : se un client gli ha comunicato di cancellare un carattere;
-    void localErase(Symbol s, std::string chiamante);
+    void localErase(Symbol s);
 
     //Ritorna una stringa con l'intero contenuto del file
-    std::string to_string();
+    QString to_string();
 
     //Ritorna il codice identificativo del file
-    std::string getSite();
+    QString getSite();
 
     std::vector<Symbol> getSymbols();
+
 };
 
 

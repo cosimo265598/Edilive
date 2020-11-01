@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QImage>
 #include <QBuffer>
+#include <QJsonArray>
 
 #include "updateuser.h"
 
@@ -15,8 +16,8 @@ public:
     static void MessageSendToServer(QByteArray& byte,QByteArray& appendByte);
 
 
-    static QJsonDocument MessageInsert(char car, std::vector<int> posf, QString id, QString siteid);
-    static QJsonDocument MessageDelete(QString docURI, char car, std::vector<int> pos, QString id, QString siteid);
+    static QJsonDocument MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid);
+    static QJsonDocument MessageDelete(QString URI, QChar car, std::vector<int> pos, QString id, QString siteid);
 
     static QJsonDocument MessageTest(QString data);
     static QJsonDocument MessageLogin(QString username);
@@ -27,16 +28,16 @@ public:
     static QJsonDocument MessageOpenDir();
     static QJsonDocument MessageCreateNewFile(QString nomefile);
     static QJsonDocument MessageGenericErrorFile(QString data);
-    static QJsonDocument MessageOpenFile(QString nomefile);
-    static QJsonDocument MessagedDeleteFile(QString nomefile);
+    static QJsonDocument MessageOpenFile(QString URI);
+    static QJsonDocument MessagedDeleteFile(QString URI);
 
     // profile management
     static QJsonDocument MessageSubscriberInfoRequest();
     static QJsonDocument MessagedUpdateProfileRequest(QString nickname, QString password, QByteArray serializedImage);
 
     //TextEditor
-    static QJsonDocument MessageRemoveClientWorkspace(QString fileName);
-
+    static QJsonDocument MessageRemoveClientWorkspace(QString URI);
+    static QJsonDocument MessagedCloseEditor(QString URI);
     static QJsonDocument MessageShareFile(QString username, QString URI);
 };
 

@@ -20,10 +20,9 @@
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QTimer>
-#include <textedit.h>
 #include <QAbstractSocket>
 #include <QChar>
-
+#include <QSaveFile>
 
 #include "mainwindow.h"
 #include "ui_mainwindowstacked.h"
@@ -80,14 +79,17 @@ private slots:
     void onCreateNewFileRequest(QString fileName);
     void onDeleteFileRequest(QString fileName);
     void onUpdateProfileRequest(updateUser_t);
+    void onCloseTextEditor();
 
 public slots:
     void ping();
     void errorSocket(QAbstractSocket::SocketError error);
     void closeControll();
-    void localInsertion(QString c, int pos);
-    void onRemoveClientWorkspace(QString docURI);
+    void localInsertion(QChar c, int pos);
+    void onLocalDeletion(int pos);
+    void onRemoveClientWorkspace(QString URI);
     void onShareFile(QString username, QString URI);
+    void saveFile(QString filename); // URI o fileName? credo URI
 
 private:
     MainWindowStacked *mainWindowStacked=nullptr;
@@ -125,7 +127,9 @@ signals:
     void newFileCreationFailure(QString errorMessage);
     void updateSuccess();
     void refreshText(QString);
-    void addConnectedUser(int id,QString username,QImage img);
+    void updateListUsersConnected(int id,QString username,QImage img);
+    void fromServerInsertSignal(QString c, int pos,QString user);
+    void fromServerDeleteSignal(int pos,QString user);
     void removeConnectedUser(QString);
     void accountUpdateError(QString);
 };

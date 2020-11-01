@@ -19,29 +19,22 @@ void BuilderMessageClient::MessageSendToServer(QByteArray &byte, QByteArray &app
 }
 
 //fileName mi serve per trovare il workspace, da sostituire con fileURI. Metto già il nome del campo aggiornato
-QJsonDocument BuilderMessageClient::MessageInsert(char car, std::vector<int> posf, QString id, QString siteid)
+QJsonDocument BuilderMessageClient::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",18);
-    std::string s(1,car);
-    objtosend.insert("car",QString::fromStdString(s));
-    std::string posfstringa="";
-    for(int i=0; i<posf.size(); i++){
-        std::stringstream ss;
-        ss << posf[i];
-        std::string str = ss.str();
-        if(i==posf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
+    objtosend.insert("car",QString(car));
 
-    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    QJsonArray array;
+    for(int i : posf)
+        array.append(i);
+
+    objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
     jsondoc.setObject(objtosend);
-    qDebug() << "Sto mandando al server carattere " << QString::fromStdString(s)<< " con posf=" <<QString::fromStdString(posfstringa)<<" con id="<<id;
+    qDebug() << "Sto mandando al server carattere " << car<< " con posf=" <<array<<" con id="<<id;
 
     return jsondoc;
 
@@ -49,25 +42,18 @@ QJsonDocument BuilderMessageClient::MessageInsert(char car, std::vector<int> pos
 }
 
 //fileName mi serve per trovare il workspace, da sostituire con fileURI. Metto già il nome del campo aggiornato
-QJsonDocument BuilderMessageClient::MessageDelete(QString fileName, char car, std::vector<int> posf, QString id, QString siteid)
+QJsonDocument BuilderMessageClient::MessageDelete(QString fileName, QChar car, std::vector<int> posf, QString id, QString siteid)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",19);
-    std::string s(1,car);
-    objtosend.insert("car",QString::fromStdString(s));
-    std::string posfstringa="";
-    for(int i=0; i<posf.size(); i++){
-        std::stringstream ss;
-        ss << posf[i];
-        std::string str = ss.str();
-        if(i==posf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
+    objtosend.insert("car",QString(car));
 
-    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    QJsonArray array;
+    for(int i : posf)
+        array.append(i);
+
+    objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
     jsondoc.setObject(objtosend);
@@ -139,13 +125,13 @@ QJsonDocument BuilderMessageClient::MessageOpenDir()
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString nomefile)
+QJsonDocument BuilderMessageClient::MessageCreateNewFile(QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",12);
     objtosend.insert("auth",true);
-    objtosend.insert("nomefile",nomefile);
+    objtosend.insert("nomefile",fileName);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
@@ -161,6 +147,7 @@ QJsonDocument BuilderMessageClient::MessageGenericErrorFile(QString data)
     return jsondoc;
 }
 
+// CHECK FIELD!!!!!!!!
 QJsonDocument BuilderMessageClient::MessageOpenFile(QString nomefile)
 {
     QJsonDocument jsondoc;
@@ -183,13 +170,13 @@ QJsonDocument BuilderMessageClient::MessageSubscriberInfoRequest()
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString nomefile)
+QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString URI)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",17);
     objtosend.insert("auth",true);
-    objtosend.insert("nomefile",nomefile);
+    objtosend.insert("nomefile",URI);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }
@@ -222,11 +209,24 @@ QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nicknam
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessageRemoveClientWorkspace(QString fileName)
+// SARA' URI invece di filename?
+
+QJsonDocument BuilderMessageClient::MessagedCloseEditor(QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
-    objtosend.insert("fileName", fileName);
+    objtosend.insert("type",20);
+    objtosend.insert("auth",true);
+     objtosend.insert("nomefile",fileName);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+}
+
+QJsonDocument BuilderMessageClient::MessageRemoveClientWorkspace(QString URI)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("fileName", URI);
     objtosend.insert("auth",true);
     objtosend.insert("type",20);
     jsondoc.setObject(objtosend);

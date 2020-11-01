@@ -2,7 +2,6 @@
 #include <QBuffer>
 #include <QDebug>
 #include <QDir>
-#include <sstream>
 
 void BuilderMessage::MessageSendToClient(QByteArray &byte,QJsonDocument jsonToSend)
 {
@@ -42,19 +41,26 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
         for(; i<symbols.size(); i++){
             //qDebug() << "              "       << i;
             std::vector<int> posf = symbols[i].getPosFraz();
-            std::string s(1,symbols[i].getCar());
+            QChar car = symbols[i].getCar();
             QJsonArray posArray;
             for(int val: posf)
                posArray.append(val);
 
             //qDebug() << "posf: " << posf << "    posArray:  " << posArray;
 
+            QBuffer out;
+            QDataStream data(&out);
+            out.open(QIODevice::WriteOnly);
+            data<<symbols[i].getFmt();
+
             QJsonObject obj{
-                                {"car",QString::fromStdString(s)},
+                                {"car",QString(car)},
                                 {"posfraz",posArray},
-                                {"id",QString::fromStdString(symbols[i].getId())},
-                                {"siteid",QString::fromStdString(symbols[i].getSite())}
+                                {"id",symbols[i].getId()},
+                                {"siteid",symbols[i].getSite()},
+                                {"format",QLatin1String(out.data().toBase64())}
                            };
+
             cur_json += sizeof (obj);
             qDebug() << cur_json;
             if(cur_json < max_json){
@@ -80,26 +86,18 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
 }
 
 
-QJsonDocument BuilderMessage::MessageInsert(char car, std::vector<int> posf, QString id, QString siteid/*, QString iniziale*/)
+QJsonDocument BuilderMessage::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid/*, QString iniziale*/)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
-    objtosend.insert("type",50);
-    std::string s(1,car);
-    objtosend.insert("car",QString::fromStdString(s));
-    //objtosend.insert("iniziale",iniziale);
-    std::string posfstringa="";
-    for(unsigned long i=0; i<posf.size(); i++){
-        std::stringstream ss;
-        ss << posf[i];
-        std::string str = ss.str();
-        if(i==posf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
+    objtosend.insert("type",50);;
+    objtosend.insert("car",QString(car));
 
-    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    QJsonArray array;
+    for(int i: posf)
+        array.append(i);
+
+    objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
     jsondoc.setObject(objtosend);
@@ -108,35 +106,24 @@ QJsonDocument BuilderMessage::MessageInsert(char car, std::vector<int> posf, QSt
 }
 
 
-QJsonDocument BuilderMessage::MessageConflictInsert(char car, std::vector<int> newposf, std::vector<int> oldposf, QString id, QString siteid)
+QJsonDocument BuilderMessage::MessageConflictInsert(QChar car, std::vector<int> newposf, std::vector<int> oldposf, QString id, QString siteid)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",51);
-    std::string s(1,car);
-    objtosend.insert("car",QString::fromStdString(s));
-    std::string posfstringa="";
-    for(int i=0; i<newposf.size(); i++){
-        std::stringstream ss;
-        ss << newposf[i];
-        std::string str = ss.str();
-        if(i==newposf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
-    objtosend.insert("newposfraz",QString::fromStdString(posfstringa));
-    posfstringa="";
-    for(int i=0; i<oldposf.size(); i++){
-        std::stringstream ss;
-        ss << oldposf[i];
-        std::string str = ss.str();
-        if(i==oldposf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
-    objtosend.insert("newposfraz",QString::fromStdString(posfstringa));
+    objtosend.insert("car",QString(car));
+
+    QJsonArray array;
+    for(int i: newposf)
+        array.append(i);
+
+    objtosend.insert("newposfraz",array);
+
+    QJsonArray array_old;
+    for(int i: oldposf)
+        array.append(i);
+
+    objtosend.insert("oldposfraz",array_old);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
     jsondoc.setObject(objtosend);
@@ -144,24 +131,19 @@ QJsonDocument BuilderMessage::MessageConflictInsert(char car, std::vector<int> n
 
 }
 
-QJsonDocument BuilderMessage::MessageDelete(char car, std::vector<int> posf, QString id, QString siteid)
+QJsonDocument BuilderMessage::MessageDelete(QChar car, std::vector<int> posf, QString id, QString siteid)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",52);
-    std::string s(1,car);
-    objtosend.insert("car",QString::fromStdString(s));
-    std::string posfstringa="";
-    for(int i=0; i<posf.size(); i++){
-        std::stringstream ss;
-        ss << posf[i];
-        std::string str = ss.str();
-        if(i==posf.size()-1)
-            posfstringa.append(str);
-        else
-            posfstringa.append(str).append("-");
-    }
-    objtosend.insert("posfraz",QString::fromStdString(posfstringa));
+    objtosend.insert("car",QString(car));
+
+    QJsonArray array;
+    for(int i: posf)
+        array.append(i);
+
+
+    objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
     jsondoc.setObject(objtosend);
@@ -200,6 +182,7 @@ QJsonDocument BuilderMessage::MessageChallegePassed(QString data)
     return jsondoc;
 
 }
+
 QJsonDocument BuilderMessage::MessageLoginError(QString data)
 {
     QJsonDocument jsondoc;
