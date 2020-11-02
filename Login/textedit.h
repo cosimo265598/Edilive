@@ -139,7 +139,6 @@ private:
     void newPresence(qint32 userId, QString username, QImage image);
     void removePresence(qint32 userId);
 
-
     QAction *actionSave;
     QAction *actionTextBold;
     QAction *actionTextUnderline;

@@ -121,6 +121,13 @@ signals:
     void removeClientFromWorkspace(QWebSocket*, QString);
     //void requestShareFile(QWebSocket*, QString, QString);
 
+    /*
+//insert and delete of chars
+    void insertionChar(Symbol s, QWebSocket *clientSocket);
+    void deletionChar(Symbol s,QWebSocket *clientSocket);
+    void onRemoveClientWorkSpace(QString docURI, QWebSocket *clientSocket);
+    */
+
 };
 
 #endif // TASKS_H

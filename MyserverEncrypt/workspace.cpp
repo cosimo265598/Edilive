@@ -10,8 +10,8 @@ Workspace::Workspace(QObject *parent, QString path) : QObject(parent), path(path
 
     QFileInfo info(path);
      qDebug() << "Created new workspace with filename="<<path;
-    sf = new SharedFile(info.fileName().toStdString(),info.owner().toStdString()); //DA SISTEMARE CON VERO CREATORE
-    sf -> readExistingFile(path.toStdString());
+     sf = new SharedFile(info.fileName(),info.owner()); //DA SISTEMARE CON VERO CREATORE
+     sf -> readExistingFile(path);
 }
 
 void Workspace::addClient(QWebSocket* clientSocket, QSharedPointer<Client> client)

@@ -549,91 +549,137 @@ void Tasks::serverOpenFile()
     emit openFile(socket, fileName);
 }
 
-void Tasks::serverInsertionChar(){
+void Tasks::insertionChar(QWebSocket *clientSocket, Symbol s){
 
-    char c = request["car"].toString().toStdString()[0];
-    std::string id=request["id"].toString().toStdString();
-    std::string posfraz=request["posfraz"].toString().toStdString();
-    std::string siteid=request["siteid"].toString().toStdString();
+    QString caller =clients[clientSocket]->getUsername();
+    /*
+    workspaces[QString::fromStdString(s.getSite())].get()->insertChar(s, "server", clientSocket, caller);
+    */
+    QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
 
-    qDebug()<< "Il server ha ricevuto carattere "<< c << " con posf=" << QString::fromStdString(posfraz) << " e id="<<QString::fromStdString(id);
-    std::vector<int> v;
-    int i=0;
-    while(i<posfraz.length()){
-        if(i!=0 && (int)posfraz[i]-'0'==0)
-            break;
-        if(posfraz[i]!=','){
-            std::string cifra;
-            while(posfraz[i]!='-' && i<posfraz.length()){
-                std::stringstream ss;
-                ss << posfraz[i]-'0';
-                cifra.append(ss.str());
-                i++;
+    SharedFile *sf = w->getSharedFile();
+
+    //AREA DEBUG
+    qDebug() << "INSERIMENTO DA CLIENT";
+    qDebug() << "File pre inserimento: " <<(sf->to_string());
+    for(Symbol s : sf->getSymbols()){
+        qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+    }
+    //fine AREA DEBUG
+
+    int esito = sf->localInsert(s, "server");
+    qDebug()<< "Conflitto: "<<esito;
+    if(esito==1){//conflitto
+        qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
+        std::vector<Symbol> simboli = sf->getSymbols();
+        std::vector<int> nuovapos;
+        for(int i=0; i<simboli.size(); i++)
+            if(simboli[i].getId()==s.getId()){
+                nuovapos=simboli[i].getPosFraz();
+                break;
             }
-            v.push_back(std::stoi(cifra));
-            i++;
+        Symbol news(s.getCar(),s.getSite(), nuovapos, s.getId(),s.getFmt());
+        QByteArray data1;
+        BuilderMessage::MessageSendToClient(
+                    data1,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), (s.getId()), (s.getSite())));
+
+        clientSocket->sendBinaryMessage(data1);
+        for(QSharedPointer<Client> cl : w->getClients()){
+                QByteArray data;
+                BuilderMessage::MessageSendToClient(
+                            data,BuilderMessage::MessageInsert(s.getCar(), news.getPosFraz(), (s.getId()), (s.getSite())/*,"no"*/));
+
+                cl->getSocket()->sendBinaryMessage(data);
         }
     }
-    Symbol s(c,siteid,v,id);
+    else{
+        qDebug()<< "E ARRIVATO IL MOMENTO DI MANDARE : ";
 
-    emit insertionChar(socket, s);
-}
+        for(QSharedPointer<Client> cl : w->getClients()){
+            qDebug()<< "NUMERO ITERAZIONE ANCORA:";
+            if(cl->getUsername()!=caller){
+                qDebug()<< "STO MANDANDO "<< cl->getUsername();
 
-void Tasks::serverDeleteChar(){
-    char c = request["char"].toString().toStdString()[0];
-    std::string id=request["id"].toString().toStdString();
-    std::string posfraz=request["posfraz"].toString().toStdString();
-    std::string siteid=request["siteid"].toString().toStdString();
+                QByteArray data;
+                BuilderMessage::MessageSendToClient(
+                            data,BuilderMessage::MessageInsert(s.getCar(), s.getPosFraz(), s.getId(), s.getSite()/*,"no"*/));
 
-    std::vector<int> v;
-    int i=0;
-    while(i<posfraz.length()){
-        if(i!=0 && (int)posfraz[i]-'0'==0)
-        break;
-        if(posfraz[i]!=','){
-            std::string cifra;
-            while(posfraz[i]!='-' && i<posfraz.length()){
-                std::stringstream ss;
-                ss << posfraz[i]-'0';
-                cifra.append(ss.str());
-                i++;
+                cl->getSocket()->sendBinaryMessage(data);
             }
-            v.push_back(std::stoi(cifra));
-            i++;
         }
     }
-    Symbol s(c,siteid,v,id);
-    emit deletionChar(socket, s);
+    //AREA DEBUG
+    qDebug() << "File post inserimento: " << sf->to_string();
+    for(Symbol s : sf->getSymbols()){
+        qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+    }
+    //fine AREA DEBUG
 }
+void Tasks::deletionChar(QWebSocket *clientSocket, Symbol s){
+    QString caller =clients[clientSocket]->getUsername();
+    //workspaces[QString::fromStdString(s.getSite())].get()->localErase(s, "server", caller);
+
+    QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
+    SharedFile *sf = w->getSharedFile();
+
+    //AREA DEBUG
+        qDebug() << "CANCELLAZIONE DA CLIENT";
+        qDebug() << "File prima: " << sf->to_string();
+        for(Symbol s1 : sf->getSymbols()){
+            qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<s1.getId();
+        }
+        //fine AREA DEBUG
+    qDebug()<<"locla erase:"<<s.getPosFraz();
+
+    sf->localErase(s);
+    //AREA DEBUG
+    qDebug()<<"Sto cancellando car="<<s.getCar()<< " con id="<<s.getId();
+        qDebug() << "File dopo: " << sf->to_string();
+        for(Symbol s1 : sf->getSymbols()){
+            qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<(s1.getId());
+        }
+        //fine AREA DEBUG
+
+    //INFORMA TUTTI I CLIENT TRANNE IL CHIAMANTE DELLA CANCELLAZIONE
+    for(QSharedPointer<Client> cl : w->getClients()){
+        if(cl->getUsername()!=caller){
+            qDebug()<<"Sto informando della cancellazione client: "<<cl->getUsername();
+            QByteArray data;
+            BuilderMessage::MessageSendToClient(
+                        data,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), s.getId(), s.getSite()));
+
+            cl->getSocket()->sendBinaryMessage(data);
+        }
+    }
+}
+
 
 void Tasks::serverRemoveClientFromWorkspace(){
     qDebug() << "ricevuto segnale di remove client from workspace";
-    QString fileName = request["fileName"].toString();
+    QString URI = request["fileName"].toString();
 
-    qDebug() << fileName;
-    workspaces[fileName]->removeClient(socket);
-    qDebug() << "OK rimosso client,  n client: " << workspaces[fileName]->getClients().size() << "In workspace: " << fileName;
+    qDebug() << URI;
+    workspaces[URI]->removeClient(socket);
+    qDebug() << "OK rimosso client,  n client: " << workspaces[URI]->getClients().size() << "In workspace: " << URI;
 
-    if(workspaces[fileName]->getClients().size()<=0){
-
-        QString rootPath(QDir().currentPath()+"/files/");
+    if(workspaces[URI]->getClients().size()<=0){
 
         //Safe way to save a file. All the operation are done on a temporary unique-random named file.
         //Only if the commit() return true the original file is modified
-        QSaveFile file(rootPath + fileName);
+        QSaveFile file(rootPath + URI);
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
             file.resize(0);
             QTextStream out(&file);
-            out << QString::fromStdString(workspaces[fileName]->getSharedFile()->to_string());
+
             file.commit();
         }
 
-        this->workspaces.remove(fileName);
+        this->workspaces.remove(URI);
 
         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
     }
     else
-        emit removeClientFromWorkspace(socket, fileName); // Remove the current client from the other client still sharing the <fileName> file
+        emit removeClientFromWorkspace(socket, URI); // Remove the current client from the other client still sharing the <fileName> file
 }
 
 void Tasks::serverShareFile()

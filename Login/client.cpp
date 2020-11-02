@@ -194,25 +194,6 @@ void Client::standardInsert(QJsonObject symbol)
     QString siteid=symbol["siteid"].toString();
     std::vector<int> v;
 
-    /*
-    int i=0;
-    while(i<posfraz.length()){
-        if(i!=0 && (int)posfraz[i]-'0'==0)
-            break;
-        if(posfraz[i]!=','){
-            std::string cifra;
-            while(posfraz[i]!='-' && i<posfraz.length()){
-                std::stringstream ss;
-                ss << posfraz[i]-'0';
-                cifra.append(ss.str());
-                i++;
-            }
-            v.push_back(std::stoi(cifra));
-            i++;
-        }
-    }
-    */
-
     for(auto val :symbol["posfraz"].toArray())
         v.push_back(val.toInt());
 
@@ -300,7 +281,6 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     case 4:{    // message unlock login
         old_clientstatus=clientStatus;
         clientStatus=Connected;
-        qDebug()<<"Successfull login : old "<<old_clientstatus<<" new "<<clientStatus;
 
         if(old_clientstatus==LoginRequest || old_clientstatus==RegistrationRequest){
             qDebug()<<"QUESTO IF ";
@@ -744,13 +724,13 @@ void Client::onLocalDeletion(int pos)
     this->m_webSocket->sendBinaryMessage(out);
 }
 
-void Client::onRemoveClientWorkspace(QString fileName)
+void Client::onRemoveClientWorkspace(QString URI)
 {
     qDebug() << "Mi rimuovo";
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessageRemoveClientWorkspace(fileName));
+                BuilderMessageClient::MessageRemoveClientWorkspace(URI));
     this->m_webSocket->sendBinaryMessage(out);
 }
 

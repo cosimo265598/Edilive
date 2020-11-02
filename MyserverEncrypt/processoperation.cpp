@@ -183,107 +183,11 @@ void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
 
 void ProcessOperation::onInsertionChar(QWebSocket *clientSocket, Symbol s){
 
-    QString caller =clients[clientSocket]->getUsername();
-    /*
-    workspaces[QString::fromStdString(s.getSite())].get()->insertChar(s, "server", clientSocket, caller);
-    */
-    QSharedPointer<Workspace> w =  workspaces[QString::fromStdString(s.getSite())];
 
-    SharedFile *sf = w->getSharedFile();
-
-    //AREA DEBUG
-    qDebug() << "INSERIMENTO DA CLIENT";
-    qDebug() << "File pre inserimento: " << QString::fromStdString(sf->to_string());
-    for(Symbol s : sf->getSymbols()){
-        std::string posfstringa="";
-        for(int i=0; i<s.getPosFraz().size(); i++){
-            std::stringstream ss;
-            ss << s.getPosFraz()[i];
-            std::string str = ss.str();
-            if(i==s.getPosFraz().size()-1)
-                posfstringa.append(str);
-            else
-                posfstringa.append(str).append("-");
-        }
-
-        qDebug() << s.getCar() << " con posfraz=" << QString::fromStdString(posfstringa) ;
-    }
-    //fine AREA DEBUG
-
-    int esito = sf->localInsert(s, "server");
-    qDebug()<< "Conflitto: "<<esito;
-    if(esito==1){//conflitto
-        qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
-        std::vector<Symbol> simboli = sf->getSymbols();
-        std::vector<int> nuovapos;
-        for(int i=0; i<simboli.size(); i++)
-            if(simboli[i].getFloatPosFraz()==s.getFloatPosFraz()){
-                nuovapos=simboli[i+1].getPosFraz();
-                break;
-            }
-        Symbol news(s.getCar(),s.getSite(), nuovapos, s.getId());
-        QByteArray data1;
-        BuilderMessage::MessageSendToClient(
-                    data1,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), QString::fromStdString(s.getId()), QString::fromStdString(s.getSite())));
-
-        clientSocket->sendBinaryMessage(data1);
-        for(QSharedPointer<Client> cl : w->getClients()){
-                QByteArray data;
-                BuilderMessage::MessageSendToClient(
-                            data,BuilderMessage::MessageInsert(s.getCar(), news.getPosFraz(), QString::fromStdString(s.getId()), QString::fromStdString(s.getSite())/*,"no"*/));
-
-                cl->getSocket()->sendBinaryMessage(data);
-        }
-    }
-    else{
-        for(QSharedPointer<Client> cl : w->getClients()){
-            if(cl->getUsername()!=caller){
-                QByteArray data;
-                BuilderMessage::MessageSendToClient(
-                            data,BuilderMessage::MessageInsert(s.getCar(), s.getPosFraz(), QString::fromStdString(s.getId()), QString::fromStdString(s.getSite())/*,"no"*/));
-
-                cl->getSocket()->sendBinaryMessage(data);
-            }
-        }
-    }
-    //AREA DEBUG
-    qDebug() << "File post inserimento: " << QString::fromStdString(sf->to_string());
-    for(Symbol s : sf->getSymbols()){
-        std::string posfstringa="";
-        for(int i=0; i<s.getPosFraz().size(); i++){
-            std::stringstream ss;
-            ss << s.getPosFraz()[i];
-            std::string str = ss.str();
-            if(i==s.getPosFraz().size()-1)
-                posfstringa.append(str);
-            else
-                posfstringa.append(str).append("-");
-        }
-
-        qDebug() << s.getCar() << " con posfraz=" << QString::fromStdString(posfstringa) ;
-    }
-    //fine AREA DEBUG
 }
 
 void ProcessOperation::onDeletionChar(QWebSocket *clientSocket, Symbol s){
-    QString caller =clients[clientSocket]->getUsername();
-    //workspaces[QString::fromStdString(s.getSite())].get()->localErase(s, "server", caller);
 
-    QSharedPointer<Workspace> w =  workspaces[QString::fromStdString(s.getSite())];
-    SharedFile *sf = w->getSharedFile();
-
-
-    sf->localErase(s, "server");
-    //INFORMA TUTTI I CLIENT TRANNE IL CHIAMANTE DELLA CANCELLAZIONE
-    for(QSharedPointer<Client> cl : w->getClients()){
-        if(cl->getUsername()!=caller){
-            QByteArray data;
-            BuilderMessage::MessageSendToClient(
-                        data,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), QString::fromStdString(s.getId()), QString::fromStdString(s.getSite())));
-
-            cl->getSocket()->sendBinaryMessage(data);
-        }
-    }
 }
 
 void ProcessOperation::onRemoveClientFromWorkspace(QWebSocket *clientSocket, QString fileName)
