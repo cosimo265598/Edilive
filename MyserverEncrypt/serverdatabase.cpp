@@ -104,7 +104,6 @@ void ServerDatabase::insertNewDoc(QString URI, QString fileName, QString creator
 
         if(!db.commit())
         {
-             qDebug() << "qui";
              qDebug() << "Failed to commit";
              db.rollback();
              qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
@@ -126,33 +125,81 @@ ServerDatabase::~ServerDatabase()
 }
 
 
-void ServerDatabase::insertUser(const UserData& user)
+void ServerDatabase::insertUser(UserData& user)
 {
     emit printUiServerDatabase("Query insertUser");
 
-    QSqlQuery query(db);
+    int userId = -1;
 
+    if(db.transaction()){
+        QSqlQuery query(db);
 
-    // Insertion query of a new record in the Users table
-    query.prepare("INSERT INTO Users (Username, UserID, Nickname, PassHash, Salt, Icon) "
-        "VALUES (:username, :id, :nickname, :passhash, :salt, :icon)");
+        // Selection query for one user whit a particular username
+        query.prepare("SELECT * FROM Users WHERE Username = :username");
+        query.bindValue(":username", user.getUsername());
 
-    QByteArray icon;
-    QBuffer buffer(&icon);
-    buffer.open(QIODevice::WriteOnly);
-    user.getIcon().save(&buffer);	// writes image into the bytearray in PNG format
+        if (!query.exec()){
+            qDebug()<<LOG_PRINT_DB+"Error selecting existing user";
+            throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
+        }
 
-    query.bindValue(":username", user.getUsername());
-    query.bindValue(":id", user.getUserId());
-    query.bindValue(":nickname", user.getNickname());
-    query.bindValue(":passhash", user.getPasswordHash());
-    query.bindValue(":salt", user.getSalt());
-    query.bindValue(":icon", icon);
+        if(query.first()){
+            qDebug()<<LOG_PRINT_DB+"Username already existing";
+            throw DatabaseDuplicatedException(query.lastQuery().toStdString(), query.lastError());
+        }
 
-    if (!query.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error insert user "+query.lastError().text();
-        throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
+        if(query.exec("SELECT MAX(UserID) FROM Users"))
+        {
+            // Get the max value of the UserID column and return it incremented by 1 (first available ID)
+            query.next();
+            if (query.isValid()){
+                userId = query.value(0).toInt() + 1;
+                user.setUserId(userId);
+            }else{
+                qDebug()<<LOG_PRINT_DB+"Error get max user id";
+                throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
+            }
+        }
+        else
+        {
+            qDebug()<<LOG_PRINT_DB+"Error get max user id";
+            throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
+        }
 
+        // Insertion query of a new record in the Users table
+        query.prepare("INSERT INTO Users (Username, UserID, Nickname, PassHash, Salt, Icon) "
+            "VALUES (:username, :id, :nickname, :passhash, :salt, :icon)");
+
+        QByteArray icon;
+        QBuffer buffer(&icon);
+        buffer.open(QIODevice::WriteOnly);
+        user.getIcon().save(&buffer);
+
+        query.bindValue(":username", user.getUsername());
+        query.bindValue(":id", user.getUserId());
+        query.bindValue(":nickname", user.getNickname());
+        query.bindValue(":passhash", user.getPasswordHash());
+        query.bindValue(":salt", user.getSalt());
+        query.bindValue(":icon", icon);
+
+        if (!query.exec()){
+            qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
+            db.rollback();
+            throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
+        }
+
+        if(!db.commit())
+        {
+             qDebug() << "qui";
+             qDebug() << "Failed to commit";
+             db.rollback();
+             qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
+             throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
+        }
+
+    }else{
+        qDebug() <<  "Failed to start transaction mode";
+        throw DatabaseTransactionException("Failed to start transaction mode");
     }
 }
 
@@ -200,7 +247,7 @@ bool ServerDatabase::addDocToUser(QString username, QString URI)
         if (!query.exec()){
             qDebug()<<LOG_PRINT_DB+"Error select existing user";
             db.rollback();
-            throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
+            throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
         }
 
         if(query.first()){
@@ -220,7 +267,6 @@ bool ServerDatabase::addDocToUser(QString username, QString URI)
 
         if(!db.commit())
         {
-             qDebug() << "qui";
              qDebug() << "Failed to commit";
              db.rollback();
              qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
@@ -260,6 +306,11 @@ bool ServerDatabase::removeDocFromUser(QString username, QString URI)
         }
 
         query.next();
+        if(!query.isValid()){
+            db.rollback();
+            throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
+        }
+
         if(query.value(0).toInt()==0){
             query.prepare("DELETE FROM Files WHERE URI = :uri");
             query.bindValue(":uri", URI);
@@ -274,11 +325,11 @@ bool ServerDatabase::removeDocFromUser(QString username, QString URI)
 
        if(!db.commit())
        {
-            qDebug() << "qui";
             db.rollback();
             qDebug()<<LOG_PRINT_DB+"Failed to commit";
             throw DatabaseDeleteException(query.lastQuery().toStdString(), query.lastError());
        }
+
        return cancel;
     }
     else
@@ -286,23 +337,6 @@ bool ServerDatabase::removeDocFromUser(QString username, QString URI)
         qDebug() <<  "Failed to start transaction mode";
         throw DatabaseTransactionException("Failed to start transaction mode");
     }
-
-    /*
-    emit printUiServerDatabase("Query removeDocFromUser");
-
-    QSqlQuery qRemoveDocEditor(db);
-    // Deletion query of a User-filename pair from the DocEditors table
-    qRemoveDocEditor.prepare("DELETE FROM DocEditors WHERE Username = :username AND URI = :uri");
-
-    qRemoveDocEditor.bindValue(":username", username);
-    qRemoveDocEditor.bindValue(":uri", URI);
-
-    if (!qRemoveDocEditor.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error remove doc from  user";
-        throw DatabaseWriteException(qInsertDocEditor.lastQuery().toStdString(), qInsertDocEditor.lastError());
-
-    }
-    */
 }
 
 void ServerDatabase::removeDoc(QString URI)
@@ -400,21 +434,17 @@ UserData ServerDatabase::readUser(QString username)
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
 
-    if(query.first()){
+    if(!query.first())
+        throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
 
-        UserData user(
+    return UserData(
                     query.value("Username").toString(),
                     query.value("UserID").toInt(),
                     query.value("Nickname").toString(),
                     query.value("PassHash").toByteArray(),
                     query.value("Salt").toByteArray(),
                     QImage::fromData(query.value("Icon").toByteArray())
-        );
-
-        return user;
-    }
-
-    return UserData(); // return an empty data
+     );
 }
 
 QStringList ServerDatabase::readUserDocuments(QString username)
@@ -423,7 +453,7 @@ QStringList ServerDatabase::readUserDocuments(QString username)
 
     QSqlQuery query(db);
     // Selection query of all the filenames owned by a user (DocEditors table)
-    query.prepare("SELECT Files.FileName, Files.Creator, Files.Created, Files.URI FROM Files LEFT JOIN DocEditors WHERE Files.URI = DocEditors.URI AND Username = :username AND Pending = :pending");
+    query.prepare("SELECT Files.FileName, Files.Creator, Files.Created, Files.URI FROM Files LEFT JOIN DocEditors WHERE Files.URI = DocEditors.URI AND Username = :username AND Pending = :pending ORDER BY Files.Filename ASC");
 
     query.bindValue(":username", username);
     query.bindValue(":pending", 0);

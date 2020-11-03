@@ -52,3 +52,13 @@ DatabaseTransactionException::DatabaseTransactionException(std::string  err)
     : DatabaseException(err, QSqlError{})
 {
 }
+
+DatabaseNotFoundException::DatabaseNotFoundException(std::string query, QSqlError err)
+    : DatabaseException("Unable to exec this query: " + query, err)
+{
+}
+
+DatabaseDuplicatedException::DatabaseDuplicatedException(std::string query, QSqlError err)
+    : DatabaseException("Unable to exec this query: " + query, err)
+{
+}

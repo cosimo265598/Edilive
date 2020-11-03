@@ -47,7 +47,7 @@ enum TypeOperation : quint16
     DeleteFile,
     // add other enum below, and do not change the order of list
     InsertionChar,
-    DeleteChar,
+    DeletionChar,
     RemoveClientFromWorkspace,
     ShareFile
 
@@ -94,7 +94,7 @@ private:
     void serverDeleteFileForClient();
     void serverOpenFile();
     void serverInsertionChar();
-    void serverDeleteChar();
+    void serverDeletionChar();
     void serverRemoveClientFromWorkspace();
     void serverShareFile();
 
@@ -120,14 +120,6 @@ signals:
     void deletionChar (QWebSocket *, Symbol);
     void removeClientFromWorkspace(QWebSocket*, QString);
     //void requestShareFile(QWebSocket*, QString, QString);
-
-    /*
-//insert and delete of chars
-    void insertionChar(Symbol s, QWebSocket *clientSocket);
-    void deletionChar(Symbol s,QWebSocket *clientSocket);
-    void onRemoveClientWorkSpace(QString docURI, QWebSocket *clientSocket);
-    */
-
 };
 
 #endif // TASKS_H

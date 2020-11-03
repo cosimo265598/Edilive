@@ -70,7 +70,7 @@ public:
     // Queries
 
     void insertNewDoc(QString URI, QString fileName, QString creator, QString created);
-    void insertUser(const UserData& user);
+    void insertUser(UserData& user);
     void updateUser(const UserData& user);
     bool addDocToUser(QString username, QString URI);
     bool removeDocFromUser(QString username, QString fileName);

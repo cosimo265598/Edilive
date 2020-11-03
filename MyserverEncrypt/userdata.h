@@ -56,6 +56,8 @@ public:
     void update(QString nickname, QString password, QImage icon);
     void rollback(const UserData& backup);
     void generateSalt(QByteArray &salt);
+    void setUserId(int id);
+
 };
 
 #endif // USERDATA_H

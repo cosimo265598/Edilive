@@ -78,7 +78,19 @@ public:
     DatabaseTransactionException(std::string err);
 };
 
+class DatabaseNotFoundException : public DatabaseException
+{
+public:
 
+    DatabaseNotFoundException(std::string query, QSqlError err);
+};
+
+class DatabaseDuplicatedException : public DatabaseException
+{
+public:
+
+    DatabaseDuplicatedException(std::string query, QSqlError err);
+};
 
 
 

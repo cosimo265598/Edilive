@@ -13,6 +13,7 @@
 #include <iostream>
 #include <QRunnable>
 #include <QThreadPool>
+#include <shared_mutex>
 
 #include "workspace.h"
 #include "tasks.h"

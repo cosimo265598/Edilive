@@ -9,6 +9,11 @@
 const QString UserData::saltCharacters = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
 
 
+void UserData::setUserId(int userId)
+{
+    m_userId = userId;
+}
+
 UserData::UserData() : m_userId(-1) { }
 
 UserData::UserData(QString username, int userId, QString nickname, QString passwd, QImage icon)

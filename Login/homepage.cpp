@@ -145,7 +145,7 @@ QString HomePage::sharedFileNameConflictManage(QString fileName)
 {
     int i = 1;
     if(listfile.contains(fileName)){
-        while(listfile.contains(QString(fileName + '(' + QChar(i) + ')')))
+        while(listfile.contains(QString(fileName + '(' + QString::number(i) + ')')))
             i++;
 
         qDebug()<< "File conflict " << QString(fileName + '(' + QString::number(i) + ')');
