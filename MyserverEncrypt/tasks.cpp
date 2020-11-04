@@ -40,31 +40,25 @@ void Tasks::serverLoginRequest()
     //QThread::currentThread()->msleep(10000);
 
     try {
-        database.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
+
         return;
 
     }catch (DatabaseException& re ) {
         emit printUiServer(re.what());
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
+
         return;
     }
 
     try {
 
         UserData user(database.readUser(username));
-
-
-      /*
-            for (QString docUri : database.readUserDocuments(user.getUsername()))
-                user.addDocument(docUri);
-            users.insert(user.getUsername(), user);
-        }
-        */
 
         //Saving all the user info in memory. Deleted if login procedure will be abort or will fail
         users.insert(user.getUsername(), user);
@@ -73,12 +67,13 @@ void Tasks::serverLoginRequest()
         emit printUiServer(re.what());
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
+
         return;
     }catch (DatabaseNotFoundException& re) {
-        users.remove(username);
         emit printUiServer(re.what());
         emit loginError(socket, "Username " + username + " not registered");
         emit socketAbort(socket);
+
         return;
 
     }catch (DatabaseException& re ) {
@@ -137,7 +132,6 @@ void Tasks::serverLoginUnlock()
         return ;
     }else{
         users.remove(client->getUsername());
-        //client->logout();
         emit loginError(socket, "Credentials inserted are not correct");
         emit socketAbort(socket);
 
@@ -156,7 +150,7 @@ void Tasks::serverAccountCreate()
     ServerDatabase database;
 
     try {
-        database.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
         emit accountCreationError(socket, "Server error during account creation");
@@ -229,21 +223,26 @@ void Tasks::serverAccountCreate()
 
 void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
 {
-    QSharedPointer<Client> client = clients[socket];
+    QWebSocket * socket1 = socket;
+
+    if(pushSocket!=nullptr)
+        socket1 = pushSocket;
+
+    QSharedPointer<Client> client = clients[socket1];
     QJsonArray files;
     QList<file_t> fileList;
 
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
-        //emit fileCreationError(socket, "Error creation file");
+
         return;
     }catch (DatabaseException& re ) {
         emit printUiServer(re.what());
-        //emit fileCreationError(socket, "Error creation file");
+
         return;
     }
 
@@ -273,13 +272,8 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
                      });
     }
 
-    //QWebSocket *socket1;
-    if(pushSocket != nullptr)
-        //socket1 = pushSocket;
-        emit openDirOfClient(pushSocket, files);
-    else
         //socket1 = socket;
-        emit openDirOfClient(socket, files);
+        emit openDirOfClient(socket1, files);
 
     /*
     /////
@@ -314,7 +308,7 @@ void Tasks:: serverUpdateProfileClient(){
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("Databaseread problem during the query execution");
         emit accountUpdateError(socket, "Server error during account update");
@@ -392,7 +386,7 @@ void Tasks::serverCreateFileForClient()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
         emit fileCreationError(socket, "Server error creating new file");
@@ -448,7 +442,7 @@ void Tasks::serverDeleteFileForClient()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
         emit fileDeletionError(socket, "Server error deleting file");
@@ -701,7 +695,7 @@ void Tasks::serverShareFile()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString(QRandomGenerator::global()->generate()),ui);
+        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer(re.what());
         return;

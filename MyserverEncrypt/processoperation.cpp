@@ -237,11 +237,10 @@ void ProcessOperation::onSocketAbort(QWebSocket *clientSocket)
                     QWebSocketProtocol::CloseCodeBadOperation);
         clientSocket->deleteLater();
     }
-
+    clients.remove(clientSocket);
     if (client->isLogged())
     {
         client->logout();
-        clients.remove(clientSocket);
         emit printUiServer("Eject "+client->getUsername()+" ip: "+ip);
     }
     else

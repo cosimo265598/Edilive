@@ -649,7 +649,14 @@ void Client::resetUpdateUser(){
 
 void Client::ping()
 {
+    qDebug()<<m_webSocket.get()->closeCode();
     qDebug()<<"ping called - "<< old_clientstatus << " new "<< clientStatus;
+    if(m_webSocket.get()->closeCode()==QWebSocketProtocol::CloseCodeBadOperation){
+        waitingDialog.stopTimerForced();
+        waitingDialog.reject();
+        waitingDialog.close();
+        return;
+    }
     this->clientStatus=ReConnect;
     m_webSocket.get()->open(this->urlForConnection);
 }
@@ -663,8 +670,12 @@ void Client::closeControll()
 {
     if(waitingDialog.result()==QDialog::DialogCode::Rejected){
         qDebug()<<"No way to recover the connectio - app should be close";
-        if(mainWindowStacked!=nullptr)
-            mainWindowStacked->close();
+        if(mainWindowStacked!=nullptr){
+             stackedDialog = new StartupStackedDialog();
+             stackedDialog->show();
+             mainWindowStacked->close();
+        }
+
     }else{
         qDebug()<<"Connection recovered";
     }

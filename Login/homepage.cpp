@@ -42,15 +42,16 @@ void HomePage::onFileHandlerClicked(){
 void HomePage::onFocusChange(QWidget *old, QWidget *now){
     if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
         //Reset the original stylesheet with no border if the element is no more focused
+
         selected->setStyleSheet("QToolButton{border:none;}");
         selected = nullptr;
 
     }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){
-        qDebug() << "delete";
-        deleteFile();
+        QTimer::singleShot(100, this, SLOT(onDeleteFile()));
     }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_share"){
-        shareFile();
+        QTimer::singleShot(100, this, SLOT(onShareFile()));
     }
+
 }
 
 void HomePage::on_pushButton_new_file_clicked()
@@ -166,25 +167,26 @@ void HomePage::on_pushButton_Logout_clicked()
 ////TODO
 }
 
-void HomePage::deleteFile(){
+void HomePage::onDeleteFile(){
      QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
      delMsgBox.addButton(QMessageBox::Cancel);
      if(delMsgBox.exec()==QMessageBox::Ok){
         qDebug() << "OK";
         QString URI = selected -> getURI();
-        selected = nullptr;
+
         emit deleteFileRequest(URI);
      }
+     selected->setStyleSheet("QToolButton{border:none;}");
+     selected = nullptr;
 }
 
-void HomePage::shareFile()
+void HomePage::onShareFile()
 {
     qDebug() << "Homepage Share";
 
     DialogShare *diag = new DialogShare(this, selected->getURI());
     connect(diag, SIGNAL(shareFile(QString, QString)), this, SIGNAL(shareFile(QString, QString)));
     diag->exec();
-
+    selected->setStyleSheet("QToolButton{border:none;}");
     selected = nullptr;
-
 }

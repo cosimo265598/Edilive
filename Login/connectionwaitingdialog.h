@@ -22,6 +22,7 @@ public:
     void setText(QString message);
     void setNumberRetry();
     int resultOfRetry();
+    void stopTimerForced();
 
 public slots:
     void changeState(QAbstractSocket::SocketState state);

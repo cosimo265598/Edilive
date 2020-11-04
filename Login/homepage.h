@@ -21,6 +21,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDialogButtonBox>
+#include <QTimer>
 
 #include "dialogshare.h"
 #include "ui_homepage.h"
@@ -52,6 +53,8 @@ private Q_SLOTS:
     void on_pushButton_profile_page_clicked();
     void on_pushButton_Logout_clicked();
     void onFocusChange(QWidget *old, QWidget *now);
+    void onDeleteFile();
+    void onShareFile();
 
 public Q_SLOTS:
      void onReceivedFileHandlers(QJsonArray);
@@ -69,8 +72,6 @@ private:
     QMap<QString, FileHandler*> listfile;
     FileHandler *selected;
 
-    void deleteFile();
-    void shareFile();
     void loadImage(QByteArray serializedImage);
     QString sharedFileNameConflictManage(QString fileName);
 
