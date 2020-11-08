@@ -16,7 +16,7 @@ void UserData::setUserId(int userId)
 
 UserData::UserData() : m_userId(-1) { }
 
-UserData::UserData(QString username, int userId, QString nickname, QString passwd, QImage icon)
+UserData::UserData(QString username, int userId, QString nickname, QString passwd, QByteArray icon)
     : m_username(username), m_userId(userId), m_nickname(nickname), m_icon(icon)
 {
     QCryptographicHash hash(QCryptographicHash::Sha512);
@@ -29,7 +29,7 @@ UserData::UserData(QString username, int userId, QString nickname, QString passw
     m_passwd = hash.result();
 }
 
-UserData::UserData(QString username, int userId, QString nickname, QByteArray passhash, QByteArray salt, QImage icon)
+UserData::UserData(QString username, int userId, QString nickname, QByteArray passhash, QByteArray salt, QByteArray icon)
     : m_username(username), m_userId(userId), m_nickname(nickname), m_passwd(passhash), m_salt(salt), m_icon(icon)
 {
 }
@@ -63,7 +63,7 @@ QByteArray UserData::getPasswordHash() const
     return m_passwd;
 }
 
-QImage UserData::getIcon() const
+QByteArray UserData::getIcon() const
 {
     return m_icon;
 }
@@ -104,7 +104,7 @@ void UserData::setNickname(QString newNickname)
     m_nickname = newNickname;
 }
 
-void UserData::setIcon(QImage newIcon)
+void UserData::setIcon(QByteArray newIcon)
 {
     m_icon = newIcon;
 }
@@ -119,7 +119,7 @@ void UserData::setPassword(QString newPassword)
     m_passwd = hash.result();
 }
 
-void UserData::update(QString nickname, QString password, QImage icon)
+void UserData::update(QString nickname, QString password, QByteArray icon)
 {
     qDebug() << nickname.isEmpty();
     if(!nickname.isEmpty())

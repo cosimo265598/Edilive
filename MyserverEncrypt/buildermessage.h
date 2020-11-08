@@ -39,10 +39,10 @@ public:
     static QJsonDocument MessageFileDeletionError(QString error);
     static QJsonDocument MessageFileCreationSuccess(QString username,QString nickname,QImage icon);//
 
-    static QJsonDocument MessageAccountInfo(QString username,QString nickname,QImage icon);
+    static QJsonDocument MessageAccountInfo(QString username,QString nickname,QByteArray serializedImage);
     static QJsonDocument MessageAccountUpdateError(QString);
     static QJsonDocument MessageAccountUpdateSuccess(QString);
-    static QJsonDocument MessageInsertClientWorkspace(QString username, QString nickname, QImage ico);
+    static QJsonDocument MessageInsertClientWorkspace(QString username, QString nickname, QByteArray serializedImage );
     static QJsonDocument MessageRemoveClientFromWorkspace(QString username);
     static QJsonDocument MessageRequestShareFile(QString, QString);
 };

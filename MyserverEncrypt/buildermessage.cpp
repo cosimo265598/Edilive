@@ -245,17 +245,12 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName, QString creato
 
 
     for(auto client : connected){
-        QByteArray icon;
-        QBuffer buffer(&icon);
-        buffer.open(QIODevice::WriteOnly);
-        client->getUser()->getIcon().save(&buffer);
 
         array.append(QJsonObject{
                          {"username",client->getUser()->getUsername()},
                          {"nickname", client->getUser()->getNickname()},
-                         {"icon", QLatin1String(buffer.data().toBase64())}
+                         {"icon", QLatin1String(client->getUser()->getIcon())}
                      });
-        buffer.close();
     }
 
     json.insert("type",11);
@@ -266,31 +261,21 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName, QString creato
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QImage ico)
+QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QByteArray serializedImage)
 {
     bool presentIcon=false;
-    if(!ico.isNull())
+    if(!serializedImage.isNull())
         presentIcon=true;
-
-    qDebug()  << presentIcon;
-
-    QByteArray icon;
-    QBuffer buffer(&icon);
-    buffer.open(QIODevice::WriteOnly);
-    ico.save(&buffer);
 
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",17);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("icon",QLatin1String(buffer.data().toBase64()));
-    json.insert("icon_present", presentIcon);
+    json.insert("icon",QString::fromLatin1(serializedImage.toBase64().data()));
+    json.insert("present_icon", presentIcon);
     jsondoc.setObject(json);
 
-    buffer.close();
-
-    jsondoc.setObject(json);
     return jsondoc;
 }
 
@@ -323,31 +308,21 @@ QJsonDocument BuilderMessage::MessageAccountUpdateSuccess(QString msg){
     return jsondoc;
 }
 
-QJsonDocument BuilderMessage::MessageInsertClientWorkspace(QString username, QString nickname, QImage ico)
+QJsonDocument BuilderMessage::MessageInsertClientWorkspace(QString username, QString nickname, QByteArray serializedImage)
 {
     bool presentIcon=false;
-    if(!ico.isNull())
+    if(!serializedImage.isNull())
         presentIcon=true;
-
-    qDebug()  << presentIcon;
-
-    QByteArray icon;
-    QBuffer buffer(&icon);
-    buffer.open(QIODevice::WriteOnly);
-    ico.save(&buffer);
 
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",100);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("icon",QLatin1String(buffer.data().toBase64()));
+    json.insert("icon",QLatin1String(serializedImage));
     json.insert("icon_present", presentIcon);
     jsondoc.setObject(json);
 
-    buffer.close();
-
-    jsondoc.setObject(json);
     return jsondoc;
 
 }

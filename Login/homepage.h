@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QDialogButtonBox>
 #include <QTimer>
+#include <QPixmap>
 
 #include "dialogshare.h"
 #include "ui_homepage.h"

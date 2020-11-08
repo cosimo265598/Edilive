@@ -68,7 +68,7 @@ public slots:
     void onAccountConfirmed(QWebSocket*, QString);
     void onOpenDirOfClient(QWebSocket*, QJsonArray);
     void onAccountUpdateSuccess(QWebSocket*, QString);
-    void onPersonalDataOfClient(QWebSocket* , QString, QString, QImage);
+    void onPersonalDataOfClient(QWebSocket* , QString, QString, QByteArray);
     void onFileCreationError(QWebSocket* , QString);
     void onFileDeletionError(QWebSocket* , QString);
     void onOpenFile(QWebSocket*, QString);

@@ -372,13 +372,12 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 17:{
-        qDebug()<<"load Info";
-        QByteArray serializedImage;
-        if(jsonObj["icon_present"].toBool()){
-            auto const encoded = jsonObj["icon"].toString().toLatin1();
-            serializedImage = QByteArray::fromBase64(encoded);
-        }else
-            serializedImage = nullptr;
+        qDebug()<<"load Info    " << jsonObj;
+        QByteArray serializedImage = nullptr;
+        if(jsonObj["present_icon"].toBool()){
+            QString stringifiedImage = jsonObj["icon"].toString();
+            serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+        }
 
         subscriber.username = jsonObj["username"].toString();
         subscriber.nickname = jsonObj["nickname"].toString();
@@ -620,9 +619,11 @@ void Client::onUpdateProfileRequest(updateUser_t updateUser){
     qDebug() << "update";
     this->updateUser = updateUser;
     QByteArray out;
+
     BuilderMessageClient::MessageSendToServer(
                 out,
                 BuilderMessageClient::MessagedUpdateProfileRequest(updateUser.nickname, updateUser.password, updateUser.serializedImage));
+
     this->m_webSocket->sendBinaryMessage(out);
 }
 
@@ -779,3 +780,36 @@ void Client::saveFile(QString filename)
         file.commit();
     }
 }
+
+
+/*
+//Serve in effettivo salvare l'immagine in locale?
+QByteArray Client::saveAccountImage(QByteArray serializedImage){
+    qDebug() << "CHIAMATO";
+    ;
+     QPixmap pixmap;;
+     pixmap.loadFromData(serializedImage);
+     // DA SISTEMARE IL PATH in modo che sia indipendente (con currentPath, ritorna il path con la cartella temporanea di debug)
+     QString path = QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/prova.png";
+     if(QFile::exists(path)){
+         qDebug() << "esiste";
+         QFile file(path);
+         file.setPermissions(file.permissions() |
+                             QFileDevice::WriteOwner |
+                             QFileDevice::WriteUser |
+                             QFileDevice::WriteGroup |
+                             QFileDevice::WriteOther);
+         qDebug() << "Rimosso" << file.remove();
+     }
+     QFile file(path);
+     if(file.open(QIODevice::ReadWrite)) {
+        pixmap.save(&file);
+     }else {
+        qDebug() << "Can't open file";
+     }
+     //file.seek(0);
+     QByteArray out;
+     file.close();
+     return out;
+}
+*/

@@ -9,8 +9,8 @@ ProfilePage::ProfilePage(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ProfilePage)
 {
-    resetUpdateUser();
     ui->setupUi(this);
+    resetUpdateUser();
 }
 
 ProfilePage::~ProfilePage()
@@ -22,7 +22,12 @@ ProfilePage::~ProfilePage()
 void ProfilePage::on_buttonBox_ok_cancel_accepted()
 {
     if(updateUser.nickname == nullptr && updateUser.password == nullptr && updateUser.serializedImage == nullptr){
-        QMessageBox::critical(this, tr("WARNING"),"No changes detected",QMessageBox::Ok);
+        if(!ui->password->text().simplified().isNull() || !ui->confirmPassword->text().simplified().isNull()){
+            ui->password->setStyleSheet(" border: 1px solid red;");
+            ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
+        }else{
+            QMessageBox::critical(this, tr("WARNING"),"No changes detected",QMessageBox::Ok);
+        }
         return;
     }
     if(QMessageBox::critical(this, tr("WARNING"),"Apply the changes?",QMessageBox::Ok,QMessageBox::Cancel) == 0x00000400){
@@ -75,6 +80,7 @@ void ProfilePage::loadImage(QByteArray serializedImage){
     if (serializedImage == nullptr){
         pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
+        serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);
     }
 
@@ -90,6 +96,7 @@ void ProfilePage::on_pushButton_changeImage_clicked()
         QPixmap pixmap;
         file.open(QIODevice::ReadOnly);
         QByteArray serializedImage = file.readAll();
+
         file.close();
 
         pixmap.loadFromData(serializedImage);
@@ -127,4 +134,9 @@ void ProfilePage::resetUpdateUser(){
     updateUser.nickname.clear();
     updateUser.password.clear();
     updateUser.serializedImage.clear();
+
+    ui->password->setStyleSheet("");
+    ui->confirmPassword->setStyleSheet("");
+    ui->password->text().clear();
+    ui->confirmPassword->text().clear();
 }

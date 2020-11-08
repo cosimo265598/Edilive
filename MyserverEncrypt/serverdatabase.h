@@ -7,6 +7,8 @@
 #include <QSqlRecord>
 #include "userdata.h"
 #include <QDateTime>
+#include <QImage>
+
 #include "ui_mainwindow.h"
 
 

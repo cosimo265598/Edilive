@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QBuffer>
 #include <QJsonArray>
+#include <QTextCodec>
 
 #include "updateuser.h"
 

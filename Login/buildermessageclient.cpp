@@ -198,12 +198,11 @@ QJsonDocument BuilderMessageClient::MessagedUpdateProfileRequest(QString nicknam
     else
         objtosend.insert("password","");
 
-    if(serializedImage!=nullptr){
-        QBuffer buffer(&serializedImage);
-        buffer.open(QIODevice::WriteOnly);
-        objtosend.insert("icon",QLatin1String(buffer.data().toBase64()));
-    }else
-        objtosend.insert("icon","");
+    if(serializedImage != nullptr)
+        objtosend.insert("icon",QString::fromLatin1(serializedImage.toBase64().data()));
+    else{
+         objtosend.insert("icon","");
+    }
 
     jsondoc.setObject(objtosend);
     return jsondoc;

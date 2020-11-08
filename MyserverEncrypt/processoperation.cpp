@@ -134,12 +134,12 @@ void ProcessOperation::onAccountUpdateSuccess(QWebSocket *socket, QString messag
     socket->sendBinaryMessage(data);
 }
 
-void ProcessOperation::onPersonalDataOfClient(QWebSocket* socket, QString username, QString nickname, QImage image)
+void ProcessOperation::onPersonalDataOfClient(QWebSocket* socket, QString username, QString nickname, QByteArray serializedImage)
 {
     QByteArray data;
 
     BuilderMessage::MessageSendToClient(
-                data,BuilderMessage::MessageAccountInfo(username, nickname,image));
+                data,BuilderMessage::MessageAccountInfo(username, nickname,serializedImage));
 
     socket->sendBinaryMessage(data);
 }
@@ -166,7 +166,7 @@ void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
 
     Client *client = clients[socket].get();
     QByteArray data;
-    BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName, client->getUsername(),  workspaces[fileName].get()->getClients())); //DA SISTEMARE CON VERO CREATORE
+    BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(fileName, client->getUsername(),  workspaces[fileName].get()->getClients()));
     BuilderMessage::MessageSendToClient(data, workspaces[fileName].get()->getSharedFile());
     socket->sendBinaryMessage(data);
 
@@ -174,7 +174,7 @@ void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
     for(QSharedPointer<Client> cl : workspaces[fileName]->getClients()){
         if(cl->getUsername().compare(client->getUsername())!=0){
             QByteArray data;
-            BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageInsertClientWorkspace(client->getUser()->getUsername(),client->getUser()->getNickname(),client->getUser()->getIcon())); //DA SISTEMARE CON VERO CREATORE
+            BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageInsertClientWorkspace(client->getUser()->getUsername(),client->getUser()->getNickname(),client->getUser()->getIcon()));
             cl->getSocket()->sendBinaryMessage(data);
         }
         qDebug()<<data;

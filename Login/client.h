@@ -112,7 +112,7 @@ private:
 
     void resetUser();
     void resetUpdateUser();
-    QByteArray saveAccountImage(QString serializedImage);
+    //QByteArray saveAccountImage(QByteArray serializedImage);
     void createMainWindowStacked();
     void startTextEditor(QString fileName);
     void subscriberInfoRequest();

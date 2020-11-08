@@ -42,14 +42,14 @@ void Tasks::serverLoginRequest()
     try {
         database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection exception in ServerLoginRequest()");
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
 
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection exception in ServerLoginRequest()");
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
 
@@ -64,20 +64,20 @@ void Tasks::serverLoginRequest()
         users.insert(user.getUsername(), user);
 
     }catch (DatabaseReadException& re) {
-        emit printUiServer(re.what());
+        emit printUiServer("readUser query READ EXCEPTION in ServerLoginRequest() ");
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
 
         return;
     }catch (DatabaseNotFoundException& re) {
-        emit printUiServer(re.what());
+        emit printUiServer("readUser query NOTFOUND EXCEPTION in ServerLoginRequest()");
         emit loginError(socket, "Username " + username + " not registered");
         emit socketAbort(socket);
 
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("readUser query EXCEPTION in ServerLoginRequest()");
         emit loginError(socket, "Server error during login");
         emit socketAbort(socket);
 
@@ -152,13 +152,13 @@ void Tasks::serverAccountCreate()
     try {
         database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket, "Server error during account creation");
         emit socketAbort(socket);
 
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket, "Server error during account creation");
         emit socketAbort(socket);
 
@@ -169,7 +169,8 @@ void Tasks::serverAccountCreate()
 
     try
     {
-        UserData user(username, -1, "nickname", password, QImage(":/images/default.png"));		/* create a new user		*/
+        UserData user(username, -1, "nickname", password, QByteArray());		/* create a new user with null profile image */
+
         //Try to add the new user record to the server database
         database.insertUser(user);
 
@@ -177,32 +178,32 @@ void Tasks::serverAccountCreate()
         qDebug() << users[username].getNickname() << " " << users[username].getUserId() << " " ;
 
     }catch (DatabaseReadException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertUser query READ EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket, "Server error creating new account");
         emit socketAbort(socket);
         return;
 
     }catch (DatabaseWriteException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertUser query WRITE EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket,  "Server error creating new account");
         emit socketAbort(socket);
         return;
 
     }catch (DatabaseTransactionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertUser query TRANSACTION EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket,  "Server error creating new account");
         emit socketAbort(socket);
 
         return;
 
     }catch (DatabaseDuplicatedException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertUser query DUPLICATE EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket, "Username already existing");
         emit socketAbort(socket);
 
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertUser query EXCEPTION in ServerAccountCreate()");
         emit accountCreationError(socket, "Server error creating new account");
         emit socketAbort(socket);
 
@@ -237,11 +238,11 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
     try {
         db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in ServerOpenDirClient()");
 
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in ServerOpenDirClient()");
 
         return;
     }
@@ -250,11 +251,11 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
     fileList = db.getUserDocs(client->getUsername());
 
     }catch (DatabaseReadException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("getUserDocs query READ EXCEPTION in ServerOpenDirClient()");
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("getUserDocs query EXCEPTION in ServerOpenDirClient()");
         return;
     }
 
@@ -289,33 +290,34 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
 
 void Tasks:: serverUpdateProfileClient(){
     qDebug()<<"segnale di modifica dati profilo ricevuto";
-
-    ServerDatabase database;
+    QSharedPointer<Client> client = clients[socket];
 
     QString nickname = request["nickname"].toString();
     QString password = request["password"].toString();
-    QString stringifiedImage = request["image"].toString();
+    QString stringifiedImage = request["icon"].toString();
 
-    QSharedPointer<Client> client = clients[socket];
-    QByteArray data;
-    QImage image{};
-    if(!stringifiedImage.isEmpty())
-        image.loadFromData(QByteArray::fromBase64(stringifiedImage.toLatin1()));
+    QByteArray serializedImage;
+
+    if(!stringifiedImage.isEmpty()){
+        serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+    }
+
+    qDebug() << serializedImage;
 
     UserData user = users[client->getUsername()];
-    user.update(nickname, password, image);
+    user.update(nickname, password, serializedImage);
 
     ServerDatabase db;
 
     try {
         db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer("Databaseread problem during the query execution");
+        emit printUiServer("open DB connection EXCEPTION in serverUpdateProfileClient()");
         emit accountUpdateError(socket, "Server error during account update");
 
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer("Databaseread problem during the query execution");
+        emit printUiServer("open DB connection EXCEPTION in serverUpdateProfileClient()");
         emit accountUpdateError(socket, "Server error during account update");
 
         return;
@@ -323,16 +325,16 @@ void Tasks:: serverUpdateProfileClient(){
 
     try
     {	// Add the new user record to the server database
-        database.updateUser(user);
+        db.updateUser(user);
 
     }catch (DatabaseWriteException& re ) {
-        emit printUiServer(re.what());
-       emit accountUpdateError(socket, "Account Update Error");
+        emit printUiServer("updateUser query WRITE EXCEPTION in serverUpdateProfileClient()");
+        emit accountUpdateError(socket, "Account Update Error");
 
         return;
 
     }catch (DatabaseException& re) {
-        emit printUiServer(re.what());
+        emit printUiServer("updateUser query EXCEPTION in serverUpdateProfileClient()");
         emit accountUpdateError(socket, "Account Update Error");
         return;
     }
@@ -348,9 +350,9 @@ void Tasks::serverPersonalDataOfClient()
 
     QString username = users[client->getUsername()].getUsername();
     QString nickname = users[client->getUsername()].getNickname();
-    QImage image     = users[client->getUsername()].getIcon();
+    QByteArray serializedImage     = users[client->getUsername()].getIcon();
 
-    emit personalDataOfClient(socket, username, nickname, image);
+    emit personalDataOfClient(socket, username, nickname, serializedImage);
 }
 
 void Tasks::serverCreateFileForClient()
@@ -367,7 +369,7 @@ void Tasks::serverCreateFileForClient()
     QFile newFile(filePath);
 
     if(newFile.exists()){
-        emit printUiServer("File with same name already exists");
+        emit printUiServer("serverCreateFileForClient() error. File with same name already exists");
         emit fileCreationError(socket, "File with same name already exists");
         return;
     }
@@ -378,7 +380,7 @@ void Tasks::serverCreateFileForClient()
         newFile.close();
 
     }else{
-        emit printUiServer("Error creation file");
+        emit printUiServer("serverCreateFileForClient() error creation file");
         emit fileCreationError(socket, "Error creation file");
         return;
     }
@@ -388,12 +390,12 @@ void Tasks::serverCreateFileForClient()
     try {
         db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverCreateFileForClient()");
         emit fileCreationError(socket, "Server error creating new file");
         QFile(filePath).remove();
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverCreateFileForClient()");
         emit fileCreationError(socket, "Server error creating new file");
         QFile(filePath).remove();
         return;
@@ -405,19 +407,19 @@ void Tasks::serverCreateFileForClient()
         this->serverOpenDirOfClient(nullptr);
 
     }catch (DatabaseWriteException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertNewDoc query WRITE EXCEPTION in serverCreateFileForClient()");
         emit fileCreationError(socket, "Server error creation file");
         QFile(filePath).remove();
         return;
 
     }catch (DatabaseTransactionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertNewDoc query TRANSACTION EXCEPTION in serverCreateFileForClient()");
         emit fileCreationError(socket, "Server error deletion file");
         QFile(filePath).remove();
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("insertNewDoc query EXCEPTION in serverCreateFileForClient()");
         emit fileCreationError(socket, "Server error creation file");
         QFile(filePath).remove();
         return;
@@ -444,11 +446,11 @@ void Tasks::serverDeleteFileForClient()
     try {
         db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverDeleteFileForClient()");
         emit fileDeletionError(socket, "Server error deleting file");
         return;
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverDeleteFileForClient()");
         emit fileDeletionError(socket, "Server error deleting file");
         return;
     }
@@ -460,22 +462,22 @@ void Tasks::serverDeleteFileForClient()
         this->serverOpenDirOfClient(nullptr);
 
     }catch (DatabaseReadException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("removeDocFromUser query READ EXCEPTION in in serverDeleteFileForClient()");
         emit fileCreationError(socket, "Error deletion file");
         return;
 
     }catch (DatabaseWriteException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("removeDocFromUser query WRITE EXCEPTION in in serverDeleteFileForClient()");
         emit fileCreationError(socket, "Error deletion file");
         return;
 
     }catch (DatabaseTransactionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("removeDocFromUser query TRANSACTION EXCEPTION in in serverDeleteFileForClient()");
         emit fileCreationError(socket, "Error deletion file");
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("removeDocFromUser query EXCEPTION in in serverDeleteFileForClient()");
         emit fileCreationError(socket, "Error deletion file");
         return;
     }
@@ -697,11 +699,11 @@ void Tasks::serverShareFile()
     try {
         db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
     }catch (DatabaseConnectionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverShareFile()");
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("open DB connection EXCEPTION in serverShareFile()");
         return;
 
     }
@@ -718,19 +720,19 @@ void Tasks::serverShareFile()
         }
 
     }catch (DatabaseNotFoundException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("addDocToUser query NOT FOUND EXCEPTION in serverShareFile()");
         return;
 
     }catch (DatabaseWriteException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("addDocToUser query WRITE EXCEPTION in serverShareFile()");
         return;
 
     }catch (DatabaseTransactionException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("addDocToUser query TRANSACTION EXCEPTION in serverShareFile()");
         return;
 
     }catch (DatabaseException& re ) {
-        emit printUiServer(re.what());
+        emit printUiServer("addDocToUser query EXCEPTION in serverShareFile()");
         return;
     }
 

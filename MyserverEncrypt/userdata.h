@@ -21,7 +21,7 @@ private:
     QString m_nickname;
     QByteArray m_passwd;		// hashed
     QByteArray m_salt;			// randomly generated
-    QImage m_icon;				// nullable, check with QImage::isNull()
+    QByteArray m_icon;
     QList<QString> m_documents;
 
     static const QString saltCharacters;
@@ -30,8 +30,8 @@ public:
 
     UserData();	 // Use this to construct an empty user and populate the fields later
 
-    UserData(QString username, int userId, QString nickname, QString passwd, QImage icon = QImage());
-    UserData(QString username, int userId, QString nickname, QByteArray passhash, QByteArray salt, QImage icon);
+    UserData(QString username, int userId, QString nickname, QString passwd, QByteArray icon = QByteArray());
+    UserData(QString username, int userId, QString nickname, QByteArray passhash, QByteArray salt, QByteArray icon);
 
     ~UserData();
 
@@ -42,7 +42,7 @@ public:
     QString getNickname() const;
     QByteArray getPasswordHash() const;
     QByteArray getSalt() const;
-    QImage getIcon() const;
+    QByteArray getIcon() const;
     QList<QString> getDocuments() const;
     bool hasDocument(QString uri) const;
     QString getURIat(int index) const;
@@ -51,9 +51,9 @@ public:
     void addDocument(QString docUri);
     void removeDocument(QString uri);
     void setNickname(QString newNickname);
-    void setIcon(QImage newIcon);
+    void setIcon(QByteArray newIcon);
     void setPassword(QString newPassword);
-    void update(QString nickname, QString password, QImage icon);
+    void update(QString nickname, QString password, QByteArray icon);
     void rollback(const UserData& backup);
     void generateSalt(QByteArray &salt);
     void setUserId(int id);

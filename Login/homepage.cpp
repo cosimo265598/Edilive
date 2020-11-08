@@ -131,13 +131,17 @@ void HomePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArr
 }
 
 void HomePage::loadImage(QByteArray serializedImage){
-    QPixmap pixmap;
+
+    QPixmap pixmap{};
     if (serializedImage == nullptr){
         pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
     }else{
         qDebug() << "load";
+        serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);
     }
+
+    qDebug() << pixmap;
 
     ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }

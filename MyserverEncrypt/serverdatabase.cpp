@@ -170,17 +170,12 @@ void ServerDatabase::insertUser(UserData& user)
         query.prepare("INSERT INTO Users (Username, UserID, Nickname, PassHash, Salt, Icon) "
             "VALUES (:username, :id, :nickname, :passhash, :salt, :icon)");
 
-        QByteArray icon;
-        QBuffer buffer(&icon);
-        buffer.open(QIODevice::WriteOnly);
-        user.getIcon().save(&buffer);
-
         query.bindValue(":username", user.getUsername());
         query.bindValue(":id", user.getUserId());
         query.bindValue(":nickname", user.getNickname());
         query.bindValue(":passhash", user.getPasswordHash());
         query.bindValue(":salt", user.getSalt());
-        query.bindValue(":icon", icon);
+        query.bindValue(":icon", user.getIcon());
 
         if (!query.exec()){
             qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
@@ -213,11 +208,10 @@ void ServerDatabase::updateUser(const UserData& user)
     query.prepare("UPDATE Users SET Nickname = :nickname, PassHash = :passhash, Salt = :salt, Icon = :icon "
         "WHERE Username = :username");
 
-
     QByteArray icon;
-    QBuffer buffer(&icon);
-    buffer.open(QIODevice::WriteOnly);
-    user.getIcon().save(&buffer);
+    QDataStream out(&icon, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_13);
+    out << user.getIcon();
 
     query.bindValue(":username", user.getUsername());
     query.bindValue(":nickname", user.getNickname());
@@ -402,7 +396,7 @@ QList<UserData> ServerDatabase::readUsersList()
                 query.value("Nickname").toString(),
                 query.value("PassHash").toByteArray(),
                 query.value("Salt").toByteArray(),
-                QImage::fromData(query.value("Icon").toByteArray()));
+                query.value("Icon").toByteArray());
 
             users.append(user);
 
@@ -431,11 +425,16 @@ UserData ServerDatabase::readUser(QString username)
 
     if (!query.exec()){
         qDebug()<<LOG_PRINT_DB+"Error select existing user";
+
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
 
-    if(!query.first())
+    if(!query.first()){
+        qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
         throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
+    }
+
+    QByteArray b = query.value("Icon").toByteArray();
 
     return UserData(
                     query.value("Username").toString(),
@@ -443,7 +442,7 @@ UserData ServerDatabase::readUser(QString username)
                     query.value("Nickname").toString(),
                     query.value("PassHash").toByteArray(),
                     query.value("Salt").toByteArray(),
-                    QImage::fromData(query.value("Icon").toByteArray())
+                    query.value("Icon").toByteArray()
      );
 }
 
