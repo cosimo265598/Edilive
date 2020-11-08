@@ -27,10 +27,10 @@ public:
 
     // File management
     static QJsonDocument MessageOpenDir();
-    static QJsonDocument MessageCreateNewFile(QString nomefile);
+    static QJsonDocument MessageCreateNewFile(QString fileName);
     static QJsonDocument MessageGenericErrorFile(QString data);
-    static QJsonDocument MessageOpenFile(QString URI);
-    static QJsonDocument MessagedDeleteFile(QString URI);
+    static QJsonDocument MessageOpenFile(QString URI, QString fileName);
+    static QJsonDocument MessagedDeleteFile(QString URI, QString fileName);
 
     // profile management
     static QJsonDocument MessageSubscriberInfoRequest();

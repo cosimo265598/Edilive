@@ -26,7 +26,7 @@ HomePage::~HomePage()
 
 void HomePage::onFileHandlerDbClicked(){
 
-    emit fileHandlerDbClicked(dynamic_cast<FileHandler *>(QObject::sender())->getURI());
+    emit fileHandlerDbClicked(dynamic_cast<FileHandler *>(QObject::sender())->getURI(), dynamic_cast<FileHandler *>(QObject::sender())->getFileName());
 }
 
 void HomePage::onFileHandlerClicked(){
@@ -102,18 +102,18 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
     listfile = QMap<QString, FileHandler*>();
 
     for(auto entry: paths){
-        QJsonObject dir = entry.toObject();
-        QString filename = dir["filename"].toString();
+        QJsonObject file = entry.toObject();
+        QString filename = file["filename"].toString();
 
         filename = sharedFileNameConflictManage(filename);
 
-        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, dir["URI"].toString(), dir["creator"].toString(), dir["created"].toString(),dir["size"].toInt());
+        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, file["URI"].toString(), file["creator"].toString(), file["created"].toString(),file["size"].toInt());
         listfile[filename]=item;
         item->installEventFilter(eventFilter);
         connect(item, &FileHandler::clicked,[item, this]()
-                    {ui->infoLabel->setText("File Selected:\t"+item->getFileName()+"\tCreator: "+
-                                                 item->getCreator() + "\tSize: "+
-                                                 item->getSize() +"\tCreated: "+
+                    {ui->infoLabel->setText("<b>File Selected:</b> "+item->getFileName()+"\t\t<b>Creator:</b> "+
+                                                 item->getCreator() + "\t\t<b>Size:</b> "+
+                                                 item->getSize() +"\t<b>Created:</b> "+
                                                  item->getCreated());});
 
         connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerDbClicked);
@@ -177,8 +177,9 @@ void HomePage::onDeleteFile(){
      if(delMsgBox.exec()==QMessageBox::Ok){
         qDebug() << "OK";
         QString URI = selected -> getURI();
+        QString fileName = selected->getFileName();
 
-        emit deleteFileRequest(URI);
+        emit deleteFileRequest(URI, fileName);
      }
      selected->setStyleSheet("QToolButton{border:none;}");
      selected = nullptr;

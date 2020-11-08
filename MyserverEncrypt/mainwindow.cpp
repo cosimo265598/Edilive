@@ -75,7 +75,7 @@ void MainWindow::prepareToStart()
     }
 
     // Read The database file , avoid to interview each time the db
-    QList<UserData> listUser=database.readUsersList();
+   // QList<UserData> listUser=database.readUsersList();
     // Possible implementation , load at the begining in map
     /*
     for (UserData user : database.readUsersList() )
@@ -89,7 +89,7 @@ void MainWindow::prepareToStart()
     */
     // Initialize the counter
 
-    ui->commet->appendPlainText("Users in database: "+ QString::number(listUser.count()) );
+    //ui->commet->appendPlainText("Users in database: "+ QString::number(listUser.count()) );
     ui->commet->appendPlainText("(INIT COMPLETE )" );
 }
 

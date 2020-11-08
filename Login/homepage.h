@@ -77,10 +77,10 @@ private:
     QString sharedFileNameConflictManage(QString fileName);
 
 signals:
-    void fileHandlerDbClicked(QString URI);
+    void fileHandlerDbClicked(QString URI, QString fileName);
     void updateAccountClicked();
     void createNewFileRequest(QString fileName);
-    void deleteFileRequest(QString URI);
+    void deleteFileRequest(QString URI, QString fileName);
     void shareFile(QString username, QString URI);
 };
 

@@ -584,14 +584,14 @@ void Client::onConnectionFailure(){
     this->m_webSocket->abort();
 }
 
-void Client::onFileHandlerDbClicked(QString URI){
+void Client::onFileHandlerDbClicked(QString URI, QString fileName){
     //sf = new SharedFile(fileName.toStdString(), "notMe");
     QString stringa("Ho aggiornato il file attuale a "+URI);
     qDebug()<<stringa;
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessageOpenFile(URI));
+                BuilderMessageClient::MessageOpenFile(URI, fileName));
     m_webSocket.get()->sendBinaryMessage(out);
 }
 
@@ -607,11 +607,11 @@ void Client::onCreateNewFileRequest(QString fileName){
     this->m_webSocket->sendBinaryMessage(out);
 }
 
-void Client::onDeleteFileRequest(QString URI){
+void Client::onDeleteFileRequest(QString URI, QString fileName){
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
-                BuilderMessageClient::MessagedDeleteFile(URI));
+                BuilderMessageClient::MessagedDeleteFile(URI, fileName));
     this->m_webSocket->sendBinaryMessage(out);
 }
 

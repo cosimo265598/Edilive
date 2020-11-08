@@ -1,18 +1,25 @@
 #ifndef USERDATA_H
 #define USERDATA_H
 
-#include <QImage>
+#include <QMap>
 #include <QList>
 #include <QByteArray>
 
 #define MAX_NAME_LENGTH	  50			  // 50 characters
 #define MAX_IMAGE_SIZE	  5*1024*1024      // 5 MByte
 
+struct file_t{
+    QString fileName;
+    QString URI;
+    QString creator;
+    QString created;
+};
+
 class UserData
 {
     /* Operators for QDataStream serialization and deserialization */
-    friend QDataStream& operator>>(QDataStream& in, UserData& user);			// Input deserialization
-    friend QDataStream& operator<<(QDataStream& out, const UserData& user);		// Output serialization
+    //friend QDataStream& operator>>(QDataStream& in, UserData& user);			// Input deserialization
+    //friend QDataStream& operator<<(QDataStream& out, const UserData& user);		// Output serialization
 
 private:
 
@@ -22,7 +29,7 @@ private:
     QByteArray m_passwd;		// hashed
     QByteArray m_salt;			// randomly generated
     QByteArray m_icon;
-    QList<QString> m_documents;
+    QMap<QString, file_t> files;
 
     static const QString saltCharacters;
 
@@ -43,18 +50,18 @@ public:
     QByteArray getPasswordHash() const;
     QByteArray getSalt() const;
     QByteArray getIcon() const;
-    QList<QString> getDocuments() const;
-    bool hasDocument(QString uri) const;
-    QString getURIat(int index) const;
+    QList<file_t> getFiles() const;
+    bool hasFile(QString fileName) const;
+    //QString getURIat(int index) const;
 
     /* setters */
-    void addDocument(QString docUri);
-    void removeDocument(QString uri);
+    void addFile(file_t file);
+    void removeDocument(QString fileName);
     void setNickname(QString newNickname);
     void setIcon(QByteArray newIcon);
     void setPassword(QString newPassword);
     void update(QString nickname, QString password, QByteArray icon);
-    void rollback(const UserData& backup);
+    //void rollback(const UserData& backup);
     void generateSalt(QByteArray &salt);
     void setUserId(int id);
 

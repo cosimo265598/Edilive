@@ -75,9 +75,9 @@ private slots:
     void onDisconnection();
     void onConnectionSuccess();
     void onConnectionFailure();
-    void onFileHandlerDbClicked(QString URI);
+    void onFileHandlerDbClicked(QString URI, QString fileName);
     void onCreateNewFileRequest(QString fileName);
-    void onDeleteFileRequest(QString URI);
+    void onDeleteFileRequest(QString URI, QString fileName);
     void onUpdateProfileRequest(updateUser_t);
     void onCloseTextEditor();
 

@@ -29,11 +29,11 @@ public slots:
 
 signals:
     void receivedFileHandlers(QJsonArray, QString);
-    void fileHandlerDbClicked(QString fileName);
+    void fileHandlerDbClicked(QString URI, QString fileName);
     void loadSubscriberInfo(QString, QString, QByteArray);
     void createNewFileRequest(QString fileName);
     void newFileCreationFailure(QString errorMessage);
-    void deleteFileRequest(QString fileName);
+    void deleteFileRequest(QString URI, QString fileName);
     void updateProfileRequest(updateUser_t);
     void updateSuccess();
     void resetSubscriberInfo();

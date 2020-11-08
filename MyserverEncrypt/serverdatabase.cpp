@@ -68,7 +68,7 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
 
 }
 
-void ServerDatabase::insertNewDoc(QString URI, QString fileName, QString creator, QString created)
+void ServerDatabase::insertNewDoc(file_t file)
 {
     emit printUiServerDatabase("Query insertNewDoc");
 
@@ -79,10 +79,10 @@ void ServerDatabase::insertNewDoc(QString URI, QString fileName, QString creator
         query.prepare("INSERT INTO Files (URI, FileName, Creator, Created) "
                               "VALUES (:uri, :filename, :creator, :created)");
 
-        query.bindValue(":uri", URI);
-        query.bindValue(":filename", fileName);
-        query.bindValue(":creator",creator);
-        query.bindValue(":created", created);
+        query.bindValue(":uri", file.URI);
+        query.bindValue(":filename", file.fileName);
+        query.bindValue(":creator", file.creator);
+        query.bindValue(":created", file.created);
 
         if (!query.exec()){
             qDebug()<<LOG_PRINT_DB+"Error insert new Doc "+query.lastError().text();
@@ -92,8 +92,8 @@ void ServerDatabase::insertNewDoc(QString URI, QString fileName, QString creator
 
 
         query.prepare("INSERT INTO DocEditors (Username, URI, Pending) VALUES (:username, :uri, :pending)");
-        query.bindValue(":username", creator);
-        query.bindValue(":uri", URI);
+        query.bindValue(":username", file.creator);
+        query.bindValue(":uri", file.URI);
         query.bindValue(":pending", 0);  // If 0, access allowed. If 1 means a shared file to accept or not
 
         if (!query.exec()){

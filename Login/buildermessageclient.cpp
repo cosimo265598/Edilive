@@ -148,13 +148,13 @@ QJsonDocument BuilderMessageClient::MessageGenericErrorFile(QString data)
 }
 
 // CHECK FIELD!!!!!!!!
-QJsonDocument BuilderMessageClient::MessageOpenFile(QString URI)
+QJsonDocument BuilderMessageClient::MessageOpenFile(QString URI, QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",11);
     objtosend.insert("auth",true);
-    //objtosend.insert("nomefile",nomefile);
+    objtosend.insert("fileName", fileName);
     objtosend.insert("URI",URI);
     jsondoc.setObject(objtosend);
     return jsondoc;
@@ -170,13 +170,14 @@ QJsonDocument BuilderMessageClient::MessageSubscriberInfoRequest()
     return jsondoc;
 }
 
-QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString URI)
+QJsonDocument BuilderMessageClient::MessagedDeleteFile(QString URI, QString fileName)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
     objtosend.insert("type",17);
     objtosend.insert("auth",true);
     objtosend.insert("URI",URI);
+    objtosend.insert("fileName", fileName);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

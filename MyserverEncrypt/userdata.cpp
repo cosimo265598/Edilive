@@ -73,30 +73,31 @@ QByteArray UserData::getSalt() const
     return m_salt;
 }
 
-bool UserData::hasDocument(QString uri) const
+bool UserData::hasFile(QString fileName) const
 {
-    return m_documents.contains(uri);
+    return files.contains(fileName);
 }
 
-QList<QString> UserData::getDocuments() const
+QList<file_t> UserData::getFiles() const
 {
-    return m_documents;
+    return files.values();
 }
 
+/*
 QString UserData::getURIat(int index) const
 {
     return m_documents.at(index);
 }
+*/
 
-
-void UserData::addDocument(QString docUri)
+void UserData::addFile(file_t file)
 {
-    m_documents << docUri;
+    files.insert(file.fileName, file);
 }
 
-void UserData::removeDocument(QString uri)
+void UserData::removeDocument(QString fileName)
 {
-    m_documents.removeOne(uri);
+    files.remove(fileName);
 }
 
 void UserData::setNickname(QString newNickname)
@@ -130,6 +131,7 @@ void UserData::update(QString nickname, QString password, QByteArray icon)
         setPassword(password);
 }
 
+/*
 void UserData::rollback(const UserData& backup)
 {
     m_nickname = backup.getNickname();
@@ -138,7 +140,7 @@ void UserData::rollback(const UserData& backup)
     m_salt = backup.getSalt();
     m_documents = backup.getDocuments();
 }
-
+*/
 void UserData::generateSalt(QByteArray &m_salt){
     m_salt.clear();
     for (int i = 0; i < 32; ++i)	// 32 caratteri
@@ -146,7 +148,7 @@ void UserData::generateSalt(QByteArray &m_salt){
 }
 
 
-
+/*
 QDataStream& operator>>(QDataStream& in, UserData& user)
 {
     // Object deserialized reading field by field from the stream
@@ -161,7 +163,8 @@ QDataStream& operator>>(QDataStream& in, UserData& user)
 
     return in;
 }
-
+*/
+/*
 QDataStream& operator<<(QDataStream& out, const UserData& user)
 {
     // Object serialized as the sequence of its member fields
@@ -176,4 +179,4 @@ QDataStream& operator<<(QDataStream& out, const UserData& user)
 
     return out;
 }
-
+*/

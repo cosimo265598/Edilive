@@ -6,6 +6,10 @@
 // Set of characters that will be used to generate random sequences as nonce
 const QString Client::nonceCharacters = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
 
+void Client::setUser(UserData *user)
+{
+    activeUser = user;
+}
 
 Client::Client(QWebSocket* s) :
     socket(s), activeUser(nullptr), logged(false)
@@ -76,10 +80,8 @@ bool Client::authenticate(QByteArray token)
     //return !hash.result().compare(token);
 }
 
-QByteArray Client::challenge(UserData* user)
+QByteArray Client::challenge()
 {
-    activeUser = user;		// store the user which is trying to login on this client
-
     for (int i = 0; i < 32; ++i)	// create a 32-character randomly generated nonce
     {
         int index = qrand() % nonceCharacters.length();

@@ -41,13 +41,6 @@
 
 #define LOG_PRINT_DB  QDateTime::currentDateTime().toString()
 
-struct file_t{
-    QString fileName;
-    QString URI;
-    QString creator;
-    QString created;
-};
-
 class ServerDatabase: public QObject
 {
   Q_OBJECT
@@ -71,7 +64,7 @@ public:
 
     // Queries
 
-    void insertNewDoc(QString URI, QString fileName, QString creator, QString created);
+    void insertNewDoc(file_t );
     void insertUser(UserData& user);
     void updateUser(const UserData& user);
     bool addDocToUser(QString username, QString URI);

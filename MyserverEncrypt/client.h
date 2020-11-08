@@ -13,7 +13,7 @@ class Client
 private:
 
     QWebSocket* socket;
-    UserData* activeUser;
+    UserData *activeUser;
     bool logged;
 
     QByteArray nonce;
@@ -30,7 +30,7 @@ public:
     bool isLogged();
 
     bool authenticate(QByteArray token);
-    QByteArray challenge(UserData* user);
+    QByteArray challenge();
 
     /* getters */
     UserData* getUser() const;
@@ -38,6 +38,7 @@ public:
     QString getUsername() const;
     QWebSocket* getSocket() const;
     qintptr getSocketDescriptor() const;
+    void setUser(UserData *usern);
 };
 
 
