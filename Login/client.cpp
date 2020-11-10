@@ -486,6 +486,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         QJsonArray nposfraz=jsonObj["newposfraz"].toArray();
         QJsonArray oposfraz=jsonObj["oldposfraz"].toArray();
         QString siteid=jsonObj["siteid"].toString();
+
         std::vector<int> vn, vo;
         int i =0;
 
@@ -498,16 +499,30 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         QTextCharFormat fmt;
         out2>>fmt;
 
-
         Symbol sn(c,siteid,vn,id,fmt);
         Symbol so(c,siteid,vo,id,fmt);
-        sf->localErase(so);
-        sf->localInsert(sn, subscriber.username);
-        //emit fromServerDeleteSignal(so.get,this->subscriber.username);
-        //emit fromServerInsertSignal(sn,pos,u,fmt);
 
-        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE LA CANCELLAZIONE DALL'EDITOR DI SYMBOL SO
-        //EMETTI SEGNALE CHE VA INTERCETTATO DA TEXTEDIT PER SCATENARE L'INSERIMENTO NELL'EDITOR DI SYMBOL SN
+        int i_pos=0;
+        for(auto s: sf->getSymbols()){
+            if(s.getId()==so.getId()){
+                break;
+            }
+            i_pos++;
+        }
+
+        sf->localErase(so);   
+        emit fromServerDeleteSignal(i_pos,this->subscriber.username);
+
+        sf->localInsert(sn, subscriber.username);
+
+        i_pos=0;
+        for(auto s: sf->getSymbols()){
+            if(s.getId()==sn.getId()){
+                break;
+            }
+            i_pos++;
+        }
+        emit fromServerInsertSignal(sn.getCar(),i_pos,this->subscriber.username,sn.getFmt());
         break;
     }
     case 52:{ //cancellazione

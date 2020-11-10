@@ -24,7 +24,7 @@ public:
 
     static QJsonDocument MessageCursorChange(int pos, QString user, QString site);
     static QJsonDocument MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid,QTextCharFormat fmt);
-     static QJsonDocument MessageConflictInsert(QChar car, std::vector<int>  newposf, std::vector<int>  oldposf, QString id, QString siteid);
+     static QJsonDocument MessageConflictInsert(QChar car, std::vector<int> newposf, std::vector<int> oldposf, QString id, QString siteid, QTextCharFormat fmt);
      static QJsonDocument MessageDelete(QChar car, std::vector<int> posf, QString id, QString siteid);
 
     static QJsonDocument MessageLogin();

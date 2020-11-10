@@ -126,7 +126,7 @@ QJsonDocument BuilderMessage::MessageInsert(QChar car, std::vector<int> posf, QS
 }
 
 
-QJsonDocument BuilderMessage::MessageConflictInsert(QChar car, std::vector<int> newposf, std::vector<int> oldposf, QString id, QString siteid)
+QJsonDocument BuilderMessage::MessageConflictInsert(QChar car, std::vector<int> newposf, std::vector<int> oldposf, QString id, QString siteid, QTextCharFormat fmt)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
@@ -146,6 +146,15 @@ QJsonDocument BuilderMessage::MessageConflictInsert(QChar car, std::vector<int> 
     objtosend.insert("oldposfraz",array_old);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
+
+    QBuffer out;
+    QDataStream data(&out);
+    out.open(QIODevice::WriteOnly);
+    data<<fmt;
+
+
+    objtosend.insert("format",QLatin1String(out.data().toBase64()));
+
     jsondoc.setObject(objtosend);
     return jsondoc;
 

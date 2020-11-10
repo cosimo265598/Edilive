@@ -561,7 +561,7 @@ void Tasks::serverOpenFile()
 }
 
 void Tasks::serverInsertionChar(){
-    QChar c = QString(request["car"].toString()).front();
+   QChar c = QString(request["car"].toString()).front();
    QString id=request["id"].toString();
    QJsonArray posfraz=request["posfraz"].toArray();
    QString siteid=request["siteid"].toString();
@@ -576,12 +576,12 @@ void Tasks::serverInsertionChar(){
    QTextCharFormat fmt;
    out2>>fmt;
 
-   Symbol s(c,siteid,v,id,fmt);
+   Symbol old(c,siteid,v,id,fmt);
    QString caller =clients[socket]->getUsername();
        /*
        workspaces[QString::fromStdString(s.getSite())].get()->insertChar(s, "server", clientSocket, caller);
        */
-       QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
+       QSharedPointer<Workspace> w =  workspaces[(old.getSite())];
 
        SharedFile *sf = w->getSharedFile();
 
@@ -593,14 +593,17 @@ void Tasks::serverInsertionChar(){
        }
        //fine AREA DEBUG
 
-       int esito = sf->localInsert(s, "server");
+       int esito = sf->localInsert(old, "server");
        qDebug()<< "Conflitto: "<<esito;
-       if(esito==1){//conflitto
+
+       //== CONFLITTO ==
+
+       if(esito==1){
            qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
            std::vector<Symbol> simboli = sf->getSymbols();
            std::vector<int> nuovapos;
            for(Symbol ss : simboli)
-               if(ss.getId()==s.getId()){
+               if(ss.getId()==old.getId()){
                    nuovapos=ss.getPosFraz();
                    break;
                }
@@ -610,16 +613,16 @@ void Tasks::serverInsertionChar(){
                    nuovapos=simboli[i].getPosFraz();
                    break;
                }*/
-           Symbol news(s.getCar(),s.getSite(), nuovapos, s.getId(),s.getFmt());
+           Symbol news(old.getCar(),old.getSite(), nuovapos, old.getId(),old.getFmt());
            QByteArray data1;
            BuilderMessage::MessageSendToClient(
-                       data1,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), (s.getId()), (s.getSite())));
+                       data1,BuilderMessage::MessageConflictInsert(news.getCar(), news.getPosFraz(), old.getPosFraz(), news.getId(), news.getSite(), news.getFmt()));
 
            socket->sendBinaryMessage(data1);
            for(QSharedPointer<Client> cl : w->getClients()){
                    QByteArray data;
                    BuilderMessage::MessageSendToClient(
-                               data,BuilderMessage::MessageInsert(s.getCar(), news.getPosFraz(), (s.getId()), (s.getSite()), s.getFmt()));
+                               data,BuilderMessage::MessageInsert(news.getCar(), news.getPosFraz(), (news.getId()), (news.getSite()), news.getFmt()));
 
                    cl->getSocket()->sendBinaryMessage(data);
            }
@@ -634,7 +637,7 @@ void Tasks::serverInsertionChar(){
 
                    QByteArray data;
                    BuilderMessage::MessageSendToClient(
-                               data,BuilderMessage::MessageInsert(s.getCar(), s.getPosFraz(), s.getId(), s.getSite(),s.getFmt()/*,"no"*/));
+                               data,BuilderMessage::MessageInsert(old.getCar(), old.getPosFraz(), old.getId(), old.getSite(),old.getFmt()/*,"no"*/));
 
                    cl->getSocket()->sendBinaryMessage(data);
                }
