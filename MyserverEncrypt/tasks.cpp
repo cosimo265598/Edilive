@@ -561,77 +561,106 @@ void Tasks::serverOpenFile()
 }
 
 void Tasks::serverInsertionChar(){
-/*
-    QString caller =clients[clientSocket]->getUsername();
+    QChar c = QString(request["car"].toString()).front();
+   QString id=request["id"].toString();
+   QJsonArray posfraz=request["posfraz"].toArray();
+   QString siteid=request["siteid"].toString();
 
-    workspaces[QString::fromStdString(s.getSite())].get()->insertChar(s, "server", clientSocket, caller);
+   qDebug()<< "Il server ha ricevuto carattere "<< c << " con posf=" << (posfraz) << " e id="<<(id);
+   std::vector<int> v;
 
-    QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
+   for(QJsonValue val: posfraz)    v.push_back(val.toInt());
 
-    SharedFile *sf = w->getSharedFile();
+   QByteArray ricevo(QByteArray::fromBase64(request["format"].toString().toLatin1()));
+   QDataStream out2(ricevo);
+   QTextCharFormat fmt;
+   out2>>fmt;
 
-    //AREA DEBUG
-    qDebug() << "INSERIMENTO DA CLIENT";
-    qDebug() << "File pre inserimento: " <<(sf->to_string());
-    for(Symbol s : sf->getSymbols()){
-        qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
-    }
-    //fine AREA DEBUG
+   Symbol s(c,siteid,v,id,fmt);
+   QString caller =clients[socket]->getUsername();
+       /*
+       workspaces[QString::fromStdString(s.getSite())].get()->insertChar(s, "server", clientSocket, caller);
+       */
+       QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
 
-    int esito = sf->localInsert(s, "server");
-    qDebug()<< "Conflitto: "<<esito;
-    if(esito==1){//conflitto
-        qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
-        std::vector<Symbol> simboli = sf->getSymbols();
-        std::vector<int> nuovapos;
-        for(int i=0; i<simboli.size(); i++)
-            if(simboli[i].getId()==s.getId()){
-                nuovapos=simboli[i].getPosFraz();
-                break;
-            }
-        Symbol news(s.getCar(),s.getSite(), nuovapos, s.getId(),s.getFmt());
-        QByteArray data1;
-        BuilderMessage::MessageSendToClient(
-                    data1,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), (s.getId()), (s.getSite())));
+       SharedFile *sf = w->getSharedFile();
 
-        clientSocket->sendBinaryMessage(data1);
-        for(QSharedPointer<Client> cl : w->getClients()){
-                QByteArray data;
-                BuilderMessage::MessageSendToClient(
-                */
-                      //      data,BuilderMessage::MessageInsert(s.getCar(), news.getPosFraz(), (s.getId()), (s.getSite())/*,"no"*/));
-/*
-                cl->getSocket()->sendBinaryMessage(data);
-        }
-    }
-    else{
-        qDebug()<< "E ARRIVATO IL MOMENTO DI MANDARE : ";
+       //AREA DEBUG
+       qDebug() << "INSERIMENTO DA CLIENT";
+       qDebug() << "File pre inserimento: " <<(sf->to_string());
+       for(Symbol s : sf->getSymbols()){
+           qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+       }
+       //fine AREA DEBUG
 
-        for(QSharedPointer<Client> cl : w->getClients()){
-            qDebug()<< "NUMERO ITERAZIONE ANCORA:";
-            if(cl->getUsername()!=caller){
-                qDebug()<< "STO MANDANDO "<< cl->getUsername();
+       int esito = sf->localInsert(s, "server");
+       qDebug()<< "Conflitto: "<<esito;
+       if(esito==1){//conflitto
+           qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
+           std::vector<Symbol> simboli = sf->getSymbols();
+           std::vector<int> nuovapos;
+           for(Symbol ss : simboli)
+               if(ss.getId()==s.getId()){
+                   nuovapos=ss.getPosFraz();
+                   break;
+               }
+           /*
+           for(int i=0; i<simboli.size(); i++)
+               if(simboli[i].getId()==s.getId()){
+                   nuovapos=simboli[i].getPosFraz();
+                   break;
+               }*/
+           Symbol news(s.getCar(),s.getSite(), nuovapos, s.getId(),s.getFmt());
+           QByteArray data1;
+           BuilderMessage::MessageSendToClient(
+                       data1,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), (s.getId()), (s.getSite())));
 
-                QByteArray data;
-                BuilderMessage::MessageSendToClient(
-                */
-                            //data,BuilderMessage::MessageInsert(s.getCar(), s.getPosFraz(), s.getId(), s.getSite()/*,"no"*/));
-/*
-                cl->getSocket()->sendBinaryMessage(data);
-            }
-        }
-    }
-    //AREA DEBUG
-    qDebug() << "File post inserimento: " << sf->to_string();
-    for(Symbol s : sf->getSymbols()){
-        qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
-    }
-    //fine AREA DEBUG
-    */
+           socket->sendBinaryMessage(data1);
+           for(QSharedPointer<Client> cl : w->getClients()){
+                   QByteArray data;
+                   BuilderMessage::MessageSendToClient(
+                               data,BuilderMessage::MessageInsert(s.getCar(), news.getPosFraz(), (s.getId()), (s.getSite()), s.getFmt()));
+
+                   cl->getSocket()->sendBinaryMessage(data);
+           }
+       }
+       else{
+           qDebug()<< "E ARRIVATO IL MOMENTO DI MANDARE : ";
+
+           for(QSharedPointer<Client> cl : w->getClients()){
+               qDebug()<< "NUMERO ITERAZIONE ANCORA:";
+               if(cl->getUsername()!=caller){
+                   qDebug()<< "STO MANDANDO "<< cl->getUsername();
+
+                   QByteArray data;
+                   BuilderMessage::MessageSendToClient(
+                               data,BuilderMessage::MessageInsert(s.getCar(), s.getPosFraz(), s.getId(), s.getSite(),s.getFmt()/*,"no"*/));
+
+                   cl->getSocket()->sendBinaryMessage(data);
+               }
+           }
+       }
+       //AREA DEBUG
+       qDebug() << "File post inserimento: " << sf->to_string();
+       for(Symbol s : sf->getSymbols()){
+           qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+       }
+       //fine AREA DEBUG
+
 }
 void Tasks::serverDeletionChar(){
-    /*
-    QString caller =clients[clientSocket]->getUsername();
+    QChar c             =QString(request["car"].toString()).front();
+    QString id          =request.value("id").toString();
+    QJsonArray posfraz  =request.value("posfraz").toArray();
+    QString siteid      =request.value("siteid").toString();
+    std::vector<int> v;
+    qDebug()<< "Il server ha ricevuto carattere (delete) "<< c << " con posf=" << (posfraz) << " e id="<<(id);
+
+    for(QJsonValue val: posfraz)    v.push_back(val.toInt());
+
+    Symbol s(c,siteid,v,id,QTextCharFormat());
+
+    QString caller =clients[socket]->getUsername();
     //workspaces[QString::fromStdString(s.getSite())].get()->localErase(s, "server", caller);
 
     QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
@@ -666,7 +695,6 @@ void Tasks::serverDeletionChar(){
             cl->getSocket()->sendBinaryMessage(data);
         }
     }
-    */
 }
 
 
@@ -687,12 +715,22 @@ void Tasks::serverRemoveClientFromWorkspace(){
         //Safe way to save a file. All the operation are done on a temporary unique-random named file.
         //Only if the commit() return true the original file is modified
         QSaveFile file(rootPath + URI);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
-            file.resize(0);
-            QTextStream out(&file);
+        if (file.open(QIODevice::WriteOnly))
+        {
+            QDataStream docFileStream(&file);
+
+            qDebug()<<"File opened";
+            for(Symbol s: w->getSharedFile()->getSymbols())
+                docFileStream<<s.getCar()<<s.getFmt();
+
+           qDebug()<<"File writed";
+           if (docFileStream.status() == QDataStream::Status::WriteFailed)
+            {
+                file.cancelWriting();
+                file.commit();
+            }
             file.commit();
         }
-
         this->workspaces.remove(URI);
 
         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
@@ -769,6 +807,22 @@ void Tasks::serverShareFile()
 
 }
 
+void Tasks::changeCursorPosition(){
+    int pos     =request["pos"].toInt();
+    QString user=request["user"].toString();
+    QString site=request["site"].toString();
+    QSharedPointer<Workspace> w =  workspaces[site];
+    for(QSharedPointer<Client> cl : w->getClients()){
+        if(cl->getUsername()!=user){
+            qDebug()<<"Sto informando della cancellazione client: "<<cl->getUsername();
+            QByteArray data;
+            BuilderMessage::MessageSendToClient(
+                        data,BuilderMessage::MessageCursorChange(pos, user, site));
+            cl->getSocket()->sendBinaryMessage(data);
+        }
+    }
+}
+
 void Tasks::run(){
     switch (typeOp) {
 
@@ -785,7 +839,7 @@ void Tasks::run(){
         case TypeOperation::DeletionChar:               this->serverDeletionChar();                   break;
         case TypeOperation::RemoveClientFromWorkspace:  this->serverRemoveClientFromWorkspace();    break;
         case TypeOperation::ShareFile:                  this->serverShareFile();                    break;
-
+        case TypeOperation::changeCursorPosition:       this->changeCursorPosition();               break;
         default: qDebug() << "No Task";
     }
 }

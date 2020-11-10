@@ -59,6 +59,7 @@ void SharedFile::readExistingFile(QString filePath){
                 else
                     localInsert(countchar-1, -2, c, "server");
                 countchar++;
+
             }
         }
         localInsert(countchar-1, -2, QChar::ParagraphSeparator, "server");

@@ -225,4 +225,3 @@ QString SharedFile::getSite() {
 std::vector<Symbol> SharedFile::getSymbols(){
     return this->symbols;
 }
-

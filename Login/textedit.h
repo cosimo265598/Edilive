@@ -79,17 +79,19 @@ public:
     void drawAllCursor();
 
 public slots:
-    void fromServerInsert(QString c, int pos,QString user);
+    void fromServerNewCursorPosition(int pos, QString user);
+    void fromServerInsert(QString c, int pos,QString user,QTextCharFormat nee_format);
     void fromServerDelete(int pos,QString user);
     void fileNew();
-    void textChange();
+    //void textChange();
     void onUpdateListUsersConnected(int id, QString username, QImage img);
     void onContentsChanged(int position, int charsRemoved, int charsAdded);
 signals:
     void localDeletionSignal(int pos);
-    void localInsertionSignal(QChar c, int pos);
+    void localInsertionSignal(QChar c, int pos,QTextCharFormat fmt);
     void removeClientWorkspace(QString);
     void saveFile(QString filename);
+    void changeCursorPositionSignal(int pos, QString user);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -132,12 +134,16 @@ private:
     void modifyIndentation(int amount);
 
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
     void drawCursor(const Presence& p);
     void newPresence(qint32 userId, QString username, QImage image);
     void removePresence(qint32 userId);
+    void textSubscript();
+    void textSuperscript();
+    void scriptChanged(QTextCharFormat::VerticalAlignment a);
 
     QAction *actionSave;
     QAction *actionTextBold;
@@ -158,6 +164,8 @@ private:
     QAction *actionCopy;
     QAction *actionPaste;
 #endif
+    QAction* actionTextSubscript;
+    QAction* actionTextSuperscript;
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;

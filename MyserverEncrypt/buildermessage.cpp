@@ -18,6 +18,18 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, QByteArray &appendByt
     out << appendByte;
 }
 
+QJsonDocument BuilderMessage::MessageCursorChange(int pos, QString user, QString site)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",53);
+    objtosend.insert("pos",pos);
+    objtosend.insert("site", site);
+    objtosend.insert("user",user);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+
+}
 void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
 
     QDataStream out(&byte, QIODevice::WriteOnly | QIODevice::Append);
@@ -86,7 +98,7 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
 }
 
 
-QJsonDocument BuilderMessage::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid/*, QString iniziale*/)
+QJsonDocument BuilderMessage::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid, QTextCharFormat fmt)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
@@ -100,6 +112,14 @@ QJsonDocument BuilderMessage::MessageInsert(QChar car, std::vector<int> posf, QS
     objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
+
+    QBuffer out;
+    QDataStream data(&out);
+    out.open(QIODevice::WriteOnly);
+    data<<fmt;
+
+
+    objtosend.insert("format",QLatin1String(out.data().toBase64()));
     jsondoc.setObject(objtosend);
     return jsondoc;
 

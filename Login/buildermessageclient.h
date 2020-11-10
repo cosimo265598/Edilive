@@ -7,7 +7,7 @@
 #include <QBuffer>
 #include <QJsonArray>
 #include <QTextCodec>
-
+#include <QTextCharFormat>
 #include "updateuser.h"
 
 class BuilderMessageClient
@@ -16,9 +16,10 @@ public:
     static void MessageSendToServer(QByteArray& byte,QJsonDocument jsonToSend);
     static void MessageSendToServer(QByteArray& byte,QByteArray& appendByte);
 
+    static QJsonDocument MessageCursorChange(int pos, QString user, QString site);
 
-    static QJsonDocument MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid);
-    static QJsonDocument MessageDelete(QString URI, QChar car, std::vector<int> pos, QString id, QString siteid);
+    static QJsonDocument MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid,QTextCharFormat fmt );
+    static QJsonDocument MessageDelete(QString docURI, QChar car, std::vector<int> pos, QString id, QString siteid);
 
     static QJsonDocument MessageTest(QString data);
     static QJsonDocument MessageLogin(QString username);

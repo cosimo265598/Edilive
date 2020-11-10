@@ -49,6 +49,7 @@ enum TypeOperation : quint16
     InsertionChar,
     DeletionChar,
     RemoveClientFromWorkspace,
+    changeCursorPosition,
     ShareFile
 
 };
@@ -97,6 +98,7 @@ private:
     void serverDeletionChar();
     void serverRemoveClientFromWorkspace();
     void serverShareFile();
+    void changeCursorPosition();
 
     //QString generateURI(QString creator, QString fileName) const;
 

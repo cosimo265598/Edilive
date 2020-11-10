@@ -11,6 +11,18 @@ void BuilderMessageClient::MessageSendToServer(QByteArray &byte,QJsonDocument js
     out << jsonToSend;
 }
 
+QJsonDocument BuilderMessageClient::MessageCursorChange(int pos, QString user, QString site)
+{
+    QJsonDocument jsondoc;
+    QJsonObject objtosend;
+    objtosend.insert("type",21);
+    objtosend.insert("pos",pos);
+    objtosend.insert("site", site);
+    objtosend.insert("user",user);
+    jsondoc.setObject(objtosend);
+    return jsondoc;
+
+}
 void BuilderMessageClient::MessageSendToServer(QByteArray &byte, QByteArray &appendByte)
 {
     QDataStream out(&byte, QIODevice::WriteOnly | QIODevice::Append);
@@ -19,7 +31,7 @@ void BuilderMessageClient::MessageSendToServer(QByteArray &byte, QByteArray &app
 }
 
 //fileName mi serve per trovare il workspace, da sostituire con fileURI. Metto già il nome del campo aggiornato
-QJsonDocument BuilderMessageClient::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid)
+QJsonDocument BuilderMessageClient::MessageInsert(QChar car, std::vector<int> posf, QString id, QString siteid,QTextCharFormat fmt )
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
@@ -33,6 +45,13 @@ QJsonDocument BuilderMessageClient::MessageInsert(QChar car, std::vector<int> po
     objtosend.insert("posfraz",array);
     objtosend.insert("id",id);
     objtosend.insert("siteid",siteid);
+
+    QBuffer out;
+    QDataStream data(&out);
+    out.open(QIODevice::WriteOnly);
+    data<<fmt;
+
+    objtosend.insert("format",QLatin1String(out.data().toBase64()));
     jsondoc.setObject(objtosend);
     qDebug() << "Sto mandando al server carattere " << car<< " con posf=" <<array<<" con id="<<id;
 
@@ -60,6 +79,7 @@ QJsonDocument BuilderMessageClient::MessageDelete(QString fileName, QChar car, s
     return jsondoc;
 
 }
+
 
 QJsonDocument BuilderMessageClient::MessageTest(QString data)
 {
@@ -240,7 +260,7 @@ QJsonDocument BuilderMessageClient::MessageShareFile(QString username, QString U
     objtosend.insert("URI", URI);
     objtosend.insert("username", username);
     objtosend.insert("auth",true);
-    objtosend.insert("type",21);
+    objtosend.insert("type",22);
     jsondoc.setObject(objtosend);
     return jsondoc;
 }

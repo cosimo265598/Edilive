@@ -35,4 +35,3 @@ QTextCharFormat Symbol::getFmt()
 {
     return this->fmtChar;
 }
-

@@ -75,4 +75,3 @@ void Presence::setAction(QAction* action)
     //Editor action
     _iconPressedAction = action;
 }
-
