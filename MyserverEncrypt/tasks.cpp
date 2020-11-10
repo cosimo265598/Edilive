@@ -506,7 +506,7 @@ void Tasks::serverDeleteFileForClient()
 
 void Tasks::serverOpenFile()
 {
-    qDebug()<<"Segnale apertura file ricevuto";
+    //qDebug()<<"Segnale apertura file ricevuto";
     QString URI = request["URI"].toString();
     QString fileName = request["fileName"].toString();
 
@@ -514,10 +514,10 @@ void Tasks::serverOpenFile()
     QString filePath = rootPath + URI;
     QFile filecreate(filePath);
 
-    qDebug() << "TEST   URI: " << URI << "FileName: " << fileName;
+    //qDebug() << "TEST   URI: " << URI << "FileName: " << fileName;
 
     if(!client->getUser()->hasFile(fileName)){
-        qDebug()<< "File not found";
+        //qDebug()<< "File not found";
         emit fileDeletionError(socket, "File Not Found");
         this->serverOpenDirOfClient(nullptr);
 
@@ -534,11 +534,13 @@ void Tasks::serverOpenFile()
 
     }
     else{
-        qDebug() << "Adding current client to existing workspace";
         workspaces[URI].get()->addClient(socket, client);
     }
 
-    qDebug() << "Numero Workspace: " << workspaces.size();
+    qDebug() << "APERTURA FILE" <<(workspaces[URI]->getSharedFile()->to_string());
+    for(Symbol s : workspaces[URI]->getSharedFile()->getSymbols()){
+        qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+    }
 
     emit openFile(socket, URI);
 
@@ -566,7 +568,6 @@ void Tasks::serverInsertionChar(){
    QJsonArray posfraz=request["posfraz"].toArray();
    QString siteid=request["siteid"].toString();
 
-   qDebug()<< "Il server ha ricevuto carattere "<< c << " con posf=" << (posfraz) << " e id="<<(id);
    std::vector<int> v;
 
    for(QJsonValue val: posfraz)    v.push_back(val.toInt());
@@ -584,22 +585,13 @@ void Tasks::serverInsertionChar(){
        QSharedPointer<Workspace> w =  workspaces[(old.getSite())];
 
        SharedFile *sf = w->getSharedFile();
-
-       //AREA DEBUG
-       qDebug() << "INSERIMENTO DA CLIENT";
-       qDebug() << "File pre inserimento: " <<(sf->to_string());
-       for(Symbol s : sf->getSymbols()){
-           qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
-       }
-       //fine AREA DEBUG
-
        int esito = sf->localInsert(old, "server");
-       qDebug()<< "Conflitto: "<<esito;
 
        //== CONFLITTO ==
 
        if(esito==1){
-           qDebug()<<"Sono nella zona di conflitto perchè esito="<<esito;
+           qDebug()<< "INSERIMENTO da CLIENT con CONFLITTO -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
+
            std::vector<Symbol> simboli = sf->getSymbols();
            std::vector<int> nuovapos;
            for(Symbol ss : simboli)
@@ -607,12 +599,6 @@ void Tasks::serverInsertionChar(){
                    nuovapos=ss.getPosFraz();
                    break;
                }
-           /*
-           for(int i=0; i<simboli.size(); i++)
-               if(simboli[i].getId()==s.getId()){
-                   nuovapos=simboli[i].getPosFraz();
-                   break;
-               }*/
            Symbol news(old.getCar(),old.getSite(), nuovapos, old.getId(),old.getFmt());
            QByteArray data1;
            BuilderMessage::MessageSendToClient(
@@ -628,12 +614,9 @@ void Tasks::serverInsertionChar(){
            }
        }
        else{
-           qDebug()<< "E ARRIVATO IL MOMENTO DI MANDARE : ";
-
+           qDebug()<< "INSERIMENTO da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
            for(QSharedPointer<Client> cl : w->getClients()){
-               qDebug()<< "NUMERO ITERAZIONE ANCORA:";
                if(cl->getUsername()!=caller){
-                   qDebug()<< "STO MANDANDO "<< cl->getUsername();
 
                    QByteArray data;
                    BuilderMessage::MessageSendToClient(
@@ -644,7 +627,7 @@ void Tasks::serverInsertionChar(){
            }
        }
        //AREA DEBUG
-       qDebug() << "File post inserimento: " << sf->to_string();
+       qDebug() << "File POST inserimento: " << sf->to_string();
        for(Symbol s : sf->getSymbols()){
            qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
        }
@@ -657,7 +640,7 @@ void Tasks::serverDeletionChar(){
     QJsonArray posfraz  =request.value("posfraz").toArray();
     QString siteid      =request.value("siteid").toString();
     std::vector<int> v;
-    qDebug()<< "Il server ha ricevuto carattere (delete) "<< c << " con posf=" << (posfraz) << " e id="<<(id);
+    qDebug()<< "CANCELLAZIONE da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
 
     for(QJsonValue val: posfraz)    v.push_back(val.toInt());
 
@@ -669,19 +652,9 @@ void Tasks::serverDeletionChar(){
     QSharedPointer<Workspace> w =  workspaces[(s.getSite())];
     SharedFile *sf = w->getSharedFile();
 
-    //AREA DEBUG
-        qDebug() << "CANCELLAZIONE DA CLIENT";
-        qDebug() << "File prima: " << sf->to_string();
-        for(Symbol s1 : sf->getSymbols()){
-            qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<s1.getId();
-        }
-        //fine AREA DEBUG
-    qDebug()<<"locla erase:"<<s.getPosFraz();
-
     sf->localErase(s);
     //AREA DEBUG
-    qDebug()<<"Sto cancellando car="<<s.getCar()<< " con id="<<s.getId();
-        qDebug() << "File dopo: " << sf->to_string();
+        qDebug() << "File POST cancellazione: " << sf->to_string();
         for(Symbol s1 : sf->getSymbols()){
             qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<(s1.getId());
         }
@@ -690,7 +663,6 @@ void Tasks::serverDeletionChar(){
     //INFORMA TUTTI I CLIENT TRANNE IL CHIAMANTE DELLA CANCELLAZIONE
     for(QSharedPointer<Client> cl : w->getClients()){
         if(cl->getUsername()!=caller){
-            qDebug()<<"Sto informando della cancellazione client: "<<cl->getUsername();
             QByteArray data;
             BuilderMessage::MessageSendToClient(
                         data,BuilderMessage::MessageDelete(s.getCar(), s.getPosFraz(), s.getId(), s.getSite()));
@@ -852,6 +824,6 @@ Tasks::~Tasks()
     //Sistema
     if(QSqlDatabase::database(threadId).isValid())
         QSqlDatabase::removeDatabase(threadId);
-    qDebug() << "curr thread  " << QThread::currentThread();
-    qDebug() << "Returning to main thread  " << this->thread();
+    //qDebug() << "curr thread  " << QThread::currentThread();
+    //qDebug() << "Returning to main thread  " << this->thread();
 }

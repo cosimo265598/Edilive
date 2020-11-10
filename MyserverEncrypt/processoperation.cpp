@@ -170,7 +170,7 @@ void ProcessOperation::onOpenFile(QWebSocket* socket, QString fileName)
     BuilderMessage::MessageSendToClient(data, workspaces[fileName].get()->getSharedFile());
     socket->sendBinaryMessage(data);
 
-    qDebug()<< "<MAIN WINDOWS> voglio updatare tutti ";
+   // qDebug()<< "<MAIN WINDOWS> voglio updatare tutti ";
     for(QSharedPointer<Client> cl : workspaces[fileName]->getClients()){
         if(cl->getUsername().compare(client->getUsername())!=0){
             QByteArray data;

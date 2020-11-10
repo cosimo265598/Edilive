@@ -836,7 +836,7 @@ void TextEdit::cursorPositionChanged()
     p.cursor()->setPosition(pre,QTextCursor::MoveAnchor);
     drawCursor(p);
     p.cursor()->clearSelection();
-    qDebug()<<"MY CURSORO: "<<p.cursor()->position()<<" pre: "<<pre;
+    //qDebug()<<"MY CURSORO: "<<p.cursor()->position()<<" pre: "<<pre;
     emit changeCursorPositionSignal(pre, this->subscriber->username);
     ////////////////////////////////
 
@@ -855,16 +855,14 @@ void TextEdit::fromServerInsert(QString c, int pos,QString user,QTextCharFormat 
     const QSignalBlocker blocker(textEdit->document());
 
     Presence p=onlineUsers_map.find(user).value();
-    qDebug()<<"<TESTING> pre pos: "<<p.cursor()->position();
     p.cursor()->clearSelection();
     p.cursor()->setPosition(pos);
     p.cursor()->insertText(c,nee_format);
-    qDebug()<<"<TESTING> post pos: "<<p.cursor()->position();
 
     // code to set the allignment of the text block
-    qDebug()<<"Align form server "<<nee_format.properties().values();
+    //qDebug()<<"Align form server "<<nee_format.properties().values();
     int numberblock=p.cursor()->blockNumber();
-    qDebug()<<"BLOCK NUMBER"<<numberblock;
+    //qDebug()<<"BLOCK NUMBER"<<numberblock;
     QTextBlockFormat textBlockFormat = p.cursor()->blockFormat();
     switch (nee_format.properties().find(QTextFormat::BlockAlignment).value().toUInt()) {
         case Qt::AlignLeading  | Qt::AlignAbsolute:         textBlockFormat.setAlignment(Qt::AlignLeading  | Qt::AlignAbsolute); break;
@@ -883,7 +881,7 @@ void TextEdit::fromServerInsert(QString c, int pos,QString user,QTextCharFormat 
 
     QTextBlock curblock=textEdit->textCursor().block();
     if(curblock.blockNumber()==numberblock){
-        qDebug()<<"SONO NEL IF DI CONFRONTO "<<numberblock;
+        //qDebug()<<"SONO NEL IF DI CONFRONTO "<<numberblock;
         textEdit->textCursor().setBlockFormat(textBlockFormat);
         emit cursorPositionChanged();
     }
@@ -894,12 +892,12 @@ void TextEdit::fromServerInsert(QString c, int pos,QString user,QTextCharFormat 
 void TextEdit::fromServerDelete(int pos,QString user){
     const QSignalBlocker blocker(textEdit->document());
     textEdit->textCursor().clearSelection();
-    qDebug()<<" REMOVE POS:"<<pos<<" user: "<<user;
+    //qDebug()<<" REMOVE POS:"<<pos<<" user: "<<user;
     Presence p=onlineUsers_map.find(user).value();
     p.cursor()->clearSelection();
     p.cursor()->setPosition(pos+1,QTextCursor::MoveAnchor);
     p.cursor()->setPosition(pos,QTextCursor::KeepAnchor);
-    qDebug()<<"SELECTED TEXT TO REMOVE"<<p.cursor()->selectedText();
+    //qDebug()<<"SELECTED TEXT TO REMOVE"<<p.cursor()->selectedText();
     p.cursor()->removeSelectedText();
     p.cursor()->clearSelection();
     drawAllCursor();
@@ -917,15 +915,13 @@ void TextEdit::onUpdateListUsersConnected(int id, QString username, QImage img)
 void TextEdit::onContentsChanged(int position, int charsRemoved, int charsAdded)
 {
     //const QSignalBlocker blocker(textEdit->document());
-    qDebug()<<"i m called porco dio ";
     for (int i = 0; i < charsRemoved; ++i){
-        qDebug()<<"STO CANCELLANDO N VOLTE NEL FOR ";
         emit localDeletionSignal(position);
     }
     QTextCursor cur;
     for (int i = position, pos = position; i < position + charsAdded ; i++)
     {
-        qDebug()<<"STO INSERENDO NEL FOR";
+        //qDebug()<<"STO INSERENDO NEL FOR";
         cur = textEdit->textCursor();
         cur.setPosition(i+1);
         QTextCharFormat fmt = cur.charFormat();
@@ -933,17 +929,17 @@ void TextEdit::onContentsChanged(int position, int charsRemoved, int charsAdded)
 
         fmt.setProperty(QTextFormat::BlockAlignment,QVariant(cur.blockFormat().alignment()));
         //qDebug()<<fmt.properties().keys()<<"conunt"<<fmt.properties().count();
-        qDebug()<<fmt.properties().values()<<"conunt"<<fmt.properties().count();
+        //qDebug()<<fmt.properties().values()<<"conunt"<<fmt.properties().count();
 
         QChar ch = textEdit->document()->characterAt(i);
-        qDebug()<<"INSERT i="<<i<<" char="<<ch<<" italic="<<fmt.fontItalic()<<" underline="<<fmt.fontUnderline()<<" bold="<<fmt.fontWeight();
+        //qDebug()<<"INSERT i="<<i<<" char="<<ch<<" italic="<<fmt.fontItalic()<<" underline="<<fmt.fontUnderline()<<" bold="<<fmt.fontWeight();
         if (ch != QChar::Null){
             if(ch==QChar::ParagraphSeparator)
                 emit localInsertionSignal(QChar::ParagraphSeparator,i,fmt);
             else
                 emit localInsertionSignal(ch,i,fmt);
         }
-        qDebug()<<"Align: "<<cur.blockFormat().alignment();
+        //qDebug()<<"Align: "<<cur.blockFormat().alignment();
     }
     //Presence p=onlineUsers_map.find(this->subscriber->username).value();
     //drawCursor(p);

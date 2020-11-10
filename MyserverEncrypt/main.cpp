@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
         // set your working directory
         const QString pathSaverio("/QtProjects/pds-project/myservertest/MyserverEncrypt/");
         const QString pathCosimo("/GIT_Saverio/myservertest/MyserverEncrypt/");
-        const QString pathSilvia =("/scrivania/ProgettoPds/myservertest/MyserverEncrypt/");
+        const QString pathSilvia =("/Scrivania/ProgettoPDS/myservertest/MyserverEncrypt/");
 
         // set your working directory
         if(pathMembro.contains("cosimo"))

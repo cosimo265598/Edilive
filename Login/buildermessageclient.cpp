@@ -53,7 +53,7 @@ QJsonDocument BuilderMessageClient::MessageInsert(QChar car, std::vector<int> po
 
     objtosend.insert("format",QLatin1String(out.data().toBase64()));
     jsondoc.setObject(objtosend);
-    qDebug() << "Sto mandando al server carattere " << car<< " con posf=" <<array<<" con id="<<id;
+    //qDebug() << "Sto mandando al server carattere " << car<< " con posf=" <<array<<" con id="<<id;
 
     return jsondoc;
 
