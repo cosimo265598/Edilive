@@ -32,7 +32,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QSaveFile>
-
+#include <QThread>
 
 #include "presence.h"
 #include "textedit.h"
@@ -99,9 +99,6 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
     textEdit->setFocus();
     setCurrentFileName(QString());
 
-
-
-
     int j=1;
     for(auto i=this->listUsers->begin(); i!=this->listUsers->end(); i++){
         qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
@@ -125,13 +122,7 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
 
 void TextEdit::closeEvent(QCloseEvent *e)
 {
-    if (maybeSave())
-        e->accept();
-    else
-        e->ignore();
-
     qDebug() << QFileInfo(fileName).fileName();
-
     emit removeClientWorkspace(QFileInfo(fileName).fileName());
     listUsers->clear();
 }
@@ -295,8 +286,7 @@ void TextEdit::setupTextActions()
     actionIndentLess->setPriority(QAction::LowPriority);
 */
 
-    actionTextSubscript = tb->addAction(
-        QIcon(rsrcPath + "/textpedix.png"), tr("Su&bscript"),
+    actionTextSubscript = tb->addAction(QIcon(rsrcPath + "/textpedix.png"), tr("Su&bscript"),
         this, &TextEdit::textSubscript);
     actionTextSubscript->setCheckable(true);
 
@@ -417,23 +407,6 @@ void TextEdit::drawAllCursor()
     }
 }
 
-bool TextEdit::maybeSave()
-{
-    if (!textEdit->document()->isModified())
-        return true;
-
-    const QMessageBox::StandardButton ret =
-        QMessageBox::warning(this, QCoreApplication::applicationName(),
-                             tr("The document has been modified.\n"
-                                "Do you want to save your changes?"),
-                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    if (ret == QMessageBox::Save)
-        return fileSave();
-    else if (ret == QMessageBox::Cancel)
-        return false;
-    return true;
-}
-
 void TextEdit::setCurrentFileName(const QString &fileName)
 {
     this->fileName = fileName;
@@ -451,10 +424,10 @@ void TextEdit::setCurrentFileName(const QString &fileName)
 
 void TextEdit::fileNew()
 {
-    if (maybeSave()) {
-        textEdit->clear();
-        setCurrentFileName(QString());
-    }
+
+    textEdit->clear();
+    setCurrentFileName(QString());
+
 }
 
 void TextEdit::fileOpen()
@@ -463,22 +436,6 @@ void TextEdit::fileOpen()
 
 bool TextEdit::fileSave()
 {
-/*
-    if (fileName.isEmpty())
-        return fileSaveAs();
-    if (fileName.startsWith(QStringLiteral(":/")))
-        return fileSaveAs();
-
-    QTextDocumentWriter writer(fileName);
-    bool success = writer.write(textEdit->document());
-
-    if (success) {
-        textEdit->document()->setModified(false);
-        statusBar()->showMessage(tr("Wrote \"%1\"").arg(QDir::toNativeSeparators(fileName)));
-    } else {
-        statusBar()->showMessage(tr("Could not write to file \"%1\"")
-                                 .arg(QDir::toNativeSeparators(fileName)));
-    }*/
     emit saveFile(fileName);
     return true;
 }

@@ -211,8 +211,6 @@ void Client::startTextEditor(QString fileName)
 {
     textEditor= new TextEdit(0,&this->subscriber,&listUserOnWorkspace);
 
-
-
     QCoreApplication::setApplicationName("textEditor");
     textEditor->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -652,18 +650,12 @@ void Client::onUpdateProfileRequest(updateUser_t updateUser){
 
 void Client::onCloseTextEditor()
 {
-    mainWindowStacked->show();
     QByteArray out;
         BuilderMessageClient::MessageSendToServer(
                     out,
                     BuilderMessageClient::MessagedCloseEditor(sf->getSite()));
 
-    //Penso vada meglio un sf puntatore, in modo da cancellarlo in questo momento.
-
     qDebug() << "Segnalo che non sono più nell'editor";
-
-    textEditor = nullptr;
-
     this->m_webSocket->sendBinaryMessage(out);
 }
 
@@ -779,6 +771,7 @@ void Client::onLocalDeletion(int pos)
 void Client::onRemoveClientWorkspace(QString URI)
 {
     qDebug() << "Mi rimuovo";
+    mainWindowStacked->show();
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,

@@ -132,7 +132,6 @@ private:
     void setupEditActions();
     void setupTextActions();
     void setupClientOnline();
-    bool maybeSave();
     void setCurrentFileName(const QString &fileName);
     void modifyIndentation(int amount);
 
