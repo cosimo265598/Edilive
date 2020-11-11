@@ -22,11 +22,12 @@
 #include <QTextCursor>
 #include <QtConcurrent>
 #include <QRunnable>
+#include <QMutex>
 
 #include <userdata.h>
 #include "client.h"
 #include "serverdatabase.h"
-#include "processoperation.h"
+
 #include "tasks.h"
 
 QT_BEGIN_NAMESPACE
@@ -72,7 +73,8 @@ private:
     QMap<QWebSocket*, QSharedPointer<Client>> clients;
     QMap<QString, UserData> users;
     QMap<QString, QSharedPointer<Workspace>> workspaces;
-    ProcessOperation *po;
+    //ProcessOperation *po;
     ServerDatabase database;
+    QMutex mutex;
 };
 #endif // MAINWINDOW_H

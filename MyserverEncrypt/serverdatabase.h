@@ -74,9 +74,9 @@ public:
     int getMaxUserID();
     QList<UserData> readUsersList();
     UserData readUser(QString username);
-    QStringList readUserDocuments(QString username);
-    QStringList readDocuments();
-    int countDocEditors(QString fileName);
+    //QStringList readUserDocuments(QString username);
+    //int countDocEditors(QString fileName);
+    file_t readFile(QString URI);
     QList<file_t> getUserDocs(QString username);
 
 signals:

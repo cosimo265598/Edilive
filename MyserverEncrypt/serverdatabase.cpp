@@ -1,4 +1,3 @@
-
 #include "serverdatabase.h"
 #include "userdata.h"
 #include <QFile>
@@ -446,19 +445,16 @@ UserData ServerDatabase::readUser(QString username)
      );
 }
 
+/*
 QStringList ServerDatabase::readUserDocuments(QString username)
 {
     emit printUiServerDatabase("Query readUsersDocuments");
-
     QSqlQuery query(db);
     // Selection query of all the filenames owned by a user (DocEditors table)
     query.prepare("SELECT Files.FileName, Files.Creator, Files.Created, Files.URI FROM Files LEFT JOIN DocEditors WHERE Files.URI = DocEditors.URI AND Username = :username AND Pending = :pending ORDER BY Files.Filename ASC");
-
     query.bindValue(":username", username);
     query.bindValue(":pending", 0);
-
     QStringList docs;
-
     if (query.exec() && query.isActive())
     {
         query.next();
@@ -473,47 +469,48 @@ QStringList ServerDatabase::readUserDocuments(QString username)
         qDebug()<<LOG_PRINT_DB+"Error read user documents ";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
-
     return docs;
 }
+*/
 
-QStringList ServerDatabase::readDocuments()
+file_t ServerDatabase::readFile(QString URI)
 {
-    emit printUiServerDatabase("Query readDocumentfilename");
+    emit printUiServerDatabase("Query readFile Info");
 
-    QList<QString> documents;
     QSqlQuery query(db);
-    if (query.exec("SELECT DISTINCT FileName FROM DocEditors") && query.isActive())
-    {
-        // Load all the document filenames in a QString list
-        query.next();
-        while (query.isValid())
-        {
-            documents.append(query.value(0).toString());
-            query.next();
-        }
-    }
-    else
-    {
-        qDebug()<<LOG_PRINT_DB+"Error read coument filename";
+
+    query.prepare("SELECT * FROM Files WHERE URI = :uri");
+
+    query.bindValue(":uri", URI);
+
+    if (!query.exec()){
+        qDebug()<<LOG_PRINT_DB+"Error select existing file";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
-
     }
 
-    return documents;
+    if(!query.first()){
+        qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
+        throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
+    }
+
+    file_t file;
+    file.URI = query.value("URI").toString();
+    file.fileName = query.value("FileName").toString();
+    file.creator = query.value("Creator").toString();
+    file.created = query.value("Created").toString();
+
+    return file;
 }
 
+
+/*
 int ServerDatabase::countDocEditors(QString URI)
 {
     emit printUiServerDatabase("Query countDocEditor");
-
     QSqlQuery qCountDocEditors(db);
-
     // Query to count the editors of a document (DocEditors table)
     qCountDocEditors.prepare("SELECT COUNT(*) FROM DocEditors WHERE URI = :uri");
-
     qCountDocEditors.bindValue(":uri", URI);
-
     if (qCountDocEditors.exec() && qCountDocEditors.isActive())
     {
         qCountDocEditors.next();
@@ -523,11 +520,10 @@ int ServerDatabase::countDocEditors(QString URI)
     {
         qDebug()<<LOG_PRINT_DB+"Error count doc editor";
         throw DatabaseReadException(qCountDocEditors.lastQuery().toStdString(), qCountDocEditors.lastError());
-
     }
     return 0;
-
 }
+*/
 
 QList<file_t> ServerDatabase::getUserDocs(QString username)
 {

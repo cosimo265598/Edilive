@@ -6,6 +6,8 @@
 #include <QThread>
 #include <QJsonObject>
 #include <QSqlDatabase>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include "serverdatabase.h"
 #include "serverexception.h"
@@ -14,6 +16,7 @@
 #include "client.h"
 #include "buildermessage.h"
 #include "ui_mainwindow.h"
+#include "mainwindow.h"
 
 enum TypeOperation : quint16
 {
@@ -67,7 +70,8 @@ public:
           QMap<QString, UserData>& users,
           QMap<QString, QSharedPointer<Workspace>>& workspaces,
           TypeOperation type,
-          Ui::MainWindow* ui
+          Ui::MainWindow* ui,
+          QMutex *mutex
     );
 
     void run() override;
@@ -83,6 +87,7 @@ private:
     QString threadId;
     Ui::MainWindow *ui;
     QString rootPath = QDir().currentPath()+"/files/";
+    QMutexLocker locker;
 
     void serverAccountCreate(QJsonObject request);
     void serverLoginRequest();
@@ -99,6 +104,13 @@ private:
     void serverRemoveClientFromWorkspace();
     void serverShareFile();
     void changeCursorPosition();
+
+    ////////////
+    void loginError(QString);
+    void accountCreationError(QString);
+    void accountUpdateError(QString);
+    void fileDeletionError(QString);
+    void fileCreationError(QString);
 
     //QString generateURI(QString creator, QString fileName) const;
 

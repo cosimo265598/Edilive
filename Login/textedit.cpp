@@ -53,8 +53,6 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
 
     textEdit = new QTextEdit(parent);
     const QSignalBlocker blocker(textEdit->document());
-    //connect(textEdit, &QTextEdit::textChanged,this, &TextEdit::textChange);
-
 
     connect(textEdit, &QTextEdit::currentCharFormatChanged,this, &TextEdit::currentCharFormatChanged);
     connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
@@ -102,14 +100,17 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
     setCurrentFileName(QString());
 
 
-    //QImage img(150,150,QImage::Format_ARGB32);
-    //img.fill(presence->color());
-    //QImage::fromData(this->subscriber->serializedImage)
-    QImage img(":/icons_pack/avatar_default.png"); //this->subscriber->serializedImage
+
+
     int j=1;
-    //newPresence(5,this->subscriber->username,img);
     for(auto i=this->listUsers->begin(); i!=this->listUsers->end(); i++){
         qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
+        QImage img;
+        if(this->subscriber->serializedImage==nullptr){
+            img.load(":/icons_pack/avatar_default.png");
+        }
+        img.loadFromData(this->subscriber->serializedImage);
+
         newPresence(j,i->username,img);
         j++;
     }
@@ -1048,39 +1049,29 @@ void TextEdit::newPresence(qint32 userId, QString username, QImage image)
     });
 
     onlineAction->setChecked(true);
+    p.setAction(onlineAction);
     onlineUsers->addAction(onlineAction);
     onlineUsers_map.insert(p.name(), p);
 
     qDebug() << "users" << onlineUsers_map.size();
-
-    p.setAction(onlineAction);
 
     p.cursor()->movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
     qDebug()<< "NEW PRESENCE pos:"<<p.cursor()->position();
     p.cursor()->clearSelection();
 }
 
-void TextEdit::removePresence(qint32 userId)
+void TextEdit::removePresence(QString userId)
 {
-    /*
-    if (onlineUsers.contains(userId))
-    {
-        Presence& p = onlineUsers.find(userId).value();
-
-        //Hide user cursor
-        p.label()->clear();
-
-        //Remove user icon from users toolbar
-        onlineUsersToolbar->removeAction(p.actionHighlightText());
-
-        //Remove from editor
-        onlineUsers.remove(userId);
-
-        //Recompute user text highlighting
-        handleMultipleSelections();
-    }
-    */
-
+    if (onlineUsers_map.contains(userId))
+     {
+         Presence& p = onlineUsers_map.find(userId).value();
+         //Hide user cursor
+         p.label()->clear();
+         //Remove user icon from users toolbar
+         onlineUsers->removeAction(p.actionHighlightText());
+         //Remove from editor
+         onlineUsers_map.remove(userId);
+     }
 }
 
 void TextEdit::textSubscript()

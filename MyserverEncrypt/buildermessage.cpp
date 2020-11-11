@@ -292,16 +292,20 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName, QString creato
 
 QJsonDocument BuilderMessage::MessageAccountInfo(QString username, QString nickname, QByteArray serializedImage)
 {
+    QString stringified = nullptr;
     bool presentIcon=false;
-    if(!serializedImage.isNull())
+    if(!serializedImage.isNull()){
         presentIcon=true;
+        stringified = QString::fromLatin1(serializedImage.toBase64().data());
+    }
+
 
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",17);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("icon",QString::fromLatin1(serializedImage.toBase64().data()));
+    json.insert("icon",stringified);
     json.insert("present_icon", presentIcon);
     jsondoc.setObject(json);
 

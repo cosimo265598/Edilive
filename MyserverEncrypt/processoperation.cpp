@@ -28,18 +28,19 @@ Tasks *ProcessOperation::createTask(
         TypeOperation typeOp,
         Ui::MainWindow* ui)
 {
-    Tasks *task = new Tasks(nullptr, request, socket, clients, users, workspaces, typeOp,ui);
+    QMutex mutex;
+    Tasks *task = new Tasks(nullptr, request, socket, clients, users, workspaces, typeOp,ui,&mutex);
 
-    connect(task,&Tasks::loginError, this, &ProcessOperation::onLoginError,Qt::DirectConnection);
+    //connect(task,&Tasks::loginError, this, &ProcessOperation::onLoginError,Qt::DirectConnection);
     connect(task,&Tasks::messageChallenge, this, &ProcessOperation::onMessageChallenge,Qt::DirectConnection);
     connect(task,&Tasks::messageChallegePassed, this, &ProcessOperation::onMessageChallengePassed,Qt::DirectConnection);
-    connect(task,&Tasks::accountCreationError, this, &ProcessOperation::onAccountCreationError,Qt::DirectConnection);
+    //connect(task,&Tasks::accountCreationError, this, &ProcessOperation::onAccountCreationError,Qt::DirectConnection);
     connect(task,&Tasks::accountConfirmed, this, &ProcessOperation::onAccountConfirmed,Qt::DirectConnection);
     connect(task,&Tasks::openDirOfClient, this, &ProcessOperation::onOpenDirOfClient,Qt::DirectConnection);
     connect(task,&Tasks::personalDataOfClient, this, &ProcessOperation::onPersonalDataOfClient,Qt::DirectConnection);
     connect(task,&Tasks::accountUpdateSuccess, this, &ProcessOperation::onAccountUpdateSuccess,Qt::DirectConnection);
-    connect(task,&Tasks::fileCreationError, this, &ProcessOperation::onFileCreationError,Qt::DirectConnection);
-    connect(task,&Tasks::fileDeletionError, this, &ProcessOperation::onFileDeletionError,Qt::DirectConnection);
+    //connect(task,&Tasks::fileCreationError, this, &ProcessOperation::onFileCreationError,Qt::DirectConnection);
+    //connect(task,&Tasks::fileDeletionError, this, &ProcessOperation::onFileDeletionError,Qt::DirectConnection);
     connect(task,&Tasks::openFile, this, &ProcessOperation::onOpenFile,Qt::DirectConnection);
     connect(task,&Tasks::insertionChar, this, &ProcessOperation::onInsertionChar, Qt::DirectConnection);
     connect(task,&Tasks::deletionChar, this, &ProcessOperation::onDeletionChar, Qt::DirectConnection);

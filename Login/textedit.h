@@ -86,6 +86,8 @@ public slots:
     //void textChange();
     void onUpdateListUsersConnected(int id, QString username, QImage img);
     void onContentsChanged(int position, int charsRemoved, int charsAdded);
+    void removePresence(QString userId);
+
 signals:
     void localDeletionSignal(int pos);
     void localInsertionSignal(QChar c, int pos,QTextCharFormat fmt);
@@ -96,6 +98,7 @@ signals:
 protected:
     void closeEvent(QCloseEvent *e) override;
     //bool eventFilter(QObject *object, QEvent *event) override;
+
 private slots:
     void fileOpen();
     bool fileSave();
@@ -140,7 +143,6 @@ private:
     void alignmentChanged(Qt::Alignment a);
     void drawCursor(const Presence& p);
     void newPresence(qint32 userId, QString username, QImage image);
-    void removePresence(qint32 userId);
     void textSubscript();
     void textSuperscript();
     void scriptChanged(QTextCharFormat::VerticalAlignment a);

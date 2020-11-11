@@ -211,7 +211,7 @@ void Client::startTextEditor(QString fileName)
 {
     textEditor= new TextEdit(0,&this->subscriber,&listUserOnWorkspace);
 
-    connect(textEditor, &TextEdit::close, this, &Client::onCloseTextEditor);
+
 
     QCoreApplication::setApplicationName("textEditor");
     textEditor->setAttribute(Qt::WA_DeleteOnClose);
@@ -230,8 +230,11 @@ void Client::startTextEditor(QString fileName)
     connect(textEditor, &TextEdit::saveFile, this, &Client::saveFile,Qt::QueuedConnection);
     connect(textEditor, &TextEdit::changeCursorPositionSignal, this, &Client::changeCursorPosition,Qt::QueuedConnection);
     connect(this, &Client::fromServerChangeCursorSignal, textEditor, &TextEdit::fromServerNewCursorPosition, Qt::QueuedConnection);
-    textEditor->show();
+    connect(this,&Client::removeConnectedUser,textEditor,&TextEdit::removePresence,Qt::QueuedConnection);
+    connect(textEditor, &TextEdit::close, this, &Client::onCloseTextEditor);
 
+    textEditor->show();
+    mainWindowStacked->hide();
 
     for(Symbol s: sf->getSymbols())
             qDebug()<<s.getCar()<<"\n";
@@ -252,7 +255,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
     stream >> jsonDoc;
 
-    //qDebug() << jsonDoc;
+    qDebug() << jsonDoc;
 
     if (jsonDoc.isNull()) {
         std::cout << "Failed to create JSON doc." << std::endl;
@@ -266,7 +269,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
     QJsonObject jsonObj = jsonDoc.object();
 
-    qDebug() << jsonObj;
+    //qDebug() << "CONTENUTO JSON" << jsonObj;
 
     switch (jsonObj["type"].toInt()) {
     case 2:{   // message challange login
@@ -364,7 +367,15 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             subscriber_t s;
             s.username= i.toObject().value("username").toString();
             s.nickname = i.toObject().value("nickname").toString();
-            s.serializedImage= i.toObject().value("icon").toString().toLatin1().toBase64();
+            QByteArray serializedImage = nullptr;
+            QString stringifiedImage = i.toObject().value("icon").toString();
+
+            if(stringifiedImage!=nullptr){
+                QString stringifiedImage = i.toObject().value("icon").toString();
+                serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+            }
+            s.serializedImage= serializedImage;
+
             listUserOnWorkspace.append(s);
         }
         // Aperura editor per l'editing del file
@@ -373,7 +384,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 17:{
-        qDebug()<<"load Info    " << jsonObj;
+        //qDebug()<<"load Info    " << jsonObj;
         QByteArray serializedImage = nullptr;
         if(jsonObj["present_icon"].toBool()){
             QString stringifiedImage = jsonObj["icon"].toString();
@@ -407,7 +418,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
         qDebug() << "Update Account error";
         resetUpdateUser();
-        emit accountUpdateError(jsonObj["error"].toString());
+        emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
     }
 
 
@@ -641,6 +652,7 @@ void Client::onUpdateProfileRequest(updateUser_t updateUser){
 
 void Client::onCloseTextEditor()
 {
+    mainWindowStacked->show();
     QByteArray out;
         BuilderMessageClient::MessageSendToServer(
                     out,
@@ -649,6 +661,8 @@ void Client::onCloseTextEditor()
     //Penso vada meglio un sf puntatore, in modo da cancellarlo in questo momento.
 
     qDebug() << "Segnalo che non sono più nell'editor";
+
+    textEditor = nullptr;
 
     this->m_webSocket->sendBinaryMessage(out);
 }

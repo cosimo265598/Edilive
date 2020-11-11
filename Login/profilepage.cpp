@@ -78,7 +78,7 @@ void ProfilePage:: onAccountUpdateError(QString message)
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
-        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);

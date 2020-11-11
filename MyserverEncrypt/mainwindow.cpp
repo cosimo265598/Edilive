@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    this->po=ProcessOperation::getInstance(this, clients, users, workspaces);
+    //this->po=ProcessOperation::getInstance(this, clients, users, workspaces);
     
     //opening database;
     try {
@@ -193,18 +193,15 @@ void MainWindow::socketDisconnected()
     QWebSocket* socket = dynamic_cast<QWebSocket*>(sender());
     QSharedPointer<Client> client = clients[socket];
 
-    if (client->isLogged())
-    {
-        client->logout();
-    }
-
-    clients.remove(socket);					/* remove this client from the map */
-    socket->close();						/* close and destroy the socket */
-    socket->deleteLater();
-
     ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tClient "+client->getUsername()+" disconnected");
     ui->num_client->display(ui->num_client->intValue()-1);
 
+    if(users.contains(client->getUsername()))
+        users.remove(client->getUsername());
+    clients.remove(socket);					/* remove this client from the map */
+
+    socket->close();						/* close and destroy the socket */
+    socket->deleteLater();
 }
 
 void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
@@ -215,26 +212,26 @@ void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
     }
 }
 
-void MainWindow::socketAbort(QWebSocket* clientSocket)
+void MainWindow::socketAbort(QWebSocket* socket)
 {
-    // Disconnect all the socket's signals from server slots
-    disconnect(clientSocket, &QWebSocket::binaryMessageReceived, this, &MainWindow::processBinaryMessage);
-    disconnect(clientSocket, &QWebSocket::disconnected, this, &MainWindow::socketDisconnected);
+    qDebug()<<socket<<" invocazione metodo socket abort   "<<QThread::currentThread();
 
-    QSharedPointer<Client> client = clients[clientSocket];
-    QString ip=clientSocket->peerAddress().toString();
+    QSharedPointer<Client> client = clients[socket];
+    QString ip;
 
-    clientSocket->abort();						/* abort and destroy the socket */
-    clientSocket->deleteLater();
-
-    clients.remove(clientSocket);				/* remove this client from the active connections */
-    if (client->isLogged())
-    {
-        client->logout();
-        ui->commet->appendPlainText("Eject "+client->getUsername()+" ip: "+ip);
+    if(socket->isValid()){
+        ip=socket->peerAddress().toString();
+        qDebug()<<"socket abort thread "<<socket->thread()->currentThread();
+        socket->close(
+                    QWebSocketProtocol::CloseCodeBadOperation);
+        socket->deleteLater();
     }
-    else
-        ui->commet->appendPlainText("Shutdown connection client: "+ip);
+    if(users.contains(client->getUsername()))
+        users.remove(client->getUsername());
+    clients.remove(socket);					/* remove this client from the map */
+
+    socket->close();						/* close and destroy the socket */
+    socket->deleteLater();
 }
 
 void MainWindow::printUiServer(QString messageToPrint)
@@ -281,6 +278,16 @@ void MainWindow::processBinaryMessage(QByteArray message)
         return ;
     }
 
+    QJsonObject request = jsonDoc.object();
+    TypeOperation typeOp = (TypeOperation)(request["type"].toInt());
+    //Tasks *task = new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get());
+
+    //connect(task,&Tasks::socketAbort, this, &MainWindow::socketAbort,Qt::QueuedConnection);
+    //connect(task,&Tasks::printUiServer,this, &MainWindow::printUiServer,Qt::QueuedConnection);
+
+    QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), &mutex));
+
+    /*
     try {
         po->process(socket, jsonDoc.object(), ui.get());
     }
@@ -289,4 +296,5 @@ void MainWindow::processBinaryMessage(QByteArray message)
         ui->commet->appendPlainText( me.what());
         socketAbort(socket);
     }
+    */
 }

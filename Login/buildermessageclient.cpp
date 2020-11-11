@@ -246,7 +246,7 @@ QJsonDocument BuilderMessageClient::MessageRemoveClientWorkspace(QString URI)
 {
     QJsonDocument jsondoc;
     QJsonObject objtosend;
-    objtosend.insert("fileName", URI);
+    objtosend.insert("URI", URI);
     objtosend.insert("auth",true);
     objtosend.insert("type",20);
     jsondoc.setObject(objtosend);

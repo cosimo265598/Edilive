@@ -2,7 +2,7 @@
 
 FileHandler::FileHandler(QWidget* parent, const QIcon &icon, const QString &fileName,
                          const QString &URI, const QString &creator,
-                         const QString &created, const int &size)
+                         const QString &created, const QString &size)
     : QToolButton()
 {
     QToolButton::setIcon(icon);
@@ -31,7 +31,7 @@ QString FileHandler::getURI() const
     return URI;
 }
 
-int FileHandler::getSize() const
+QString FileHandler::getSize() const
 {
     return size;
 }

@@ -107,7 +107,7 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
 
         filename = sharedFileNameConflictManage(filename);
 
-        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, file["URI"].toString(), file["creator"].toString(), file["created"].toString(),file["size"].toInt());
+        FileHandler *item = new FileHandler(this, QIcon(":/icons_pack/document_480px.png"),filename, file["URI"].toString(), file["creator"].toString(), file["created"].toString(),file["size"].toString());
         listfile[filename]=item;
         item->installEventFilter(eventFilter);
         connect(item, &FileHandler::clicked,[item, this]()
@@ -134,14 +134,14 @@ void HomePage::loadImage(QByteArray serializedImage){
 
     QPixmap pixmap{};
     if (serializedImage == nullptr){
-        pixmap.load(QDir().homePath()+ "/QtProjects/pds-project/myservertest/Login/images/default.png");
+        pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         qDebug() << "load";
         serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);
     }
 
-    qDebug() << pixmap;
+    //qDebug() << pixmap;
 
     ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }

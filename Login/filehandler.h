@@ -13,13 +13,13 @@ class FileHandler : public QToolButton
 public:
     FileHandler(QWidget* parent, const QIcon &icon, const QString &fileName,
                 const QString &URI, const QString &creator,
-                const QString &created, const int &size);
+                const QString &created, const QString &size);
     ~FileHandler();
 private:
     QString fileName;
     QString creator;
     QString created;
-    int size;
+    QString size;
     QString URI;
 
 public:
@@ -31,7 +31,7 @@ public:
 
     QString getCreated() const;
 
-    int getSize() const;
+    QString getSize() const;
 
     QString getURI() const;
 

@@ -12,7 +12,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
 
     //this->setFixedSize(1200, 800);
 
-    MainWindowStacked::setAttribute(Qt::WA_DeleteOnClose, true);
+    //MainWindowStacked::setAttribute(Qt::WA_DeleteOnClose, true);
     ui->stackedWidget->addWidget(&homePage);
     ui->stackedWidget->addWidget(&profilePage);
     ui->stackedWidget->setCurrentIndex(0);
