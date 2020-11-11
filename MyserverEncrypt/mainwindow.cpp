@@ -218,20 +218,28 @@ void MainWindow::socketAbort(QWebSocket* socket)
 
     QSharedPointer<Client> client = clients[socket];
     QString ip;
-
     if(socket->isValid()){
         ip=socket->peerAddress().toString();
         qDebug()<<"socket abort thread "<<socket->thread()->currentThread();
-        socket->close(
-                    QWebSocketProtocol::CloseCodeBadOperation);
+        socket->blockSignals(true);
+        socket->flush();
+        socket->close(QWebSocketProtocol::CloseCodeBadOperation);
         socket->deleteLater();
     }
+    else
+        socket->deleteLater();
+
     if(users.contains(client->getUsername()))
         users.remove(client->getUsername());
     clients.remove(socket);					/* remove this client from the map */
 
-    socket->close();						/* close and destroy the socket */
-    socket->deleteLater();
+    if (client->isLogged())
+    {
+        client->logout();
+        emit printUiServer("Eject "+client->getUsername()+" ip: "+ip);
+    }
+    else
+        emit printUiServer("Shutdown connection of no logged client: "+ip);
 }
 
 void MainWindow::printUiServer(QString messageToPrint)

@@ -129,7 +129,8 @@ signals:
     void refreshText(QString);
     void updateListUsersConnected(int id,QString username,QImage img);
     void fromServerInsertSignal(QString c, int pos,QString user,QTextCharFormat nee_format);
-    void fromServerDeleteSignal(int pos,QString user);    void removeConnectedUser(QString);
+    void fromServerDeleteSignal(int pos,QString user);
+    void removeConnectedUser(QString);
     void accountUpdateError(QString);
     void fromServerChangeCursorSignal(int pos,QString user, QString site);
 

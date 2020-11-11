@@ -32,7 +32,8 @@ Client::Client(QObject *parent) :
     connect(this, &Client::registrationFailure, stackedDialog, &StartupStackedDialog::onRegistrationFailure);
     connect(stackedDialog, &StartupStackedDialog::registrationRequest, this, &Client::onRegistrationRequest);
 
-    //connection texteditor e client
+    //manage close windows waiting
+    connect(stackedDialog,&StartupStackedDialog::destroyed,&waitingDialog,&ConnectionWaitingDialog::close);
 
     resetUser();
     this->waitingTimer->setInterval(6000);
@@ -115,11 +116,13 @@ void Client::onDisconnection(){
     qDebug() << "DISCONNECTED";
     switch(this->clientStatus){
     case LoginRequest: {
-        emit loginFailure("Login failure, impossible to contact the server (DISCONNECTED)");
+        if(m_webSocket->error()== QAbstractSocket::ConnectionRefusedError)
+            emit loginFailure("Login failure, impossible to contact the server (DISCONNECTED)");
         break;
     }
     case RegistrationRequest: {
-        emit registrationFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
+        if(m_webSocket->error() ==QAbstractSocket::ConnectionRefusedError)
+            emit registrationFailure("Registration failure, impossible to contact the server (DISCONNECTED)");
         break;
     }
     case Connected: {
@@ -159,6 +162,8 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
     connect(this, &Client::accountUpdateError, mainWindowStacked, &MainWindowStacked::accountUpdateError);
     connect(mainWindowStacked, SIGNAL(shareFile(QString, QString)), this, SLOT(onShareFile(QString, QString)));
+
+
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -307,15 +312,12 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     case 5:{    // message  login error
         waitingTimer->stop();
         waitingDialog.hide();
-
         resetUser();
         emit loginFailure(jsonObj["error"].toString());
         break;
     }
     case 8:{    // message account confimed
         qDebug() << "Account created";
-        //this->clientStatus = Connected;
-        // Automatic login after correct registration
         BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
         m_webSocket.get()->sendBinaryMessage(out);
         break;
@@ -683,6 +685,8 @@ void Client::ping()
 void Client::errorSocket(QAbstractSocket::SocketError error)
 {
     qDebug()<<"Socket error: - "<<error;
+    if(error==QAbstractSocket::ConnectionRefusedError)
+        onDisconnection();
 }
 
 void Client::closeControll()
