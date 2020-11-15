@@ -76,5 +76,6 @@ private:
     //ProcessOperation *po;
     ServerDatabase database;
     QMutex mutex;
+    QMap<QString,QMutex*> lockwork;
 };
 #endif // MAINWINDOW_H

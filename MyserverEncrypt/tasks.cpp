@@ -710,8 +710,9 @@ void Tasks::serverRemoveClientFromWorkspace(){
             QDataStream docFileStream(&file);
 
             qDebug()<<"File opened";
-            for(Symbol s: w->getSharedFile()->getSymbols())
+            for(Symbol s: w->getSharedFile()->getSymbols()){
                 docFileStream<<s.getCar()<<s.getFmt();
+            }
 
            qDebug()<<"File writed";
            if (docFileStream.status() == QDataStream::Status::WriteFailed)

@@ -387,9 +387,19 @@ bool TextEdit::load(const QString &fileName, SharedFile* file)
 {
     {
         const QSignalBlocker blocker(textEdit->document());
-        textEdit->textCursor().setPosition(0);
-        for(Symbol s: file->getSymbols())
+        textEdit->textCursor().setPosition(QTextCursor::Start);
+        for(Symbol s: file->getSymbols()){
             textEdit->textCursor().insertText(s.getCar(),s.getFmt());
+            QTextBlockFormat textBlockFormat=textEdit->textCursor().blockFormat();
+            switch (s.getFmt().properties().find(QTextFormat::BlockAlignment).value().toUInt()) {
+                case Qt::AlignLeading  | Qt::AlignAbsolute:         textBlockFormat.setAlignment(Qt::AlignLeading  | Qt::AlignAbsolute); break;
+                case Qt::AlignTrailing | Qt::AlignAbsolute:         textBlockFormat.setAlignment(Qt::AlignTrailing | Qt::AlignAbsolute); break;
+                case Qt::AlignHCenter:                              textBlockFormat.setAlignment(Qt::AlignHCenter); break;
+                case Qt::AlignJustify:                              textBlockFormat.setAlignment(Qt::AlignJustify); break;
+                default:                                            textBlockFormat.setAlignment(Qt::AlignLeading  | Qt::AlignAbsolute); break;
+            }
+            textEdit->textCursor().setBlockFormat(textBlockFormat);
+        }
     }
     textEdit->textCursor().setPosition(QTextCursor::End,QTextCursor::MoveAnchor);
     Presence p=onlineUsers_map.find(this->subscriber->username).value();

@@ -164,7 +164,6 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, SIGNAL(shareFile(QString, QString)), this, SLOT(onShareFile(QString, QString)));
 
 
-
     subscriberInfoRequest();
     fileHandlersRequest();
 
@@ -242,10 +241,10 @@ void Client::startTextEditor(QString fileName)
     for(Symbol s: sf->getSymbols())
             qDebug()<<s.getCar()<<"\n";
 
-        qDebug() << "testo: " << sf->to_string();
+    qDebug() << "testo: " << sf->to_string();
 
-        if (!textEditor->load(fileName, sf))
-            textEditor->fileNew();
+    if (!textEditor->load(fileName, sf))
+        textEditor->fileNew();
 }
 
 

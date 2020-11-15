@@ -10,7 +10,7 @@ Workspace::Workspace(QObject *parent, QString path) : QObject(parent), path(path
 
     QFileInfo info(path);
      qDebug() << "Created new workspace with filename="<<path;
-     sf = new SharedFile(info.fileName(),info.owner()); //DA SISTEMARE CON VERO CREATORE
+     sf = new SharedFile(info.fileName(),info.owner());
      sf -> readExistingFile(path);
 }
 

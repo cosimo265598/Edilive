@@ -293,6 +293,32 @@ void MainWindow::processBinaryMessage(QByteArray message)
     //connect(task,&Tasks::socketAbort, this, &MainWindow::socketAbort,Qt::QueuedConnection);
     //connect(task,&Tasks::printUiServer,this, &MainWindow::printUiServer,Qt::QueuedConnection);
 
+    ////// prva aggiunta testing mutex separatly
+    ///  NEL CASO NON FUNZIOANA COME DEVE BASTA RIMUOVERE TUTTO IL CODICE COMRPESO TRA SUETE RIGHE IN BLU
+    if(request.contains("URI"))
+    {
+        if(workspaces.contains(request["URI"].toString()))
+        {
+            qDebug()<<"WORKSPACE PRESENT:"<<workspaces[request["URI"].toString()].get()
+                    <<"WHIT QMUTEX:"<<lockwork[request["URI"].toString()];
+            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[request["URI"].toString()]));
+            return;
+        }else
+        {
+            if(!lockwork.contains(request["URI"].toString())){
+                lockwork.insert(request["URI"].toString(),new QMutex);
+                qDebug()<<"INSERTED QMUTEX:"<<lockwork[request["URI"].toString()];
+            }
+            qDebug()<<"LIST KEY:"<<lockwork.keys();
+            qDebug()<<"LIST VALUES:"<<lockwork.values();
+            qDebug()<<"QMUTEX:"<<lockwork[request["URI"].toString()];
+            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[request["URI"].toString()]));
+            return;
+        }
+    }
+
+    ////// end  aggiunta testing
+
     QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), &mutex));
 
     /*
