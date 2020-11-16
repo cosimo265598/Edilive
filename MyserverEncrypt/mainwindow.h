@@ -74,7 +74,6 @@ private:
     QMap<QString, UserData> users;
     QMap<QString, QSharedPointer<Workspace>> workspaces;
     //ProcessOperation *po;
-    ServerDatabase database;
     QMutex mutex;
     QMap<QString,QMutex*> lockwork;
 };

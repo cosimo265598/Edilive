@@ -36,6 +36,7 @@ Client::Client(QObject *parent) :
     connect(stackedDialog,&StartupStackedDialog::destroyed,&waitingDialog,&ConnectionWaitingDialog::close);
 
     resetUser();
+    resetUpdateUser();
     this->waitingTimer->setInterval(6000);
 
     stackedDialog->show();
@@ -159,10 +160,10 @@ void Client::createMainWindowStacked()
     connect(mainWindowStacked, &MainWindowStacked::deleteFileRequest, this, &Client::onDeleteFileRequest);
     connect(mainWindowStacked, &MainWindowStacked::updateProfileRequest, this, &Client::onUpdateProfileRequest);
     connect(this, &Client::updateSuccess, mainWindowStacked, &MainWindowStacked::updateSuccess);
-    connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
+    connect(mainWindowStacked, &MainWindowStacked::resetSubscriberInfo, [this](){emit reloadProfilePageInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);});
     connect(this, &Client::accountUpdateError, mainWindowStacked, &MainWindowStacked::accountUpdateError);
     connect(mainWindowStacked, SIGNAL(shareFile(QString, QString)), this, SLOT(onShareFile(QString, QString)));
-
+    connect(this, &Client::reloadProfilePageInfo, mainWindowStacked, &MainWindowStacked::reloadProfilePageInfo);
 
     subscriberInfoRequest();
     fileHandlersRequest();
@@ -229,7 +230,7 @@ void Client::startTextEditor(QString fileName)
     connect(this,&Client::updateListUsersConnected,textEditor,&TextEdit::onUpdateListUsersConnected,Qt::QueuedConnection);
     connect(this,&Client::fromServerInsertSignal, textEditor, &TextEdit::fromServerInsert,Qt::QueuedConnection);
     connect(this,&Client::fromServerDeleteSignal, textEditor, &TextEdit::fromServerDelete,Qt::QueuedConnection);
-    connect(textEditor, &TextEdit::saveFile, this, &Client::saveFile,Qt::QueuedConnection);
+    //connect(textEditor, &TextEdit::saveFile, this, &Client::saveFile,Qt::QueuedConnection);
     connect(textEditor, &TextEdit::changeCursorPositionSignal, this, &Client::changeCursorPosition,Qt::QueuedConnection);
     connect(this, &Client::fromServerChangeCursorSignal, textEditor, &TextEdit::fromServerNewCursorPosition, Qt::QueuedConnection);
     connect(this,&Client::removeConnectedUser,textEditor,&TextEdit::removePresence,Qt::QueuedConnection);
@@ -331,11 +332,6 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         emit receivedFileHandlers(jsonObj["files"].toArray(), jsonObj["onReload"].toString());
         break;
     }
-    case 13:{    // file gia presente
-        qDebug() << "Errore nella creazione del file";
-        emit newFileCreationFailure(jsonObj["error"].toString());
-        break;
-    }
     case 11:{    // file in arrivo
         QString fileName = jsonObj["fileName"].toString();
         QString creatore = jsonObj["creator"].toString();
@@ -372,6 +368,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             if(stringifiedImage!=nullptr){
                 QString stringifiedImage = i.toObject().value("icon").toString();
                 serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+                serializedImage.remove(0,4);
             }
             s.serializedImage= serializedImage;
 
@@ -382,12 +379,18 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
         break;
     }
+    case 13:{    // file gia presente
+        qDebug() << "Errore nella creazione del file";
+        emit newFileCreationFailure(jsonObj["error"].toString());
+        break;
+    }
     case 17:{
         //qDebug()<<"load Info    " << jsonObj;
         QByteArray serializedImage = nullptr;
         if(jsonObj["present_icon"].toBool()){
             QString stringifiedImage = jsonObj["icon"].toString();
             serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+            serializedImage.remove(0,4);
         }
 
         subscriber.username = jsonObj["username"].toString();
@@ -417,7 +420,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
         qDebug() << "Update Account error";
         resetUpdateUser();
-        emit loadSubscriberInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
+        emit reloadProfilePageInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
     }
 
 
@@ -573,22 +576,29 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     case 100:{
         qDebug()<< "CASE 100 - update inset workspace";
         subscriber_t s;
+
         s.username = jsonObj["username"].toString();
         s.nickname = jsonObj["nickname"].toString();
-        s.serializedImage = jsonObj["icon"].toString().toLatin1().toBase64();
+        s.serializedImage = nullptr;
+
+        QImage img;
+        if(jsonObj["present_icon"].toBool()){
+            QString stringifiedImage = jsonObj["icon"].toString();
+            s.serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
+            s.serializedImage.remove(0,4);
+            img = QImage::fromData(s.serializedImage);
+        }else{
+            img.load(":/icons_pack/avatar_default.png");
+        }
+
         listUserOnWorkspace.append(s);
-        emit updateListUsersConnected(listUserOnWorkspace.size(),s.username,QImage::fromData(s.serializedImage));
+        emit updateListUsersConnected(listUserOnWorkspace.size(),s.username,img);
         break;
     }
 
     case 101:{
         qDebug()<< "CASE 101 - update inset workspace";
         emit removeConnectedUser(jsonObj["username"].toString());
-        break;
-    }
-    case 102:{
-        qDebug() << "CASE 102 - new shareFile Request";
-
         break;
     }
     default:         return;
@@ -792,6 +802,7 @@ void Client::onShareFile(QString username, QString URI)
     this->m_webSocket->sendBinaryMessage(out);
 }
 
+/*
 void Client::saveFile(QString filename)
 {
     qDebug()<<"save file "<<filename;
@@ -816,6 +827,7 @@ void Client::saveFile(QString filename)
         file.commit();
     }
 }
+*/
 
 void Client::changeCursorPosition(int pos, QString user){
     //DA IMPLEMENTARE

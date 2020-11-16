@@ -37,6 +37,7 @@ signals:
     void updateProfileRequest(updateUser_t);
     void updateSuccess();
     void resetSubscriberInfo();
+    void reloadProfilePageInfo(QString username, QString nickname, QByteArray serializedImage);
     void accountUpdateError(QString);
     void shareFile(QString username, QString URI);
 };

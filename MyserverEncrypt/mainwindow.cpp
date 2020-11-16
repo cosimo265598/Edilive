@@ -27,21 +27,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
     //this->po=ProcessOperation::getInstance(this, clients, users, workspaces);
     
+    /*
     //opening database;
+    ServerDatabase db;
     try {
         if(!SSLconfiguration(sslconfig))
             throw StartupException("Impossible to set encryption configuration");
         m_pWebSocketServer->setSslConfiguration(sslconfig);
 
-        database.open(defaultnamedb, QString("dafault"), ui.get());
+        //database.open(defaultnamedb, QString("dafault"), ui.get());
 
-    }catch ( DatabaseConnectionException& dce ) {
-        throw StartupException("Connection database error");
     }catch(DatabaseCreateException& dcreate_ex){
         throw StartupException("Creation database table error");
     }catch(StartupException& se){
         throw StartupException("Start up problem.");
     }
+    */
 }
 
 MainWindow::~MainWindow()
@@ -63,6 +64,11 @@ void MainWindow::prepareToStart()
         throw StartupException("Cannot find local certificate file");
     }
 
+    if(!SSLconfiguration(sslconfig))
+        throw StartupException("Impossible to set encryption configuration");
+
+    m_pWebSocketServer->setSslConfiguration(sslconfig);
+
     // Check existence of (or create) the Users folder
     if (!QDir("Users").exists())
     {
@@ -74,23 +80,27 @@ void MainWindow::prepareToStart()
         }
     }
 
-    // Read The database file , avoid to interview each time the db
-   // QList<UserData> listUser=database.readUsersList();
-    // Possible implementation , load at the begining in map
-    /*
-    for (UserData user : database.readUsersList() )
-    {
-        for (QString docUri : database.readUserDocuments(user.getUsername()))
-        {
-            user.addDocument(docUri);
-        }
-        users.insert(user.getUsername(), user);
-    }
-    */
-    // Initialize the counter
+    ServerDatabase database;
+    try {
+        database.open(defaultnamedb,QString("default"),ui.get());
+    }catch ( DatabaseConnectionException& dce ) {
+        ui->commet->appendPlainText("open DB connection exception in ServerLoginRequest()");
+        return;
 
-    //ui->commet->appendPlainText("Users in database: "+ QString::number(listUser.count()) );
-    ui->commet->appendPlainText("(INIT COMPLETE )" );
+    }catch (DatabaseException& re ) {
+        ui->commet->appendPlainText("open DB connection exception in ServerLoginRequest()");
+        return;
+    }
+
+    try{
+        int numUser = database.getMaxUserID();
+        ui->commet->appendPlainText("Users in database: "+ QString::number(numUser) );
+        ui->commet->appendPlainText("(INIT COMPLETE )" );
+
+    }catch (DatabaseReadException& re) {
+        ui->commet->appendPlainText("getMaxUserID query READ EXCEPTION in prepareToStart() ");
+        return;
+    }
 }
 
 
@@ -144,6 +154,9 @@ void MainWindow::on_stopserver_clicked()
             element.second->logout();
         }
         clients.clear();
+        users.clear();
+        lockwork.clear();
+        workspaces.clear();
 
         ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tAll client will be disconnected...");
         ui->stopserver->setEnabled(false);
@@ -276,13 +289,8 @@ void MainWindow::processBinaryMessage(QByteArray message)
     stream >> jsonDoc;
 
     // Fail if the JSON is invalid.
-    if (jsonDoc.isNull()){
-        qDebug() << "JSON NULL";
-        return ;
-    }
-    // Make sure the root is an object.
-    if (!jsonDoc.isObject()){
-        qDebug() << "JSON not a obj";
+    if (jsonDoc.isNull() || !jsonDoc.isObject()){
+        ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tprocessBinaryMessage() error. INVALID JSON FORMAT ");
         return ;
     }
 
@@ -295,24 +303,38 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
     ////// prva aggiunta testing mutex separatly
     ///  NEL CASO NON FUNZIOANA COME DEVE BASTA RIMUOVERE TUTTO IL CODICE COMRPESO TRA SUETE RIGHE IN BLU
-    if(request.contains("URI"))
+    if(request.contains("URI") || request.contains("siteid"))
     {
+        QString URI;
+        if(request.contains("URI")){
+            URI = request["URI"].toString();
+        }else if(request.contains("siteid")){
+            URI = request["siteid"].toString();
+        }
+
+        //If there isn't the workspace's URI created, is not possible to delete or insert a char (case request["siteid"])
+
+        if(!workspaces.contains(URI) && request.contains("siteid")){
+             ui->commet->appendPlainText(QDateTime::currentDateTime().toString()+"\tInvalid Message received. Abort operation ");
+             return;
+        }
+
         if(workspaces.contains(request["URI"].toString()))
         {
-            qDebug()<<"WORKSPACE PRESENT:"<<workspaces[request["URI"].toString()].get()
-                    <<"WHIT QMUTEX:"<<lockwork[request["URI"].toString()];
-            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[request["URI"].toString()]));
+            qDebug()<<"WORKSPACE PRESENT:"<<workspaces[URI].get()
+                    <<"WITH QMUTEX:"<<lockwork[URI];
+            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[URI]));
             return;
         }else
         {
-            if(!lockwork.contains(request["URI"].toString())){
-                lockwork.insert(request["URI"].toString(),new QMutex);
-                qDebug()<<"INSERTED QMUTEX:"<<lockwork[request["URI"].toString()];
+            if(!lockwork.contains(URI)){
+                lockwork.insert(URI,new QMutex);
+                qDebug()<<"INSERTED QMUTEX:"<<lockwork[URI];
             }
             qDebug()<<"LIST KEY:"<<lockwork.keys();
             qDebug()<<"LIST VALUES:"<<lockwork.values();
-            qDebug()<<"QMUTEX:"<<lockwork[request["URI"].toString()];
-            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[request["URI"].toString()]));
+            qDebug()<<"QMUTEX:"<<lockwork[URI];
+            QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[URI]));
             return;
         }
     }

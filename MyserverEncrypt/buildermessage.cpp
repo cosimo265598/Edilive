@@ -275,10 +275,17 @@ QJsonDocument BuilderMessage::MessageHeaderFile(QString fileName, QString creato
 
     for(auto client : connected){
 
+        QString stringified = nullptr;
+        bool presentIcon=false;
+        if(!client->getUser()->getIcon().isNull()){
+            presentIcon=true;
+            stringified = QString::fromLatin1(client->getUser()->getIcon().toBase64().data());
+        }
+
         array.append(QJsonObject{
                          {"username",client->getUser()->getUsername()},
                          {"nickname", client->getUser()->getNickname()},
-                         {"icon", QLatin1String(client->getUser()->getIcon())}
+                         {"icon", stringified}
                      });
     }
 
@@ -343,17 +350,20 @@ QJsonDocument BuilderMessage::MessageAccountUpdateSuccess(QString msg){
 
 QJsonDocument BuilderMessage::MessageInsertClientWorkspace(QString username, QString nickname, QByteArray serializedImage)
 {
+    QString stringified = nullptr;
     bool presentIcon=false;
-    if(!serializedImage.isNull())
+    if(!serializedImage.isNull()){
         presentIcon=true;
+        stringified = QString::fromLatin1(serializedImage.toBase64().data());
+    }
 
     QJsonDocument jsondoc;
     QJsonObject json;
     json.insert("type",100);
     json.insert("username",username);
     json.insert("nickname",nickname);
-    json.insert("icon",QLatin1String(serializedImage));
-    json.insert("icon_present", presentIcon);
+    json.insert("icon",stringified);
+    json.insert("present_icon", presentIcon);
     jsondoc.setObject(json);
 
     return jsondoc;

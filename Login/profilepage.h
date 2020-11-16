@@ -45,8 +45,9 @@ private slots:
     void on_confirmPassword_editingFinished();
 
 public slots:
-    void onLoadSubscriberInfo(QString, QString, QByteArray);
-    void onAccountUpdateError(QString);
+    void onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
+    void onAccountUpdateError(QString errorMessage);
+    void onReloadProfilePageInfo(QString username, QString nickname, QByteArray serializedImage);
 
 private:
     Ui::ProfilePage *ui;

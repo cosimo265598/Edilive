@@ -366,7 +366,7 @@ int ServerDatabase::getMaxUserID()
         // Get the max value of the UserID column and return it incremented by 1 (first available ID)
         query.next();
         if (query.isValid())
-            return query.value(0).toInt() + 1;
+            return query.value(0).toInt();
     }
     else
     {

@@ -89,7 +89,7 @@ public slots:
     void localInsertion(QChar c, int pos, QTextCharFormat format);
     void onLocalDeletion(int pos);    void onRemoveClientWorkspace(QString URI);
     void onShareFile(QString username, QString URI);
-    void saveFile(QString filename); // URI o fileName? credo URI
+    //void saveFile(QString filename); // URI o fileName? credo URI
 
 private:
     MainWindowStacked *mainWindowStacked=nullptr;
@@ -123,7 +123,9 @@ signals:
     void registrationFailure(QString errorMessage);
     void loginFailure(QString errorMessage);
     void receivedFileHandlers(QJsonArray, QString);
-    void loadSubscriberInfo(QString, QString, QByteArray);
+    void loadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
+    void reloadProfilePageInfo(QString username, QString nickname, QByteArray serializedImage);
+    void resetSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
     void newFileCreationFailure(QString errorMessage);
     void updateSuccess();
     void refreshText(QString);

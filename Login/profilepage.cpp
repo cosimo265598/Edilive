@@ -22,7 +22,7 @@ ProfilePage::~ProfilePage()
 void ProfilePage::on_buttonBox_ok_cancel_accepted()
 {
     if(updateUser.nickname == nullptr && updateUser.password == nullptr && updateUser.serializedImage == nullptr){
-        if(!ui->password->text().simplified().isNull() || !ui->confirmPassword->text().simplified().isNull()){
+        if((!ui->password->text().simplified().isNull() && ui->confirmPassword->text().simplified().isNull()) || (ui->password->text().simplified().isNull() && !ui->confirmPassword->text().simplified().isNull()) ){
             ui->password->setStyleSheet(" border: 1px solid red;");
             ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
         }else{
@@ -74,13 +74,19 @@ void ProfilePage:: onAccountUpdateError(QString message)
     return;
 }
 
+void ProfilePage::onReloadProfilePageInfo(QString username, QString nickname, QByteArray serializedImage)
+{
+    ui->username->setText(username);
+    ui->nickname->setText(nickname);
+    loadImage(serializedImage);
+}
+
 
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
         pixmap.load(":/icons_pack/avatar_default.png");
     }else{
-        serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);
     }
 
@@ -96,9 +102,7 @@ void ProfilePage::on_pushButton_changeImage_clicked()
         QPixmap pixmap;
         file.open(QIODevice::ReadOnly);
         QByteArray serializedImage = file.readAll();
-
         file.close();
-
         pixmap.loadFromData(serializedImage);
         ui->accountImage->setPixmap( pixmap.scaled(ui->accountImage->width(), ui->accountImage->height(), Qt::KeepAspectRatio,Qt::SmoothTransformation));
         updateUser.serializedImage = serializedImage;
@@ -107,15 +111,15 @@ void ProfilePage::on_pushButton_changeImage_clicked()
 
 void ProfilePage::on_nickname_editingFinished()
 {
-    if(ui->nickname->text()==nullptr)
+    if(ui->nickname->text().simplified().isNull() || ui->nickname->text().simplified().isEmpty())
         updateUser.nickname.clear();
     else
-        updateUser.nickname =  ui->nickname->text();
+        updateUser.nickname =  ui->nickname->text().simplified();
 }
 
 void ProfilePage::on_password_editingFinished()
 {
-    if(ui->password->text() != ui->confirmPassword->text())
+    if(ui->password->text().isNull() || ui->password->text().isEmpty() || (ui->password->text() != ui->confirmPassword->text()))
        updateUser.password.clear();
     else
        updateUser.password = ui->password->text();
@@ -123,7 +127,7 @@ void ProfilePage::on_password_editingFinished()
 
 void ProfilePage::on_confirmPassword_editingFinished()
 {
-    if(ui->password->text() != ui->confirmPassword->text())
+    if(ui->confirmPassword->text().isNull() || ui->confirmPassword->text().isEmpty() || (ui->password->text() != ui->confirmPassword->text()))
        updateUser.password.clear();
     else
        updateUser.password = ui->password->text();

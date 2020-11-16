@@ -103,10 +103,12 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
     for(auto i=this->listUsers->begin(); i!=this->listUsers->end(); i++){
         qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
         QImage img;
-        if(this->subscriber->serializedImage==nullptr){
+        if(i->serializedImage==nullptr){
             img.load(":/icons_pack/avatar_default.png");
+        }else{
+            img.loadFromData(i->serializedImage);
         }
-        img.loadFromData(this->subscriber->serializedImage);
+
 
         newPresence(j,i->username,img);
         j++;

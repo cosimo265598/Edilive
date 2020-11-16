@@ -31,6 +31,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
     //connection ProfilePage
     connect(&profilePage, &ProfilePage::returnToHomeClicked,  [this](){MainWindowStacked::setWindowTitle("HomePage"); ui->stackedWidget->setCurrentIndex(0);});
     connect(this, &MainWindowStacked::loadSubscriberInfo, &profilePage, &ProfilePage::onLoadSubscriberInfo);
+    connect(this, &MainWindowStacked::reloadProfilePageInfo, &profilePage, &ProfilePage::onReloadProfilePageInfo);
     connect(&profilePage, &ProfilePage::updateProfileRequest, this, &MainWindowStacked::updateProfileRequest);
     connect(&profilePage, &ProfilePage::resetSubscriberInfo, this, &MainWindowStacked::resetSubscriberInfo);
     connect(this, &MainWindowStacked::accountUpdateError, &profilePage, &ProfilePage::onAccountUpdateError);

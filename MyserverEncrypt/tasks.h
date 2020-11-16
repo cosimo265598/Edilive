@@ -88,6 +88,7 @@ private:
     Ui::MainWindow *ui;
     QString rootPath = QDir().currentPath()+"/files/";
     QMutexLocker locker;
+    QString connName;
 
     void serverAccountCreate(QJsonObject request);
     void serverLoginRequest();

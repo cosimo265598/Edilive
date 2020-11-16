@@ -17,6 +17,7 @@ Tasks::Tasks(QObject *parent,
     socket(socket),
     request(request),
     threadId(-1),
+    connName(""),
     ui(ui),
     locker(mutex)
 {
@@ -44,7 +45,8 @@ void Tasks::serverLoginRequest()
     //QThread::currentThread()->msleep(10000);
 
     try {
-        database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        database.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection exception in ServerLoginRequest()");
         this->loginError("Server error during login");
@@ -111,12 +113,6 @@ void Tasks::serverLoginUnlock()
 
     QByteArray data;
 
-    /*
-    if (client->isLogged()){
-        emit loginError(socket, "You have to loggin before use the platform");
-        return ;
-    */
-
     if (client->authenticate(token.toUtf8())){		// verify the user's account credentials
         emit printUiServer("User " + client->getUsername() + " is logged in -  served by Thread: "+threadId);
         client->login(client->getUser());
@@ -125,7 +121,8 @@ void Tasks::serverLoginUnlock()
         QList<file_t> fileList;
         ServerDatabase db;
         try {
-            db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+            connName = QString::number(QRandomGenerator::global()->generate());
+            db.open(defaultnamedb,connName,ui);
         }catch (DatabaseConnectionException& re ) {
             emit printUiServer("open DB connection EXCEPTION in ServerOpenDirClient()");
 
@@ -187,7 +184,8 @@ void Tasks::serverAccountCreate()
     ServerDatabase database;
 
     try {
-        database.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        database.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection EXCEPTION in ServerAccountCreate()");
         this->accountCreationError("Server error during account creation");
@@ -272,7 +270,6 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
                          {"creator", f.creator},
                          {"created",  f.created},
                          {"URI", f.URI},
-                         {"size", QString::number(QFileInfo(rootPath+f.URI).size())}
                      });
     }
 
@@ -297,7 +294,7 @@ void Tasks:: serverUpdateProfileClient(){
     QString password = request["password"].toString();
     QString stringifiedImage = request["icon"].toString();
 
-    QByteArray serializedImage;
+    QByteArray serializedImage = nullptr;
 
     if(!stringifiedImage.isEmpty()){
         serializedImage = QByteArray::fromBase64(stringifiedImage.toLatin1());
@@ -309,7 +306,8 @@ void Tasks:: serverUpdateProfileClient(){
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        db.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection EXCEPTION in serverUpdateProfileClient()");
         this->accountUpdateError("Server error during account update");
@@ -325,7 +323,10 @@ void Tasks:: serverUpdateProfileClient(){
     try
     {	// Add the new user record to the server database
         db.updateUser(user);
-
+        users.remove(client->getUsername());
+        user.setIcon(user.getIcon().insert(0,QByteArray("updt")));
+        users.insert(user.getUsername(), user);
+        client->setUser(&users[user.getUsername()]);
     }catch (DatabaseWriteException& re ) {
         emit printUiServer("updateUser query WRITE EXCEPTION in serverUpdateProfileClient()");
         this->accountUpdateError("Account Update Error");
@@ -337,8 +338,6 @@ void Tasks:: serverUpdateProfileClient(){
         this->accountUpdateError("Account Update Error");
         return;
     }
-
-    users[client->getUsername()] = user;
     //emit accountUpdateSuccess(socket, "Update success");
 
     ///////////
@@ -404,7 +403,8 @@ void Tasks::serverCreateFileForClient()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        db.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection EXCEPTION in serverCreateFileForClient()");
         this->fileCreationError("Server error creating new file");
@@ -416,7 +416,6 @@ void Tasks::serverCreateFileForClient()
         QFile(filePath).remove();
         return;
     }
-
 
     try{
         file_t file;
@@ -473,7 +472,8 @@ void Tasks::serverDeleteFileForClient()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        db.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection EXCEPTION in serverDeleteFileForClient()");
         this->fileDeletionError("Server error deleting file");
@@ -700,30 +700,32 @@ void Tasks::serverRemoveClientFromWorkspace(){
     w->removeClient(socket);
     qDebug() << "OK rimosso client,  n client: " << w->getClients().size() << "In workspace: " << URI;
 
-    if(w->getClients().size()<=0){
+    // == Every time a client is removed from the workspace, a persistante file saving is performed ==
 
-        //Safe way to save a file. All the operation are done on a temporary unique-random named file.
-        //Only if the commit() return true the original file is modified
-        QSaveFile file(rootPath + URI);
-        if (file.open(QIODevice::WriteOnly))
+    //Safe way to save a file. All the operation are done on a temporary unique-random named file.
+    //Only if the commit() return true the original file is modified
+    QSaveFile file(rootPath + URI);
+
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.seek(0);
+        QDataStream docFileStream(&file);
+
+        qDebug()<<"File opened";
+        for(Symbol s: w->getSharedFile()->getSymbols())
+            docFileStream<<s.getCar()<<s.getFmt();
+
+       qDebug()<<"File writed";
+       if (docFileStream.status() == QDataStream::Status::WriteFailed)
         {
-            QDataStream docFileStream(&file);
-
-            qDebug()<<"File opened";
-            for(Symbol s: w->getSharedFile()->getSymbols()){
-                docFileStream<<s.getCar()<<s.getFmt();
-            }
-
-           qDebug()<<"File writed";
-           if (docFileStream.status() == QDataStream::Status::WriteFailed)
-            {
-                file.cancelWriting();
-                file.commit();
-            }
+            file.cancelWriting();
             file.commit();
         }
-        this->workspaces.remove(URI);
+        file.commit();
+    }
 
+    if(w->getClients().size()<=0){
+        this->workspaces.remove(URI);
         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
     }else{
 
@@ -756,7 +758,8 @@ void Tasks::serverShareFile()
     ServerDatabase db;
 
     try {
-        db.open(defaultnamedb,QString::number(QRandomGenerator::global()->generate()),ui);
+        connName = QString::number(QRandomGenerator::global()->generate());
+        db.open(defaultnamedb,connName,ui);
     }catch (DatabaseConnectionException& re ) {
         emit printUiServer("open DB connection EXCEPTION in serverShareFile()");
         return;
@@ -890,8 +893,6 @@ void Tasks::run(){
 Tasks::~Tasks()
 {
     //Sistema
-    if(QSqlDatabase::database(threadId).isValid())
-        QSqlDatabase::removeDatabase(threadId);
-    //qDebug() << "curr thread  " << QThread::currentThread();
-    //qDebug() << "Returning to main thread  " << this->thread();
+    if(QSqlDatabase::database(connName).isValid())
+        QSqlDatabase::removeDatabase(connName);
 }

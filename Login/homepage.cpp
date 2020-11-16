@@ -112,8 +112,7 @@ void HomePage::onReceivedFileHandlers(QJsonArray paths){
         item->installEventFilter(eventFilter);
         connect(item, &FileHandler::clicked,[item, this]()
                     {ui->infoLabel->setText("<b>File Selected:</b> "+item->getFileName()+"\t\t<b>Creator:</b> "+
-                                                 item->getCreator() + "\t\t<b>Size:</b> "+
-                                                 item->getSize() +"\t<b>Created:</b> "+
+                                                 item->getCreator() + "\t\t<b>Created:</b> "+
                                                  item->getCreated());});
 
         connect(item, &FileHandler::doubleClicked,this, &HomePage::onFileHandlerDbClicked);
@@ -137,7 +136,6 @@ void HomePage::loadImage(QByteArray serializedImage){
         pixmap.load(":/icons_pack/avatar_default.png");
     }else{
         qDebug() << "load";
-        serializedImage.remove(0,4);
         pixmap.loadFromData(serializedImage);
     }
 
