@@ -230,7 +230,6 @@ void Client::startTextEditor(QString fileName)
     connect(this,&Client::updateListUsersConnected,textEditor,&TextEdit::onUpdateListUsersConnected,Qt::QueuedConnection);
     connect(this,&Client::fromServerInsertSignal, textEditor, &TextEdit::fromServerInsert,Qt::QueuedConnection);
     connect(this,&Client::fromServerDeleteSignal, textEditor, &TextEdit::fromServerDelete,Qt::QueuedConnection);
-    //connect(textEditor, &TextEdit::saveFile, this, &Client::saveFile,Qt::QueuedConnection);
     connect(textEditor, &TextEdit::changeCursorPositionSignal, this, &Client::changeCursorPosition,Qt::QueuedConnection);
     connect(this, &Client::fromServerChangeCursorSignal, textEditor, &TextEdit::fromServerNewCursorPosition, Qt::QueuedConnection);
     connect(this,&Client::removeConnectedUser,textEditor,&TextEdit::removePresence,Qt::QueuedConnection);

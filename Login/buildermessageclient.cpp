@@ -17,7 +17,7 @@ QJsonDocument BuilderMessageClient::MessageCursorChange(int pos, QString user, Q
     QJsonObject objtosend;
     objtosend.insert("type",21);
     objtosend.insert("pos",pos);
-    objtosend.insert("site", site);
+    objtosend.insert("siteid", site);
     objtosend.insert("user",user);
     jsondoc.setObject(objtosend);
     return jsondoc;

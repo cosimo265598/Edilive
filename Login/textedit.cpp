@@ -403,7 +403,7 @@ bool TextEdit::load(const QString &fileName, SharedFile* file)
             textEdit->textCursor().setBlockFormat(textBlockFormat);
         }
     }
-    textEdit->textCursor().setPosition(QTextCursor::End,QTextCursor::MoveAnchor);
+    textEdit->textCursor().setPosition(QTextCursor::Start,QTextCursor::MoveAnchor);
     Presence p=onlineUsers_map.find(this->subscriber->username).value();
     drawCursor(p);
     setCurrentFileName(fileName);
@@ -1045,8 +1045,6 @@ void TextEdit::removePresence(QString userId)
 
 void TextEdit::textSubscript()
 {
-    const QSignalBlocker blocker(textEdit->document());
-
     //Uncheck text Superscription
     actionTextSuperscript->setChecked(false);
 
@@ -1061,8 +1059,6 @@ void TextEdit::textSubscript()
 
 void TextEdit::textSuperscript()
 {
-    const QSignalBlocker blocker(textEdit->document());
-
     //Uncheck text Subscription
     actionTextSubscript->setChecked(false);
 

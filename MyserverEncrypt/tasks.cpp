@@ -91,10 +91,6 @@ void Tasks::serverLoginRequest()
         return;
     }
 
-    // client not logged
-    //emit messageChallenge(socket, QString(users[username].getSalt()), QString(client->challenge()));
-
-
     //////
     qDebug()<<"Funzione onMessageChallange viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
 
@@ -150,9 +146,6 @@ void Tasks::serverLoginUnlock()
             qDebug() << "FileName: " + f.fileName;
             client->getUser()->addFile(f);
         }
-
-        //emit messageChallegePassed(socket, QString());
-
 
         ///////
 
@@ -242,8 +235,6 @@ void Tasks::serverAccountCreate()
         return;
     }
 
-    //emit accountConfirmed(socket, "Account Created Correctly");
-
     ////////
     QByteArray data;
     BuilderMessage::MessageSendToClient(
@@ -273,12 +264,8 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
                      });
     }
 
-
-    //emit openDirOfClient(socket1, files);
-
     /////
 
-    //QThread::currentThread()->msleep(10000);
     QByteArray data;
     BuilderMessage::MessageSendToClient(
                 data,BuilderMessage::MessageOpenDirOfClient(files));
@@ -338,7 +325,6 @@ void Tasks:: serverUpdateProfileClient(){
         this->accountUpdateError("Account Update Error");
         return;
     }
-    //emit accountUpdateSuccess(socket, "Update success");
 
     ///////////
     QByteArray data;
@@ -357,8 +343,6 @@ void Tasks::serverPersonalDataOfClient()
     QString username = client->getUsername();
     QString nickname = client->getUser()->getNickname();
     QByteArray serializedImage = client->getUser()->getIcon();
-
-    //emit personalDataOfClient(socket, username, nickname, serializedImage);
 
     /////////////
 
@@ -390,8 +374,8 @@ void Tasks::serverCreateFileForClient()
     }
 
     if (newFile.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(&newFile);
-        out << "";
+        QDataStream out(&newFile);
+        out << " ";
         newFile.close();
 
     }else{
@@ -527,12 +511,7 @@ void Tasks::serverOpenFile()
 
     Workspace *w = nullptr;
 
-    //qDebug() << "TEST   URI: " << URI << "FileName: " << fileName;
-
     if(!client->getUser()->hasFile(fileName)){
-        //qDebug()<< "File not found";
-        //emit fileDeletionError(socket, "File Not Found");
-
         this->serverOpenDirOfClient(nullptr);
 
         return;
@@ -557,8 +536,6 @@ void Tasks::serverOpenFile()
     for(Symbol s : workspaces[URI]->getSharedFile()->getSymbols()){
         qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
     }
-
-    //emit openFile(socket, URI);
 
     //////////////////////
     QByteArray data;
@@ -729,8 +706,6 @@ void Tasks::serverRemoveClientFromWorkspace(){
         qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
     }else{
 
-       // emit removeClientFromWorkspace(socket, URI); // Remove the current client from the other client still sharing the <fileName> file
-
         /////////////////
         w->removeClient(socket);
         for(auto cl : workspaces[URI]->getClients()){
@@ -805,7 +780,7 @@ void Tasks::serverShareFile()
 void Tasks::changeCursorPosition(){
     int pos     =request["pos"].toInt();
     QString user=request["user"].toString();
-    QString site=request["site"].toString();
+    QString site=request["siteid"].toString();
     QSharedPointer<Workspace> w =  workspaces[site];
     for(QSharedPointer<Client> cl : w->getClients()){
         if(cl->getUsername()!=user){

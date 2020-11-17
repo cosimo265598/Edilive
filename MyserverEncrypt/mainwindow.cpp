@@ -25,24 +25,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     // config
     m_pWebSocketServer =  QSharedPointer<QWebSocketServer>(new QWebSocketServer("SSL_Server",QWebSocketServer::SecureMode,this));
-    //this->po=ProcessOperation::getInstance(this, clients, users, workspaces);
-    
-    /*
-    //opening database;
-    ServerDatabase db;
-    try {
-        if(!SSLconfiguration(sslconfig))
-            throw StartupException("Impossible to set encryption configuration");
-        m_pWebSocketServer->setSslConfiguration(sslconfig);
-
-        //database.open(defaultnamedb, QString("dafault"), ui.get());
-
-    }catch(DatabaseCreateException& dcreate_ex){
-        throw StartupException("Creation database table error");
-    }catch(StartupException& se){
-        throw StartupException("Start up problem.");
-    }
-    */
 }
 
 MainWindow::~MainWindow()
@@ -296,10 +278,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
     QJsonObject request = jsonDoc.object();
     TypeOperation typeOp = (TypeOperation)(request["type"].toInt());
-    //Tasks *task = new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get());
 
-    //connect(task,&Tasks::socketAbort, this, &MainWindow::socketAbort,Qt::QueuedConnection);
-    //connect(task,&Tasks::printUiServer,this, &MainWindow::printUiServer,Qt::QueuedConnection);
 
     ////// prva aggiunta testing mutex separatly
     ///  NEL CASO NON FUNZIOANA COME DEVE BASTA RIMUOVERE TUTTO IL CODICE COMRPESO TRA SUETE RIGHE IN BLU
@@ -308,8 +287,10 @@ void MainWindow::processBinaryMessage(QByteArray message)
         QString URI;
         if(request.contains("URI")){
             URI = request["URI"].toString();
+             qDebug() << "URI" << request["URI"].toString();
         }else if(request.contains("siteid")){
             URI = request["siteid"].toString();
+            qDebug() << "siteid" << request["siteid"].toString();
         }
 
         //If there isn't the workspace's URI created, is not possible to delete or insert a char (case request["siteid"])
@@ -342,15 +323,4 @@ void MainWindow::processBinaryMessage(QByteArray message)
     ////// end  aggiunta testing
 
     QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), &mutex));
-
-    /*
-    try {
-        po->process(socket, jsonDoc.object(), ui.get());
-    }
-    catch (std::exception& me)
-    {
-        ui->commet->appendPlainText( me.what());
-        socketAbort(socket);
-    }
-    */
 }

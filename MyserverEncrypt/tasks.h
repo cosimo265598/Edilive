@@ -8,6 +8,7 @@
 #include <QSqlDatabase>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QTextCharFormat>
 
 #include "serverdatabase.h"
 #include "serverexception.h"

@@ -26,7 +26,6 @@ SOURCES += \
     client.cpp \
     main.cpp \
     mainwindow.cpp \
-    processoperation.cpp \
     serverdatabase.cpp \
     serverexception.cpp \
     tasks.cpp \
@@ -40,7 +39,6 @@ HEADERS += \
     buildermessage.h \
     client.h \
     mainwindow.h \
-    processoperation.h \
     serverdatabase.h \
     serverexception.h \
     tasks.h \
