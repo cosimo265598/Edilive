@@ -19,6 +19,9 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -44,70 +47,104 @@
          <property name="palette">
           <palette>
            <active>
+            <colorrole role="Button">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
+              </color>
+             </brush>
+            </colorrole>
             <colorrole role="Base">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>255</red>
-               <green>255</green>
-               <blue>255</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
             <colorrole role="Window">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>239</red>
-               <green>41</green>
-               <blue>41</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
            </active>
            <inactive>
+            <colorrole role="Button">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
+              </color>
+             </brush>
+            </colorrole>
             <colorrole role="Base">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>255</red>
-               <green>255</green>
-               <blue>255</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
             <colorrole role="Window">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>239</red>
-               <green>41</green>
-               <blue>41</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
            </inactive>
            <disabled>
+            <colorrole role="Button">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
+              </color>
+             </brush>
+            </colorrole>
             <colorrole role="Base">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>239</red>
-               <green>41</green>
-               <blue>41</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
             <colorrole role="Window">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>239</red>
-               <green>41</green>
-               <blue>41</blue>
+               <red>243</red>
+               <green>243</green>
+               <blue>243</blue>
               </color>
              </brush>
             </colorrole>
            </disabled>
           </palette>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(243, 243, 243);</string>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="accountImage">
+            <property name="styleSheet">
+             <string notr="true">color: rgb(17, 14, 79);
+</string>
+            </property>
             <property name="text">
              <string>Image</string>
             </property>
@@ -115,6 +152,10 @@
           </item>
           <item>
            <widget class="QLabel" name="username">
+            <property name="styleSheet">
+             <string notr="true">color: rgb(17, 14, 79);
+</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -144,8 +185,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(17, 14, 79);
+</string>
+            </property>
             <property name="text">
-             <string> Menu Operazioni: </string>
+             <string>Action Menu:</string>
             </property>
            </widget>
           </item>
@@ -156,6 +201,12 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(144, 177, 203);
+color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;</string>
             </property>
             <property name="text">
              <string>New File</string>
@@ -170,6 +221,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(144, 177, 203);
+color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;</string>
+            </property>
             <property name="text">
              <string>Share</string>
             </property>
@@ -183,8 +240,14 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(144, 177, 203);
+color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;</string>
+            </property>
             <property name="text">
-             <string>Delete File</string>
+             <string>Delete FIle</string>
             </property>
            </widget>
           </item>
@@ -225,6 +288,10 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(17, 14, 79);
+</string>
+            </property>
             <property name="text">
              <string>Profile Menu:</string>
             </property>
@@ -238,8 +305,14 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(144, 177, 203);
+color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;</string>
+            </property>
             <property name="text">
-             <string>Update account</string>
+             <string>Edit Profile</string>
             </property>
            </widget>
           </item>
@@ -251,6 +324,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;
+background-color: rgb(232, 105, 105);</string>
+            </property>
             <property name="text">
              <string>Logout</string>
             </property>
@@ -261,6 +340,9 @@
        </item>
        <item>
         <widget class="Line" name="line_4">
+         <property name="styleSheet">
+          <string notr="true">background-color: &quot;transparent&quot;;</string>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -273,6 +355,9 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(243, 243, 243);</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::Panel</enum>
@@ -291,9 +376,12 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>748</width>
+            <width>784</width>
             <height>603</height>
            </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: &quot;transparent&quot;;</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <property name="topMargin">
@@ -301,6 +389,11 @@
            </property>
            <item row="0" column="2">
             <widget class="QWidget" name="fileExplorer" native="true">
+             <property name="styleSheet">
+              <string notr="true">background-color: &quot;transparent&quot;;
+color: rgb(17, 14, 79);
+</string>
+             </property>
              <layout class="QGridLayout" name="gridLayout_2">
               <property name="topMargin">
                <number>9</number>
@@ -336,6 +429,9 @@
                 <property name="autoFillBackground">
                  <bool>false</bool>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: &quot;transparent&quot;;</string>
+                </property>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
@@ -360,6 +456,11 @@
          <width>16777215</width>
          <height>20</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: &quot;transparent&quot;;
+color: rgb(17, 14, 79);
+</string>
        </property>
        <property name="text">
         <string>No file selected...</string>

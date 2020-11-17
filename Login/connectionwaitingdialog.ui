@@ -13,15 +13,25 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(243, 243, 243);
+</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="message">
      <property name="font">
       <font>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
+       <family>Ubuntu</family>
+       <pointsize>13</pointsize>
+       <weight>50</weight>
+       <italic>false</italic>
+       <bold>false</bold>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(17, 14, 79);
+font: 13pt &quot;Ubuntu&quot;;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -51,6 +61,12 @@
        <bold>true</bold>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(17, 14, 79);
+ QProgressBar::chunk {
+     background-color: #05B8CC;
+ }</string>
+     </property>
      <property name="value">
       <number>0</number>
      </property>
@@ -69,6 +85,10 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(17, 14, 79);
+font: 8pt &quot;Ubuntu&quot;;</string>
      </property>
      <property name="text">
       <string/>
