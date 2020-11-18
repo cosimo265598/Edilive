@@ -209,9 +209,9 @@ color: rgb(20, 85, 145);
        <property name="styleSheet">
         <string notr="true">background-color: rgb(243, 243, 243);
 color: rgb(17, 14, 79);
-border-width: 5px;
+border-width: 2px;
 border-radius: 20px;
-</string>
+border-style: solid;</string>
        </property>
        <property name="text">
         <string>Register</string>
@@ -229,9 +229,9 @@ border-radius: 20px;
        <property name="styleSheet">
         <string notr="true">background-color: rgb(243, 243, 243);
 color: rgb(17, 14, 79);
-border-width: 5px;
+border-width: 2px;
 border-radius: 20px;
-</string>
+border-style: solid;</string>
        </property>
        <property name="text">
         <string>I Have already an Account</string>

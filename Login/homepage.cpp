@@ -36,14 +36,18 @@ void HomePage::onFileHandlerClicked(){
 
     //During the construction of every FileHandler, a style sheet is set in order to have border:none
     // If element is highlighted, I want a border shown
-    selected->setStyleSheet("");
+    selected->setStyleSheet("QToolButton{background-color: rgb(144, 177, 203);}QToolButton:hover{\
+                            background-color: rgb(130, 171, 237);\
+                            }");
 }
 
 void HomePage::onFocusChange(QWidget *old, QWidget *now){
     if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QScrollArea *>(now) != nullptr){
         //Reset the original stylesheet with no border if the element is no more focused
 
-        selected->setStyleSheet("QToolButton{border:none;}");
+        selected->setStyleSheet("QToolButton{border:none;}QToolButton:hover{\
+                                background-color: rgb(130, 171, 237);\
+                                }");
         selected = nullptr;
 
     }else if(qobject_cast<FileHandler *>(old) != nullptr && qobject_cast<QPushButton *>(now) != nullptr &&  qobject_cast<QPushButton *>(now)->objectName()=="pushButton_delete"){

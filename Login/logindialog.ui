@@ -684,9 +684,9 @@ border-radius: 5px;</string>
          <property name="styleSheet">
           <string notr="true">background-color: rgb(243, 243, 243);
 color: rgb(17, 14, 79);
-border-width: 5px;
+border-width: 2px;
 border-radius: 20px;
-</string>
+border-style: solid;</string>
          </property>
          <property name="text">
           <string>Login</string>
@@ -704,8 +704,9 @@ border-radius: 20px;
          <property name="styleSheet">
           <string notr="true">background-color: rgb(243, 243, 243);
 color: rgb(17, 14, 79);
-border-width: 5px;
-border-radius: 20px;</string>
+border-width: 2px;
+border-radius: 20px;
+border-style: solid;</string>
          </property>
          <property name="text">
           <string>Create an account</string>
