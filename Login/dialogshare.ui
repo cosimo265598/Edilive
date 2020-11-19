@@ -45,8 +45,7 @@ border-radius: 10px;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: &quot;transparent&quot;;
-color: rgb(255, 255, 255);</string>
+    <string notr="true">background-color: &quot;transparent&quot;;</string>
    </property>
    <property name="text">
     <string>Username:</string>
@@ -63,7 +62,7 @@ color: rgb(255, 255, 255);</string>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: &quot;transparent&quot;;
-color: rgb(255, 255, 255);</string>
+</string>
    </property>
    <property name="text">
     <string>URI: </string>

@@ -68,7 +68,6 @@ void HomePage::on_pushButton_new_file_clicked()
     diag.setWindowTitle(tr("New file creation"));
     diag.setLabelText(tr("file name: "));
     diag.resize(400,0);
-    diag.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.338, y1:0, x2:1, y2:1, stop:0 rgba(131, 168, 207, 255), stop:1 rgba(200, 215, 232, 255));");
     int ret = diag.exec();
 
     if (ret == QDialog::Accepted){
@@ -177,7 +176,6 @@ void HomePage::on_pushButton_Logout_clicked()
 void HomePage::onDeleteFile(){
      QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
      delMsgBox.addButton(QMessageBox::Cancel);
-     delMsgBox.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.338, y1:0, x2:1, y2:1, stop:0 rgba(131, 168, 207, 255), stop:1 rgba(200, 215, 232, 255));");
      if(delMsgBox.exec()==QMessageBox::Ok){
         //qDebug() << "OK";
         QString URI = selected -> getURI();

@@ -282,7 +282,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
     ////// prva aggiunta testing mutex separatly
     ///  NEL CASO NON FUNZIOANA COME DEVE BASTA RIMUOVERE TUTTO IL CODICE COMRPESO TRA SUETE RIGHE IN BLU
-    if(request.contains("URI") || request.contains("siteid"))
+  /*  if(request.contains("URI") || request.contains("siteid"))
     {
         QString URI;
         if(request.contains("URI")){
@@ -318,7 +318,7 @@ void MainWindow::processBinaryMessage(QByteArray message)
             QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[URI]));
             return;
         }
-    }
+    }*/
 
     ////// end  aggiunta testing
 

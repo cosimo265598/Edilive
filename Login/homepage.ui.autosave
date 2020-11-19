@@ -20,7 +20,16 @@
    </sizepolicy>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMessageBox{
+   <string notr="true">QPushButton#pushButton_delete:hover{
+border-color: rgb(52, 101, 164);
+border-width:1px;
+background-color: rgb(144, 177, 203);
+color: rgb(255, 255, 255);
+border-width: 5px;
+border-radius: 20px;
+}
+
+QMessageBox{
 background-color: qlineargradient(spread:pad, x1:0.338, y1:0, x2:1, y2:1, stop:0 rgba(131, 168, 207, 255), stop:1 rgba(200, 215, 232, 255));
 
 }
