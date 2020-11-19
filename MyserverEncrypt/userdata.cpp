@@ -92,7 +92,22 @@ QString UserData::getURIat(int index) const
 
 void UserData::addFile(file_t file)
 {
-    files.insert(file.fileName, file);
+
+    QString name = file.fileName;
+    int i = 1;
+    if(this->files.contains(file.fileName)){
+        while(files.contains(QString(file.fileName + '(' + QString::number(i) + ')')))
+            i++;
+
+        qDebug()<< "File conflict " << QString(file.fileName + '(' + QString::number(i) + ')');
+
+
+        name = file.fileName.append(QString('(' + QString::number(i) + ')'));
+        qDebug()<< file.fileName;
+    }
+
+    file.fileName = name;
+    files.insert(name, file);
 }
 
 void UserData::removeDocument(QString fileName)

@@ -11,6 +11,7 @@ ProfilePage::ProfilePage(QWidget *parent) :
 {
     ui->setupUi(this);
     resetUpdateUser();
+    resetFields();
 }
 
 ProfilePage::~ProfilePage()
@@ -21,17 +22,30 @@ ProfilePage::~ProfilePage()
 
 void ProfilePage::on_buttonBox_ok_cancel_accepted()
 {
-    if(updateUser.nickname == nullptr && updateUser.password == nullptr && updateUser.serializedImage == nullptr){
-        if((!ui->password->text().simplified().isNull() && ui->confirmPassword->text().simplified().isNull()) || (ui->password->text().simplified().isNull() && !ui->confirmPassword->text().simplified().isNull()) ){
+    if(this->managePasswordChange()){
+        if(QString::compare(ui->password->text().simplified(), ui->confirmPassword->text().simplified(), Qt::CaseInsensitive) != 0){
+            updateUser.password.clear();
             ui->password->setStyleSheet(" border: 1px solid red;");
             ui->confirmPassword->setStyleSheet(" border: 1px solid red;");
+            QMessageBox::critical(this, tr("WARNING"),"The two password MUST be equal",QMessageBox::Ok);
+            return;
         }else{
-            QMessageBox::critical(this, tr("WARNING"),"No changes detected",QMessageBox::Ok);
+            updateUser.password = ui->password->text().simplified();
         }
+    }
+
+    if(ui->nickname->text().simplified().isNull() || ui->nickname->text().simplified().isEmpty() || ui->nickname->text().simplified() == nickname_old)
+        updateUser.nickname.clear();
+    else
+        updateUser.nickname =  ui->nickname->text().simplified();
+
+    if(updateUser.nickname == nullptr && updateUser.password == nullptr && updateUser.serializedImage == nullptr){
+        QMessageBox::critical(this, tr("WARNING"),"No changes detected",QMessageBox::Ok);
         return;
     }
     if(QMessageBox::critical(this, tr("WARNING"),"Apply the changes?",QMessageBox::Ok,QMessageBox::Cancel) == 0x00000400){
         emit updateProfileRequest(updateUser);
+        resetFields();
         resetUpdateUser();
     }else
         return;
@@ -42,6 +56,7 @@ void ProfilePage::on_buttonBox_ok_cancel_rejected()
     if(updateUser.nickname != nullptr || updateUser.password != nullptr || updateUser.serializedImage != nullptr){
         if(QMessageBox::critical(this, tr("WARNING"),"Delete changes? The operation will not reversible",QMessageBox::Ok, QMessageBox::Cancel ) == 0x00000400){
             resetUpdateUser();
+            resetFields();
             emit resetSubscriberInfo();
         }
     }
@@ -52,16 +67,19 @@ void ProfilePage::on_pushButton_returnToHome_clicked()
     if(updateUser.nickname != nullptr || updateUser.password != nullptr || updateUser.serializedImage != nullptr){
         if(QMessageBox::critical(this, tr("WARNING"),"Delete changes? The operation will not reversible",QMessageBox::Ok, QMessageBox::Cancel ) == 0x00000400){
             resetUpdateUser();
+            resetFields();
             emit resetSubscriberInfo();
             emit returnToHomeClicked();
         }
     }
     else{
+        resetFields();
         emit returnToHomeClicked();
     }
 }
 
 void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage){
+    nickname_old = nickname;
     ui->username->setText(username);
     ui->nickname->setText(nickname);
     loadImage(serializedImage);
@@ -70,6 +88,7 @@ void ProfilePage::onLoadSubscriberInfo(QString username, QString nickname, QByte
 void ProfilePage:: onAccountUpdateError(QString message)
 {
     resetUpdateUser();
+    resetFields();
     QMessageBox::critical(this, tr("WARNING"),message,QMessageBox::Ok);
     return;
 }
@@ -81,7 +100,6 @@ void ProfilePage::onReloadProfilePageInfo(QString username, QString nickname, QB
     loadImage(serializedImage);
 }
 
-
 void ProfilePage::loadImage(QByteArray serializedImage){
     QPixmap pixmap;
     if (serializedImage == nullptr){
@@ -90,7 +108,7 @@ void ProfilePage::loadImage(QByteArray serializedImage){
         pixmap.loadFromData(serializedImage);
     }
 
-    ui->accountImage->setPixmap( pixmap.scaled(150 ,150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    ui->accountImage->setPixmap( pixmap.scaled(180 ,180, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
 
@@ -109,6 +127,7 @@ void ProfilePage::on_pushButton_changeImage_clicked()
     }
 }
 
+/*
 void ProfilePage::on_nickname_editingFinished()
 {
     if(ui->nickname->text().simplified().isNull() || ui->nickname->text().simplified().isEmpty())
@@ -116,31 +135,34 @@ void ProfilePage::on_nickname_editingFinished()
     else
         updateUser.nickname =  ui->nickname->text().simplified();
 }
-
-void ProfilePage::on_password_editingFinished()
-{
-    if(ui->password->text().isNull() || ui->password->text().isEmpty() || (ui->password->text() != ui->confirmPassword->text()))
-       updateUser.password.clear();
-    else
-       updateUser.password = ui->password->text();
-}
-
-void ProfilePage::on_confirmPassword_editingFinished()
-{
-    if(ui->confirmPassword->text().isNull() || ui->confirmPassword->text().isEmpty() || (ui->password->text() != ui->confirmPassword->text()))
-       updateUser.password.clear();
-    else
-       updateUser.password = ui->password->text();
-}
+*/
 
 void ProfilePage::resetUpdateUser(){
     updateUser.username.clear();
     updateUser.nickname.clear();
     updateUser.password.clear();
-    updateUser.serializedImage.clear();
+    updateUser.serializedImage = nullptr;
+}
+
+void ProfilePage::resetFields(){
 
     ui->password->setStyleSheet("");
     ui->confirmPassword->setStyleSheet("");
-    ui->password->text().clear();
-    ui->confirmPassword->text().clear();
+    ui->password->setText(nullptr);
+    ui->confirmPassword->setText(nullptr);
+}
+
+bool ProfilePage::managePasswordChange(){
+
+    bool check = false;
+
+    if(!ui->password->text().simplified().isNull() && !ui->password->text().simplified().isEmpty()){
+        check = true;
+   }
+
+    if(!ui->confirmPassword->text().simplified().isNull() && !ui->confirmPassword->text().simplified().isEmpty()){
+        check = true;
+    }
+
+   return check;
 }

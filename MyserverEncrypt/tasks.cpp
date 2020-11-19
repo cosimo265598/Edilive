@@ -375,7 +375,8 @@ void Tasks::serverCreateFileForClient()
 
     if (newFile.open(QIODevice::WriteOnly | QIODevice::Text)){
         QDataStream out(&newFile);
-        out << " ";
+        out<<QChar(' ');
+        out<<QTextCharFormat();
         newFile.close();
 
     }else{

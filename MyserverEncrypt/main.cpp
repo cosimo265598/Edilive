@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     {
         QString pathMembro=QDir().homePath();
         // set your working directory
-        const QString pathSaverio("/QtProjects/pds-project/myservertest/MyserverEncrypt/");
+        const QString pathSaverio("/Scrivania/texteditor/myservertest/MyserverEncrypt/");
         const QString pathCosimo("/GIT_Saverio/myservertest/MyserverEncrypt/");
         const QString pathSilvia =("/Scrivania/ProgettoPDS/myservertest/MyserverEncrypt/");
 

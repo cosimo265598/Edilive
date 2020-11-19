@@ -347,12 +347,13 @@ void TextEdit::setupTextActions()
     comboStyle = new QComboBox(tb);
     tb->addWidget(comboStyle);
     comboStyle->addItem("Standard");
+    /*
     comboStyle->addItem("Heading 1");
     comboStyle->addItem("Heading 2");
     comboStyle->addItem("Heading 3");
     comboStyle->addItem("Heading 4");
     comboStyle->addItem("Heading 5");
-    comboStyle->addItem("Heading 6");
+    comboStyle->addItem("Heading 6");*/
 
     connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
 

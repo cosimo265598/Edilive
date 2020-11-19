@@ -145,7 +145,7 @@ void HomePage::loadImage(QByteArray serializedImage){
 
     //qDebug() << pixmap;
 
-    ui->accountImage->setPixmap( pixmap.scaled(150, 150, Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    ui->accountImage->setPixmap( pixmap.scaled(180, 180, Qt::KeepAspectRatio,Qt::SmoothTransformation));
 }
 
 QString HomePage::sharedFileNameConflictManage(QString fileName)

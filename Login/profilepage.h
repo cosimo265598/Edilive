@@ -40,9 +40,7 @@ private slots:
     void on_buttonBox_ok_cancel_rejected();
     void on_pushButton_returnToHome_clicked();
     void on_pushButton_changeImage_clicked();
-    void on_nickname_editingFinished();
-    void on_password_editingFinished();
-    void on_confirmPassword_editingFinished();
+    //void on_nickname_editingFinished();
 
 public slots:
     void onLoadSubscriberInfo(QString username, QString nickname, QByteArray serializedImage);
@@ -54,6 +52,9 @@ private:
     updateUser_t updateUser;
     void loadImage(QByteArray);
     void resetUpdateUser();
+    void resetFields();
+    bool managePasswordChange();
+    QString nickname_old;
 
 signals:
     void returnToHomeClicked();
