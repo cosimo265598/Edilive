@@ -99,11 +99,11 @@ void UserData::addFile(file_t file)
         while(files.contains(QString(file.fileName + '(' + QString::number(i) + ')')))
             i++;
 
-        qDebug()<< "File conflict " << QString(file.fileName + '(' + QString::number(i) + ')');
+        //qDebug()<< "File conflict " << QString(file.fileName + '(' + QString::number(i) + ')');
 
 
         name = file.fileName.append(QString('(' + QString::number(i) + ')'));
-        qDebug()<< file.fileName;
+        //qDebug()<< file.fileName;
     }
 
     file.fileName = name;
@@ -137,7 +137,7 @@ void UserData::setPassword(QString newPassword)
 
 void UserData::update(QString nickname, QString password, QByteArray icon)
 {
-    qDebug() << nickname.isEmpty();
+    //qDebug() << nickname.isEmpty();
     if(!nickname.isEmpty())
         setNickname(nickname);
     if (!icon.isNull())

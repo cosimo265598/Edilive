@@ -46,7 +46,7 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
         QJsonObject json{{"remain",-1},{"symbols", QJsonArray{}}}; // empty jsonObj, just to have a first size
         size_t cur_json = 0;
 
-        qDebug() << cur_json;
+       // qDebug() << cur_json;
 
         QJsonArray symbolArray;
 
@@ -74,7 +74,7 @@ void BuilderMessage::MessageSendToClient(QByteArray &byte, SharedFile *newfile){
                            };
 
             cur_json += sizeof (obj);
-            qDebug() << cur_json;
+         //   qDebug() << cur_json;
             if(cur_json < max_json){
                 symbolArray.append(obj);
             }

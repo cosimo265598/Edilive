@@ -61,7 +61,7 @@ void Client::onRegistrationRequest(QString username, QString password){
     user.username = username;
     user.password = password;
 
-    qDebug()<<"onRegistation request";
+    //qDebug()<<"onRegistation request";
     old_clientstatus=clientStatus;
     this->clientStatus = RegistrationRequest;
     m_webSocket.get()->open(this->urlForConnection);
@@ -88,7 +88,7 @@ void Client::onConnected(){
     }
     case ReConnect:{
         // make login again
-        qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
+        //qDebug()<<"Reconnet form login o registartion " <<old_clientstatus;
         if(old_clientstatus==LoginRequest){
             BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
             m_webSocket.get()->sendBinaryMessage(out);
@@ -114,7 +114,7 @@ void Client::resetUser(){
 }
 
 void Client::onDisconnection(){
-    qDebug() << "DISCONNECTED";
+    //qDebug() << "DISCONNECTED";
     switch(this->clientStatus){
     case LoginRequest: {
         if(m_webSocket->error()== QAbstractSocket::ConnectionRefusedError)
@@ -238,10 +238,10 @@ void Client::startTextEditor(QString fileName)
     textEditor->show();
     mainWindowStacked->hide();
 
-    for(Symbol s: sf->getSymbols())
-            qDebug()<<s.getCar()<<"\n";
+  //  for(Symbol s: sf->getSymbols())
+    //        qDebug()<<s.getCar()<<"\n";
 
-    qDebug() << "testo: " << sf->to_string();
+  //  qDebug() << "testo: " << sf->to_string();
 
     if (!textEditor->load(fileName, sf))
         textEditor->fileNew();
@@ -257,7 +257,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
     stream >> jsonDoc;
 
-    qDebug() << jsonDoc;
+   // qDebug() << jsonDoc;
 
     if (jsonDoc.isNull()) {
         std::cout << "Failed to create JSON doc." << std::endl;
@@ -289,14 +289,14 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         clientStatus=Connected;
 
         if(old_clientstatus==LoginRequest || old_clientstatus==RegistrationRequest){
-            qDebug()<<"QUESTO IF ";
+       //     qDebug()<<"QUESTO IF ";
             this->stackedDialog->close();
             this->stackedDialog=nullptr;
             createMainWindowStacked();
             return;
         }
         if(old_clientstatus==ReConnect ){
-            qDebug()<<"SECODNO IF ";
+        //    qDebug()<<"SECODNO IF ";
 
             if(stackedDialog!=nullptr){
                 this->stackedDialog->close();
@@ -305,7 +305,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             }
         }
         resetUser();
-        qDebug()<<"created";
+        //qDebug()<<"created";
         break;
     }
     case 5:{    // message  login error
@@ -316,13 +316,13 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 8:{    // message account confimed
-        qDebug() << "Account created";
+  //      qDebug() << "Account created";
         BuilderMessageClient::MessageSendToServer(out,BuilderMessageClient::MessageLogin(user.username));
         m_webSocket.get()->sendBinaryMessage(out);
         break;
     }
     case 9:{    // message account create error
-        qDebug() << "Account creation failure";
+      //  qDebug() << "Account creation failure";
         resetUser();
         emit registrationFailure(jsonObj["error"].toString());
         break;
@@ -347,15 +347,15 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
 
             last = obj["last"].toInt();
 
-            qDebug() << "Cosa mi arriva: " << obj["symbols"].toArray();
-            qDebug() << "ora inserisco";
+     //       qDebug() << "Cosa mi arriva: " << obj["symbols"].toArray();
+       //     qDebug() << "ora inserisco";
             for(auto symbol: obj["symbols"].toArray())
                 this->standardInsert(symbol.toObject());
-            qDebug() << "Ho inserito tutto";
+        //    qDebug() << "Ho inserito tutto";
         }
 
-        qDebug() << "Apro l'editor";
-        qDebug() << " connected client array "<< jsonObj["connected"].toArray();
+     //   qDebug() << "Apro l'editor";
+      //  qDebug() << " connected client array "<< jsonObj["connected"].toArray();
 
         for(auto i : jsonObj["connected"].toArray()){
             subscriber_t s;
@@ -379,7 +379,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 13:{    // file gia presente
-        qDebug() << "Errore nella creazione del file";
+       // qDebug() << "Errore nella creazione del file";
         emit newFileCreationFailure(jsonObj["error"].toString());
         break;
     }
@@ -401,7 +401,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     }
 
     case 19:{    // file not found
-        qDebug() << "Errore nella eliminazione del file";
+    //    qDebug() << "Errore nella eliminazione del file";
         //emit newFileCreationFailure(jsonObj["error"].toString());
         break;
     }
@@ -417,7 +417,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     }
     case 21:{ // Update account error
 
-        qDebug() << "Update Account error";
+        //qDebug() << "Update Account error";
         resetUpdateUser();
         emit reloadProfilePageInfo(subscriber.username, subscriber.nickname, subscriber.serializedImage);
     }
@@ -450,11 +450,11 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             cn++;
         }
         //AREA DEBUG
-        qDebug() << "INSERIMENTO CARATTERE DA SERVER -- char=" << c<<", posf="<<v<<", pos="<<cn<<", id="<<id;
+        /*qDebug() << "INSERIMENTO CARATTERE DA SERVER -- char=" << c<<", posf="<<v<<", pos="<<cn<<", id="<<id;
         qDebug() << "FIle POST inserimento: " << sf->to_string();
         for(Symbol s2 : sf->getSymbols()){
             qDebug() << s2.getCar() << " con posfraz=" <<s2.getPosFraz() ;
-        }
+        }*/
         //fine AREA DEBUG
         //
         int pos=0;
@@ -520,11 +520,11 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
             i_pos++;
         }
         //AREA DEBUG
-        qDebug() << "INSERIMENTO da SERVER con CONFLITTO -- char=" << sn.getCar()<<", posf="<<sn.getPosFraz()<<", pos="<<i_pos<<", id="<<sn.getId();
+       /* qDebug() << "INSERIMENTO da SERVER con CONFLITTO -- char=" << sn.getCar()<<", posf="<<sn.getPosFraz()<<", pos="<<i_pos<<", id="<<sn.getId();
         qDebug() << "FIle POST inserimento: " << sf->to_string();
         for(Symbol s2 : sf->getSymbols()){
             qDebug() << s2.getCar() << " con posfraz=" <<s2.getPosFraz() ;
-        }
+        }*/
 
         emit fromServerInsertSignal(sn.getCar(),i_pos,this->subscriber.username,sn.getFmt());
         break;
@@ -552,11 +552,11 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         sf->localErase(s);
 
         //AREA DEBUG
-        qDebug() << "CANCELLAZIONE DA CLIENT-- char=" << s.getCar()<<", posf="<<s.getPosFraz()<<", pos="<<counteri<<", id="<<s.getId();
+       /* qDebug() << "CANCELLAZIONE DA CLIENT-- char=" << s.getCar()<<", posf="<<s.getPosFraz()<<", pos="<<counteri<<", id="<<s.getId();
         qDebug() << "File POST cancellazione:: " << sf->to_string();
         for(Symbol s1 : sf->getSymbols()){
             qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<s1.getId();
-        }
+        }*/
         //fine AREA DEBUG
         QString st(jsonObj["id"].toString());
         QString u=st.split(jsonObj["siteid"].toString()).at(1).split("_").at(1);
@@ -573,7 +573,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
         break;
     }
     case 100:{
-        qDebug()<< "CASE 100 - update inset workspace";
+   //     qDebug()<< "CASE 100 - update inset workspace";
         subscriber_t s;
 
         s.username = jsonObj["username"].toString();
@@ -596,7 +596,7 @@ void Client::MessageReceivedFromServer(const QByteArray &message)
     }
 
     case 101:{
-        qDebug()<< "CASE 101 - update inset workspace";
+     //   qDebug()<< "CASE 101 - update inset workspace";
         emit removeConnectedUser(jsonObj["username"].toString());
         break;
     }
@@ -611,14 +611,14 @@ void Client::onConnectionSuccess(){
 
 void Client::onConnectionFailure(){
 
-    qDebug() << "Failure";
+   // qDebug() << "Failure";
     this->m_webSocket->abort();
 }
 
 void Client::onFileHandlerDbClicked(QString URI, QString fileName){
     //sf = new SharedFile(fileName.toStdString(), "notMe");
     QString stringa("Ho aggiornato il file attuale a "+URI);
-    qDebug()<<stringa;
+   // qDebug()<<stringa;
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -630,7 +630,7 @@ void Client::onFileHandlerDbClicked(QString URI, QString fileName){
 void Client::onCreateNewFileRequest(QString fileName){
     sf = new SharedFile(fileName, subscriber.username);
     QString stringa("Ho aggiornato il file attuale a "+fileName);
-    qDebug()<<stringa;
+  //  qDebug()<<stringa;
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -647,7 +647,7 @@ void Client::onDeleteFileRequest(QString URI, QString fileName){
 }
 
 void Client::onUpdateProfileRequest(updateUser_t updateUser){
-    qDebug() << "update";
+  //  qDebug() << "update";
     this->updateUser = updateUser;
     QByteArray out;
 
@@ -665,7 +665,7 @@ void Client::onCloseTextEditor()
                     out,
                     BuilderMessageClient::MessagedCloseEditor(sf->getSite()));
 
-    qDebug() << "Segnalo che non sono più nell'editor";
+  //  qDebug() << "Segnalo che non sono più nell'editor";
     this->m_webSocket->sendBinaryMessage(out);
 }
 
@@ -678,8 +678,8 @@ void Client::resetUpdateUser(){
 
 void Client::ping()
 {
-    qDebug()<<m_webSocket.get()->closeCode();
-    qDebug()<<"ping called - "<< old_clientstatus << " new "<< clientStatus;
+   // qDebug()<<m_webSocket.get()->closeCode();
+   // qDebug()<<"ping called - "<< old_clientstatus << " new "<< clientStatus;
     if(m_webSocket.get()->closeCode()==QWebSocketProtocol::CloseCodeBadOperation){
         waitingDialog.stopTimerForced();
         waitingDialog.reject();
@@ -692,7 +692,7 @@ void Client::ping()
 
 void Client::errorSocket(QAbstractSocket::SocketError error)
 {
-    qDebug()<<"Socket error: - "<<error;
+  //  qDebug()<<"Socket error: - "<<error;
     if(error==QAbstractSocket::ConnectionRefusedError)
         onDisconnection();
 }
@@ -700,7 +700,7 @@ void Client::errorSocket(QAbstractSocket::SocketError error)
 void Client::closeControll()
 {
     if(waitingDialog.result()==QDialog::DialogCode::Rejected){
-        qDebug()<<"No way to recover the connectio - app should be close";
+        //qDebug()<<"No way to recover the connectio - app should be close";
         if(mainWindowStacked!=nullptr){
              stackedDialog = new StartupStackedDialog();
              stackedDialog->show();
@@ -708,7 +708,7 @@ void Client::closeControll()
         }
 
     }else{
-        qDebug()<<"Connection recovered";
+       // qDebug()<<"Connection recovered";
     }
 }
 
@@ -733,11 +733,11 @@ void Client::localInsertion(QChar c, int pos ,QTextCharFormat format){ //INSERIM
     QByteArray out;
     Symbol s = sf->getSymbols()[pos];
     //AREA DEBUG
-    qDebug() << "INSERIMENTO LOCALE -- char="<<c<<", posf="<<s.getPosFraz()<<", pos="<<pos<<", id="<<s.getId();
+    /*qDebug() << "INSERIMENTO LOCALE -- char="<<c<<", posf="<<s.getPosFraz()<<", pos="<<pos<<", id="<<s.getId();
     qDebug() << "File POST inserimento: " << sf->to_string();
     for(Symbol s1 : sf->getSymbols()){
         qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz() ;
-    }
+    }*/
     //FINE AREA DEBUG*/
     BuilderMessageClient::MessageSendToServer(
                 out,
@@ -765,11 +765,11 @@ void Client::onLocalDeletion(int pos)
     Symbol s = sf->localErase(pos,QChar());
 
     //AREA DEBUG
-    qDebug()<<"CANCELLAZIONE LOCALE char="<<s.getCar()<<" in pos="<<pos<<" e id="<<s.getId();
+  /*  qDebug()<<"CANCELLAZIONE LOCALE char="<<s.getCar()<<" in pos="<<pos<<" e id="<<s.getId();
     qDebug()<<"File POST cancellazione:" <<sf->to_string();
     for(Symbol s : sf->getSymbols()){
         qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz()<<" e id="<<s.getId();
-    }
+    }*/
     //fine AREA DEBUG
 
     QByteArray out;
@@ -782,7 +782,7 @@ void Client::onLocalDeletion(int pos)
 
 void Client::onRemoveClientWorkspace(QString URI)
 {
-    qDebug() << "Mi rimuovo";
+  //  qDebug() << "Mi rimuovo";
     mainWindowStacked->show();
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
@@ -793,7 +793,7 @@ void Client::onRemoveClientWorkspace(QString URI)
 
 void Client::onShareFile(QString username, QString URI)
 {
-    qDebug() << "Client Share";
+   // qDebug() << "Client Share";
     QByteArray out;
     BuilderMessageClient::MessageSendToServer(
                 out,

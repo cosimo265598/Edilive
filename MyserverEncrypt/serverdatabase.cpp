@@ -30,7 +30,7 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
 
     if (!QFile::exists(dbName))
     {
-        qDebug() << "QUI";
+       // qDebug() << "QUI";
 
         // Database initialization queries
 
@@ -58,7 +58,7 @@ void ServerDatabase::open(QString dbName, QString connectionName, Ui::MainWindow
     }
 
     if (!db.open()) {
-        qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
+      //  qDebug()<<LOG_PRINT_DB+"----- ERORRE apertura db esistente"+db.lastError().text();
         emit printUiServerDatabase("----- ERORRE apertura db esistente"+db.lastError().text());
         throw DatabaseConnectionException(db.lastError());
     }
@@ -84,7 +84,7 @@ void ServerDatabase::insertNewDoc(file_t file)
         query.bindValue(":created", file.created);
 
         if (!query.exec()){
-            qDebug()<<LOG_PRINT_DB+"Error insert new Doc "+query.lastError().text();
+          //  qDebug()<<LOG_PRINT_DB+"Error insert new Doc "+query.lastError().text();
             db.rollback();
             throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
@@ -96,21 +96,21 @@ void ServerDatabase::insertNewDoc(file_t file)
         query.bindValue(":pending", 0);  // If 0, access allowed. If 1 means a shared file to accept or not
 
         if (!query.exec()){
-            qDebug()<<LOG_PRINT_DB+"Error add doc to user";
+       //     qDebug()<<LOG_PRINT_DB+"Error add doc to user";
             db.rollback();
             throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
 
         if(!db.commit())
         {
-             qDebug() << "Failed to commit";
+         //    qDebug() << "Failed to commit";
              db.rollback();
-             qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
+          //   qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
              throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
 
     }else{
-        qDebug() <<  "Failed to start transaction mode";
+    //    qDebug() <<  "Failed to start transaction mode";
         throw DatabaseTransactionException("Failed to start transaction mode");
     }
 }
@@ -138,12 +138,12 @@ void ServerDatabase::insertUser(UserData& user)
         query.bindValue(":username", user.getUsername());
 
         if (!query.exec()){
-            qDebug()<<LOG_PRINT_DB+"Error selecting existing user";
+            //qDebug()<<LOG_PRINT_DB+"Error selecting existing user";
             throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
         }
 
         if(query.first()){
-            qDebug()<<LOG_PRINT_DB+"Username already existing";
+            //qDebug()<<LOG_PRINT_DB+"Username already existing";
             throw DatabaseDuplicatedException(query.lastQuery().toStdString(), query.lastError());
         }
 
@@ -155,13 +155,13 @@ void ServerDatabase::insertUser(UserData& user)
                 userId = query.value(0).toInt() + 1;
                 user.setUserId(userId);
             }else{
-                qDebug()<<LOG_PRINT_DB+"Error get max user id";
+                //qDebug()<<LOG_PRINT_DB+"Error get max user id";
                 throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
             }
         }
         else
         {
-            qDebug()<<LOG_PRINT_DB+"Error get max user id";
+            //qDebug()<<LOG_PRINT_DB+"Error get max user id";
             throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
         }
 
@@ -177,22 +177,22 @@ void ServerDatabase::insertUser(UserData& user)
         query.bindValue(":icon", user.getIcon());
 
         if (!query.exec()){
-            qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
+      //      qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
             db.rollback();
             throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
 
         if(!db.commit())
         {
-             qDebug() << "qui";
-             qDebug() << "Failed to commit";
+       //      qDebug() << "qui";
+        //     qDebug() << "Failed to commit";
              db.rollback();
-             qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
+         //    qDebug()<<LOG_PRINT_DB+"Error insert new insert user "+query.lastError().text();
              throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
 
     }else{
-        qDebug() <<  "Failed to start transaction mode";
+    //    qDebug() <<  "Failed to start transaction mode";
         throw DatabaseTransactionException("Failed to start transaction mode");
     }
 }
@@ -219,7 +219,7 @@ void ServerDatabase::updateUser(const UserData& user)
     query.bindValue(":icon",     icon);
 
     if (!query.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error update user";
+    //    qDebug()<<LOG_PRINT_DB+"Error update user";
         throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
     }
 }
@@ -238,7 +238,7 @@ bool ServerDatabase::addDocToUser(QString username, QString URI)
         query.prepare("SELECT * FROM Users WHERE Username = :username");
         query.bindValue(":username", username);
         if (!query.exec()){
-            qDebug()<<LOG_PRINT_DB+"Error select existing user";
+        //    qDebug()<<LOG_PRINT_DB+"Error select existing user";
             db.rollback();
             throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
         }
@@ -251,7 +251,7 @@ bool ServerDatabase::addDocToUser(QString username, QString URI)
             query.bindValue(":pending", 0); // In future, put here 1 in order to allow the destinator to choose if accept or not the shared file
 
             if (!query.exec()){
-                qDebug()<<LOG_PRINT_DB+"Error add doc to user";
+           //     qDebug()<<LOG_PRINT_DB+"Error add doc to user";
                 throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
             }
 
@@ -260,16 +260,16 @@ bool ServerDatabase::addDocToUser(QString username, QString URI)
 
         if(!db.commit())
         {
-             qDebug() << "Failed to commit";
+             //qDebug() << "Failed to commit";
              db.rollback();
-             qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
+             //qDebug()<<LOG_PRINT_DB+"Error remove doc to user";
              throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
         }
 
         return exists;
 
     }else{
-        qDebug() <<  "Failed to start transaction mode";
+    //    qDebug() <<  "Failed to start transaction mode";
         throw DatabaseTransactionException("Failed to start transaction mode");
     }
 }
@@ -319,7 +319,7 @@ bool ServerDatabase::removeDocFromUser(QString username, QString URI)
        if(!db.commit())
        {
             db.rollback();
-            qDebug()<<LOG_PRINT_DB+"Failed to commit";
+    //        qDebug()<<LOG_PRINT_DB+"Failed to commit";
             throw DatabaseDeleteException(query.lastQuery().toStdString(), query.lastError());
        }
 
@@ -327,7 +327,7 @@ bool ServerDatabase::removeDocFromUser(QString username, QString URI)
     }
     else
     {
-        qDebug() <<  "Failed to start transaction mode";
+ //       qDebug() <<  "Failed to start transaction mode";
         throw DatabaseTransactionException("Failed to start transaction mode");
     }
 }
@@ -344,7 +344,7 @@ void ServerDatabase::removeDoc(QString URI)
 
 
     if (!query.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error remove doc ";
+ //       qDebug()<<LOG_PRINT_DB+"Error remove doc ";
         throw DatabaseWriteException(query.lastQuery().toStdString(), query.lastError());
     }
 }
@@ -370,7 +370,7 @@ int ServerDatabase::getMaxUserID()
     }
     else
     {
-        qDebug()<<LOG_PRINT_DB+"Error get max user id";
+   //     qDebug()<<LOG_PRINT_DB+"Error get max user id";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
 
     }
@@ -404,7 +404,7 @@ QList<UserData> ServerDatabase::readUsersList()
     }
     else
     {
-        qDebug()<<LOG_PRINT_DB+"Error read user list";
+  //      qDebug()<<LOG_PRINT_DB+"Error read user list";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
 
     }
@@ -423,13 +423,13 @@ UserData ServerDatabase::readUser(QString username)
     query.bindValue(":username", username);
 
     if (!query.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error select existing user";
+   //     qDebug()<<LOG_PRINT_DB+"Error select existing user";
 
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
 
     if(!query.first()){
-        qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
+  //      qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
         throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
     }
 
@@ -484,12 +484,12 @@ file_t ServerDatabase::readFile(QString URI)
     query.bindValue(":uri", URI);
 
     if (!query.exec()){
-        qDebug()<<LOG_PRINT_DB+"Error select existing file";
+        //qDebug()<<LOG_PRINT_DB+"Error select existing file";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
 
     if(!query.first()){
-        qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
+        //qDebug() << query.lastQuery()<< "Seconda parte: " << query.lastError();
         throw DatabaseNotFoundException(query.lastQuery().toStdString(), query.lastError());
     }
 
@@ -556,7 +556,7 @@ QList<file_t> ServerDatabase::getUserDocs(QString username)
     }
     else
     {
-        qDebug()<<LOG_PRINT_DB+"Error read user list";
+    //    qDebug()<<LOG_PRINT_DB+"Error read user list";
         throw DatabaseReadException(query.lastQuery().toStdString(), query.lastError());
     }
 

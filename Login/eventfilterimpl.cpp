@@ -6,13 +6,13 @@ bool EventFilterImpl::eventFilter(QObject *obj, QEvent *event)
 {
     if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton ){
         FileHandler* icon = qobject_cast< FileHandler*>( obj );
-        qDebug() << "Double";
+        //qDebug() << "Double";
         emit icon->doubleClicked();
         return true;
 
     }else if(event->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton){
 
-        qDebug() << "Single";
+        //qDebug() << "Single";
         FileHandler* icon = qobject_cast<FileHandler*>( obj );
         emit icon->clicked();
         return true;

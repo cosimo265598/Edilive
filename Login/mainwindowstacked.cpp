@@ -8,7 +8,7 @@ MainWindowStacked::MainWindowStacked(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    qDebug()<<"called costructor second dialog";
+    //qDebug()<<"called costructor second dialog";
 
     //this->setFixedSize(1200, 800);
 

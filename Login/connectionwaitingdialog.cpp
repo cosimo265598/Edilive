@@ -21,7 +21,7 @@ ConnectionWaitingDialog::ConnectionWaitingDialog(QWidget *parent) :
 
 ConnectionWaitingDialog::~ConnectionWaitingDialog()
 {
-    qDebug()<<"Timer deleted";
+    //qDebug()<<"Timer deleted";
     delete ui;
     timer.stop();
 }
@@ -48,7 +48,7 @@ void ConnectionWaitingDialog::stopTimerForced()
 
 void ConnectionWaitingDialog::changeState(QAbstractSocket::SocketState state)
 {
-    qDebug()<<"Stato socket changed: "<<state;
+    //qDebug()<<"Stato socket changed: "<<state;
     switch (state) {
         case QAbstractSocket::UnconnectedState:{
             setText("Lost Connection or server not responding");
@@ -58,7 +58,7 @@ void ConnectionWaitingDialog::changeState(QAbstractSocket::SocketState state)
             break;
         }
         case QAbstractSocket::ConnectedState :{
-            qDebug()<<"Connected again";
+            //qDebug()<<"Connected again";
             timer.stop();
             this->accept();
             this->close();
@@ -82,7 +82,7 @@ void ConnectionWaitingDialog::timeout()
         this->close();
         number_retry=0;
         ui->progressBar->setValue(0);
-        qDebug()<<"Stop timer";
+        //qDebug()<<"Stop timer";
     }
     else{
         this->show();

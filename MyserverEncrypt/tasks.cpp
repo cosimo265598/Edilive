@@ -41,7 +41,7 @@ void Tasks::serverLoginRequest()
         return;
     }
 
-    qDebug()<<username<<" Server login request  -  "<<this->thread()->currentThread()<< threadId;
+    //qDebug()<<username<<" Server login request  -  "<<this->thread()->currentThread()<< threadId;
     //QThread::currentThread()->msleep(10000);
 
     try {
@@ -92,7 +92,7 @@ void Tasks::serverLoginRequest()
     }
 
     //////
-    qDebug()<<"Funzione onMessageChallange viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+  //  qDebug()<<"Funzione onMessageChallange viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
 
     QByteArray data;
     BuilderMessage::MessageSendToClient(
@@ -143,13 +143,13 @@ void Tasks::serverLoginUnlock()
 
         // visita della directory
         for (auto f: fileList) {
-            qDebug() << "FileName: " + f.fileName;
+      //      qDebug() << "FileName: " + f.fileName;
             client->getUser()->addFile(f);
         }
 
         ///////
 
-        qDebug()<<"Funzione onMessageChallangePassed viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+        //qDebug()<<"Funzione onMessageChallangePassed viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
 
         QByteArray data;
         BuilderMessage::MessageSendToClient(
@@ -254,7 +254,7 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
 
     for (auto f: client->getUser()->getFiles()) {
 
-        qDebug() << "FileName: " + f.fileName;
+   //     qDebug() << "FileName: " + f.fileName;
 
         files.append(QJsonObject{
                          {"filename", f.fileName}, // meglio file name
@@ -274,7 +274,7 @@ void Tasks::serverOpenDirOfClient(QWebSocket* pushSocket)
 }
 
 void Tasks:: serverUpdateProfileClient(){
-    qDebug()<<"segnale di modifica dati profilo ricevuto";
+//    qDebug()<<"segnale di modifica dati profilo ricevuto";
     QSharedPointer<Client> client = clients[socket];
 
     QString nickname = request["nickname"].toString();
@@ -337,7 +337,7 @@ void Tasks:: serverUpdateProfileClient(){
 
 void Tasks::serverPersonalDataOfClient()
 {
-    qDebug()<<"segnale di apertura dati profilo ricevuto";
+ //   qDebug()<<"segnale di apertura dati profilo ricevuto";
     QSharedPointer<Client> client = clients[socket];
 
     QString username = client->getUsername();
@@ -356,7 +356,7 @@ void Tasks::serverPersonalDataOfClient()
 
 void Tasks::serverCreateFileForClient()
 {
-    qDebug()<<"segnale nuovo file ricevuto";
+ //   qDebug()<<"segnale nuovo file ricevuto";
 
     QString fileName = request["fileName"].toString();
     QSharedPointer<Client> client = clients[socket];
@@ -436,7 +436,7 @@ void Tasks::serverCreateFileForClient()
 
 void Tasks::serverDeleteFileForClient()
 {
-    qDebug()<<"segnale delete file ricevuto";
+ //   qDebug()<<"segnale delete file ricevuto";
 
     QString URI = request["URI"].toString();
     QString fileName = request["fileName"].toString();
@@ -444,10 +444,10 @@ void Tasks::serverDeleteFileForClient()
     QSharedPointer<Client> client = clients[socket];
 
     QFile file(rootPath + URI);
-    qDebug() << rootPath+URI;
+    //qDebug() << rootPath+URI;
 
     if(!client->getUser()->hasFile(fileName)){
-        qDebug()<< "File not found";
+  //      qDebug()<< "File not found";
         this->fileDeletionError("File Not Found");
         this->serverOpenDirOfClient(nullptr);
 
@@ -533,11 +533,11 @@ void Tasks::serverOpenFile()
         w->addClient(socket, client);
     }
 
-    qDebug() << "APERTURA FILE" <<(w->getSharedFile()->to_string());
-    for(Symbol s : workspaces[URI]->getSharedFile()->getSymbols()){
+ //   qDebug() << "APERTURA FILE" <<(w->getSharedFile()->to_string());
+ /*   for(Symbol s : workspaces[URI]->getSharedFile()->getSymbols()){
         qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
     }
-
+*/
     //////////////////////
     QByteArray data;
     BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageHeaderFile(URI, client->getUsername(),  w->getClients()));
@@ -551,7 +551,7 @@ void Tasks::serverOpenFile()
             BuilderMessage::MessageSendToClient(data,BuilderMessage::MessageInsertClientWorkspace(client->getUser()->getUsername(),client->getUser()->getNickname(),client->getUser()->getIcon()));
             cl->getSocket()->sendBinaryMessage(data);
         }
-        qDebug()<<data;
+        //qDebug()<<data;
     }
 }
 
@@ -583,7 +583,7 @@ void Tasks::serverInsertionChar(){
        //== CONFLITTO ==
 
        if(esito==1){
-           qDebug()<< "INSERIMENTO da CLIENT con CONFLITTO -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
+           //qDebug()<< "INSERIMENTO da CLIENT con CONFLITTO -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
 
            std::vector<Symbol> simboli = sf->getSymbols();
            std::vector<int> nuovapos;
@@ -607,7 +607,7 @@ void Tasks::serverInsertionChar(){
            }
        }
        else{
-           qDebug()<< "INSERIMENTO da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
+   //        qDebug()<< "INSERIMENTO da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
            for(QSharedPointer<Client> cl : w->getClients()){
                if(cl->getUsername()!=caller){
 
@@ -620,9 +620,9 @@ void Tasks::serverInsertionChar(){
            }
        }
        //AREA DEBUG
-       qDebug() << "File POST inserimento: " << sf->to_string();
+ //      qDebug() << "File POST inserimento: " << sf->to_string();
        for(Symbol s : sf->getSymbols()){
-           qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
+ //          qDebug() << s.getCar() << " con posfraz=" << s.getPosFraz() ;
        }
        //fine AREA DEBUG
 
@@ -633,7 +633,7 @@ void Tasks::serverDeletionChar(){
     QJsonArray posfraz  =request.value("posfraz").toArray();
     QString siteid      =request.value("siteid").toString();
     std::vector<int> v;
-    qDebug()<< "CANCELLAZIONE da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
+ //   qDebug()<< "CANCELLAZIONE da CLIENT -- char="<< c << ", posf=" << (posfraz) << ", id="<<(id);
 
     for(QJsonValue val: posfraz)    v.push_back(val.toInt());
 
@@ -647,11 +647,11 @@ void Tasks::serverDeletionChar(){
 
     sf->localErase(s);
     //AREA DEBUG
-        qDebug() << "File POST cancellazione: " << sf->to_string();
+    /*    qDebug() << "File POST cancellazione: " << sf->to_string();
         for(Symbol s1 : sf->getSymbols()){
             qDebug() << s1.getCar() << " con posfraz=" << s1.getPosFraz()<<" e id="<<(s1.getId());
         }
-        //fine AREA DEBUG
+      */  //fine AREA DEBUG
 
     //INFORMA TUTTI I CLIENT TRANNE IL CHIAMANTE DELLA CANCELLAZIONE
     for(QSharedPointer<Client> cl : w->getClients()){
@@ -667,16 +667,16 @@ void Tasks::serverDeletionChar(){
 
 
 void Tasks::serverRemoveClientFromWorkspace(){
-    qDebug() << "ricevuto segnale di remove client from workspace";
+   // qDebug() << "ricevuto segnale di remove client from workspace";
     QString URI = request["URI"].toString();
 
     QString caller = clients[socket]->getUsername();
-    qDebug() << "IO SONO: " << caller;
+    //qDebug() << "IO SONO: " << caller;
 
     Workspace *w = workspaces[URI].get();
 
     w->removeClient(socket);
-    qDebug() << "OK rimosso client,  n client: " << w->getClients().size() << "In workspace: " << URI;
+    //qDebug() << "OK rimosso client,  n client: " << w->getClients().size() << "In workspace: " << URI;
 
     // == Every time a client is removed from the workspace, a persistante file saving is performed ==
 
@@ -689,11 +689,11 @@ void Tasks::serverRemoveClientFromWorkspace(){
         file.seek(0);
         QDataStream docFileStream(&file);
 
-        qDebug()<<"File opened";
+   //     qDebug()<<"File opened";
         for(Symbol s: w->getSharedFile()->getSymbols())
             docFileStream<<s.getCar()<<s.getFmt();
 
-       qDebug()<<"File writed";
+ //      qDebug()<<"File writed";
        if (docFileStream.status() == QDataStream::Status::WriteFailed)
         {
             file.cancelWriting();
@@ -704,13 +704,13 @@ void Tasks::serverRemoveClientFromWorkspace(){
 
     if(w->getClients().size()<=0){
         this->workspaces.remove(URI);
-        qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
+    //    qDebug() << "Rimosso workspace, numero workspaces: " << workspaces.size();
     }else{
 
         /////////////////
         w->removeClient(socket);
         for(auto cl : workspaces[URI]->getClients()){
-            qDebug() << "Mi devo rimuovere dagli altri";
+      //      qDebug() << "Mi devo rimuovere dagli altri";
             if(cl->getUsername()!=caller){
                 QByteArray data;
                 BuilderMessage::MessageSendToClient(
@@ -724,7 +724,7 @@ void Tasks::serverRemoveClientFromWorkspace(){
 
 void Tasks::serverShareFile()
 {
-    qDebug() << "ricevuto segnale shareFile";
+    //qDebug() << "ricevuto segnale shareFile";
 
     QString URI = request["URI"].toString();
     QString userToShare = request["username"].toString();
@@ -785,7 +785,7 @@ void Tasks::changeCursorPosition(){
     QSharedPointer<Workspace> w =  workspaces[site];
     for(QSharedPointer<Client> cl : w->getClients()){
         if(cl->getUsername()!=user){
-            qDebug()<<"Sto informando della cancellazione client: "<<cl->getUsername();
+      //      qDebug()<<"Sto informando della cancellazione client: "<<cl->getUsername();
             QByteArray data;
             BuilderMessage::MessageSendToClient(
                         data,BuilderMessage::MessageCursorChange(pos, user, site));
@@ -799,7 +799,7 @@ void Tasks::changeCursorPosition(){
 
 void Tasks::loginError(QString errorMessage)
 {
-    qDebug()<<"Funzione onLoginError viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
+  //  qDebug()<<"Funzione onLoginError viene servuita da "<<QThread::currentThread()<<" id = "<<QString::number((quintptr)QThread::currentThreadId());
 
     QByteArray data;
     BuilderMessage::MessageSendToClient(

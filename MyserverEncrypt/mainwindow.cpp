@@ -167,7 +167,7 @@ void MainWindow::onNewConnection(){
     QSharedPointer<Client> client(new Client(pSocket));
     clients.insert(pSocket, client);
 
-    qDebug() << pSocket;
+   // qDebug() << pSocket;
 
     ui->num_client->display(ui->num_client->intValue()+1);
 
@@ -209,13 +209,13 @@ void MainWindow::onSslErrors(const QList<QSslError> & sslerror)
 
 void MainWindow::socketAbort(QWebSocket* socket)
 {
-    qDebug()<<socket<<" invocazione metodo socket abort   "<<QThread::currentThread();
+  //  qDebug()<<socket<<" invocazione metodo socket abort   "<<QThread::currentThread();
 
     QSharedPointer<Client> client = clients[socket];
     QString ip;
     if(socket->isValid()){
         ip=socket->peerAddress().toString();
-        qDebug()<<"socket abort thread "<<socket->thread()->currentThread();
+     //   qDebug()<<"socket abort thread "<<socket->thread()->currentThread();
         socket->blockSignals(true);
         socket->flush();
         socket->close(QWebSocketProtocol::CloseCodeBadOperation);
@@ -260,7 +260,7 @@ void MainWindow::SimpleTextMessageTest(){
 
 void MainWindow::processBinaryMessage(QByteArray message)
 {
-    qDebug() << "new binary";
+   // qDebug() << "new binary";
     QWebSocket* socket = dynamic_cast<QWebSocket*>(sender());
     if (socket == nullptr || !socket->isValid())
         return;
@@ -287,10 +287,10 @@ void MainWindow::processBinaryMessage(QByteArray message)
         QString URI;
         if(request.contains("URI")){
             URI = request["URI"].toString();
-             qDebug() << "URI" << request["URI"].toString();
+          //   qDebug() << "URI" << request["URI"].toString();
         }else if(request.contains("siteid")){
             URI = request["siteid"].toString();
-            qDebug() << "siteid" << request["siteid"].toString();
+           // qDebug() << "siteid" << request["siteid"].toString();
         }
 
         //If there isn't the workspace's URI created, is not possible to delete or insert a char (case request["siteid"])
@@ -302,19 +302,19 @@ void MainWindow::processBinaryMessage(QByteArray message)
 
         if(workspaces.contains(request["URI"].toString()))
         {
-            qDebug()<<"WORKSPACE PRESENT:"<<workspaces[URI].get()
-                    <<"WITH QMUTEX:"<<lockwork[URI];
+         //   qDebug()<<"WORKSPACE PRESENT:"<<workspaces[URI].get()
+          //          <<"WITH QMUTEX:"<<lockwork[URI];
             QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[URI]));
             return;
         }else
         {
             if(!lockwork.contains(URI)){
                 lockwork.insert(URI,new QMutex);
-                qDebug()<<"INSERTED QMUTEX:"<<lockwork[URI];
+             //   qDebug()<<"INSERTED QMUTEX:"<<lockwork[URI];
             }
-            qDebug()<<"LIST KEY:"<<lockwork.keys();
-            qDebug()<<"LIST VALUES:"<<lockwork.values();
-            qDebug()<<"QMUTEX:"<<lockwork[URI];
+         //   qDebug()<<"LIST KEY:"<<lockwork.keys();
+           // qDebug()<<"LIST VALUES:"<<lockwork.values();
+            //qDebug()<<"QMUTEX:"<<lockwork[URI];
             QThreadPool::globalInstance()->start(new Tasks(this, request, socket, clients, users, workspaces, typeOp,ui.get(), lockwork[URI]));
             return;
         }

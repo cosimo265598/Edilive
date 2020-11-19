@@ -30,7 +30,7 @@ void HomePage::onFileHandlerDbClicked(){
 }
 
 void HomePage::onFileHandlerClicked(){
-    qDebug() << "File Handler";
+    //qDebug() << "File Handler";
     selected = dynamic_cast<FileHandler *>(QObject::sender());
     selected->setFocus();
 
@@ -68,6 +68,7 @@ void HomePage::on_pushButton_new_file_clicked()
     diag.setWindowTitle(tr("New file creation"));
     diag.setLabelText(tr("file name: "));
     diag.resize(400,0);
+    diag.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.338, y1:0, x2:1, y2:1, stop:0 rgba(131, 168, 207, 255), stop:1 rgba(200, 215, 232, 255));");
     int ret = diag.exec();
 
     if (ret == QDialog::Accepted){
@@ -139,7 +140,7 @@ void HomePage::loadImage(QByteArray serializedImage){
     if (serializedImage == nullptr){
         pixmap.load(":/icons_pack/avatar_default.png");
     }else{
-        qDebug() << "load";
+        //qDebug() << "load";
         pixmap.loadFromData(serializedImage);
     }
 
@@ -155,10 +156,10 @@ QString HomePage::sharedFileNameConflictManage(QString fileName)
         while(listfile.contains(QString(fileName + '(' + QString::number(i) + ')')))
             i++;
 
-        qDebug()<< "File conflict " << QString(fileName + '(' + QString::number(i) + ')');
+        //qDebug()<< "File conflict " << QString(fileName + '(' + QString::number(i) + ')');
 
         fileName = fileName.append(QString('(' + QString::number(i) + ')'));
-        qDebug()<< fileName;
+        //qDebug()<< fileName;
     }
     return fileName;
 }
@@ -176,8 +177,9 @@ void HomePage::on_pushButton_Logout_clicked()
 void HomePage::onDeleteFile(){
      QMessageBox delMsgBox{QMessageBox::Warning,tr("WARNING"),"Delete the selected file?",QMessageBox::Ok,this};
      delMsgBox.addButton(QMessageBox::Cancel);
+     delMsgBox.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0.338, y1:0, x2:1, y2:1, stop:0 rgba(131, 168, 207, 255), stop:1 rgba(200, 215, 232, 255));");
      if(delMsgBox.exec()==QMessageBox::Ok){
-        qDebug() << "OK";
+        //qDebug() << "OK";
         QString URI = selected -> getURI();
         QString fileName = selected->getFileName();
 
@@ -189,7 +191,7 @@ void HomePage::onDeleteFile(){
 
 void HomePage::onShareFile()
 {
-    qDebug() << "Homepage Share";
+    //qDebug() << "Homepage Share";
 
     DialogShare *diag = new DialogShare(this, selected->getURI());
     connect(diag, SIGNAL(shareFile(QString, QString)), this, SIGNAL(shareFile(QString, QString)));

@@ -101,7 +101,7 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
 
     int j=1;
     for(auto i=this->listUsers->begin(); i!=this->listUsers->end(); i++){
-        qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
+        //qDebug()<<"TEXTEDIT USERNAME FROM LIST"<<i->username;
         QImage img;
         if(i->serializedImage==nullptr){
             img.load(":/icons_pack/avatar_default.png");
@@ -124,7 +124,7 @@ TextEdit::TextEdit(QWidget *parent,struct subscriber_t* subscriber,QList<subscri
 
 void TextEdit::closeEvent(QCloseEvent *e)
 {
-    qDebug() << QFileInfo(fileName).fileName();
+    //qDebug() << QFileInfo(fileName).fileName();
     emit removeClientWorkspace(QFileInfo(fileName).fileName());
     listUsers->clear();
 }
@@ -670,7 +670,7 @@ void TextEdit::textColor()
 {
     //const QSignalBlocker blocker(textEdit->document());
     //Presence p=onlineUsers_map.find(this->subscriber.username).value()
-    qDebug()<<"COLOR CALLED";
+    //qDebug()<<"COLOR CALLED";
     QColor col = QColorDialog::getColor(textEdit->textColor(), this);
     if (!col.isValid())
         return;
@@ -822,7 +822,7 @@ void TextEdit::fromServerNewCursorPosition(int pos, QString user){
 }
 
 void TextEdit::fromServerInsert(QString c, int pos,QString user,QTextCharFormat nee_format){
-    qDebug()<< "<TESTING **********>Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos<< " e di "<<user;
+//    qDebug()<< "<TESTING **********>Sono nello slot di inserimento da server con c="<<c<<" e pos="<<pos<< " e di "<<user;
     const QSignalBlocker blocker(textEdit->document());
 
     Presence p=onlineUsers_map.find(user).value();
@@ -878,7 +878,7 @@ void TextEdit::fromServerDelete(int pos,QString user){
 
 void TextEdit::onUpdateListUsersConnected(int id, QString username, QImage img)
 {
-    qDebug()<<"TEXT EDIT - signal on update user";
+    //qDebug()<<"TEXT EDIT - signal on update user";
     newPresence(id,username,img);
     drawAllCursor();
 }
@@ -940,7 +940,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 
     QTextCursor cursor = textEdit->textCursor();
     if (cursor.hasSelection()){
-        qDebug()<<"MERGE SELECTION** "<<cursor.position();
+       // qDebug()<<"MERGE SELECTION** "<<cursor.position();
         cursor.select(QTextCursor::WordUnderCursor);
     }
     textEdit->textCursor().mergeCharFormat(format);
@@ -1023,10 +1023,10 @@ void TextEdit::newPresence(qint32 userId, QString username, QImage image)
     onlineUsers->addAction(onlineAction);
     onlineUsers_map.insert(p.name(), p);
 
-    qDebug() << "users" << onlineUsers_map.size();
+   // qDebug() << "users" << onlineUsers_map.size();
 
     p.cursor()->movePosition(QTextCursor::End,QTextCursor::MoveAnchor);
-    qDebug()<< "NEW PRESENCE pos:"<<p.cursor()->position();
+   // qDebug()<< "NEW PRESENCE pos:"<<p.cursor()->position();
     p.cursor()->clearSelection();
 }
 
