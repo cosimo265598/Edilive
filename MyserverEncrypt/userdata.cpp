@@ -93,7 +93,7 @@ QString UserData::getURIat(int index) const
 void UserData::addFile(file_t file)
 {
 
-    QString name = file.fileName;
+    /*QString name = file.fileName;
     int i = 1;
     if(this->files.contains(file.fileName)){
         while(files.contains(QString(file.fileName + '(' + QString::number(i) + ')')))
@@ -106,8 +106,8 @@ void UserData::addFile(file_t file)
         //qDebug()<< file.fileName;
     }
 
-    file.fileName = name;
-    files.insert(name, file);
+    file.fileName = name;*/
+    files.insert(file.fileName, file);
 }
 
 void UserData::removeDocument(QString fileName)
